@@ -8,9 +8,11 @@
   "type": "module",
   "scripts": {
     "build": "node build.js",
-    "dev": "node build.js --watch",
+    "dev": "http-server -p 8080 -c-1",
+    "watch": "node build.js --watch",
     "test": "node test/overtype.test.js",
-    "size": "gzip-size dist/overtype.min.js"
+    "size": "gzip-size dist/overtype.min.js",
+    "serve": "http-server -p 8080 -c-1"
   },
   "keywords": [
     "markdown",
@@ -25,7 +27,8 @@
   "license": "MIT",
   "devDependencies": {
     "esbuild": "^0.19.0",
-    "gzip-size-cli": "^5.1.0"
+    "gzip-size-cli": "^5.1.0",
+    "http-server": "^14.1.1"
   },
   "files": [
     "dist",
