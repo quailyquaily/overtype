@@ -771,9 +771,10 @@ var OverType = (() => {
       opacity: 0.6 !important;
     }
 
-    /* Code fence markers */
+    /* Code fence markers - with background when not in code block */
     .overtype-wrapper .overtype-preview .code-fence {
       color: var(--code, #0d3b66) !important;
+      background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
     }
     
     /* Code block lines - background for entire code block */
