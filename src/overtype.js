@@ -9,25 +9,10 @@ import { ShortcutsManager } from './shortcuts.js';
 import { generateStyles } from './styles.js';
 import { getTheme, mergeTheme, solar } from './themes.js';
 
-// UMD wrapper for universal compatibility
-(function(root, factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD
-    define([], factory);
-  } else if (typeof module === 'object' && module.exports) {
-    // CommonJS
-    module.exports = factory();
-  } else {
-    // Browser global
-    root.OverType = factory();
-  }
-}(typeof self !== 'undefined' ? self : this, function() {
-  'use strict';
-
-  /**
-   * OverType Editor Class
-   */
-  class OverType {
+/**
+ * OverType Editor Class
+ */
+class OverType {
     // Static properties
     static instances = new WeakMap();
     static stylesInjected = false;
@@ -542,16 +527,19 @@ import { getTheme, mergeTheme, solar } from './themes.js';
 
       OverType.globalListenersInitialized = true;
     }
-  }
+}
 
-  // Export classes for advanced usage
-  OverType.MarkdownParser = MarkdownParser;
-  OverType.ShortcutsManager = ShortcutsManager;
-  
-  // Export theme utilities
-  OverType.themes = { solar, cave: getTheme('cave') };
-  OverType.getTheme = getTheme;
-  OverType.mergeTheme = mergeTheme;
+// Export classes for advanced usage
+OverType.MarkdownParser = MarkdownParser;
+OverType.ShortcutsManager = ShortcutsManager;
 
-  return OverType;
-}));
+// Export theme utilities
+OverType.themes = { solar, cave: getTheme('cave') };
+OverType.getTheme = getTheme;
+OverType.mergeTheme = mergeTheme;
+
+// Default export
+export default OverType;
+
+// Named export
+export { OverType };
