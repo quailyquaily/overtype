@@ -232,44 +232,6 @@
       margin-bottom: 8px;
     }
 
-    /* Connection Lines */
-    .connection {
-      position: absolute;
-      transform-style: preserve-3d;
-      pointer-events: none;
-    }
-
-    .connection-line {
-      position: absolute;
-      width: 1px;
-      height: 200px;
-      background: linear-gradient(180deg, 
-        transparent 0%, 
-        rgba(99, 102, 241, 0.6) 20%, 
-        rgba(99, 102, 241, 0.6) 80%, 
-        transparent 100%);
-      transform-origin: top;
-      opacity: 0.6;
-    }
-
-    .connection-line1 {
-      left: 100px;
-      top: 60px;
-      transform: rotateX(-90deg) translateZ(100px);
-    }
-
-    .connection-line2 {
-      left: 300px;
-      top: 120px;
-      transform: rotateX(-90deg) translateZ(100px);
-    }
-
-    .connection-line3 {
-      left: 500px;
-      top: 180px;
-      transform: rotateX(-90deg) translateZ(100px);
-    }
-
     /* Labels */
     .label {
       position: absolute;
@@ -287,13 +249,16 @@
       left: 30px;
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 92, 246, 0.9));
       color: white;
-      transform: translateZ(150px) translateY(-6px);
+      transform: translateZ(150px) translateY(-15px);
       box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+
+      padding: 10px 24px 12px;
+      font-size: 14px;
     }
 
     .label-preview {
       bottom: -40px;
-      right: 30px;
+      left: 50px;
       background: linear-gradient(135deg, rgba(236, 72, 153, 0.9), rgba(244, 114, 182, 0.9));
       color: white;
       transform: translateZ(-20px);
@@ -301,7 +266,7 @@
 
       padding: 13px 26px;
       font-size: 15px;
-      transform: translateZ(-50px) translateY(10px);
+      transform: translateZ(-30px) translateY(12px);
     }
 
     /* Tech Details */
@@ -366,7 +331,7 @@
 <body>
   <!-- Controls Panel -->
   <div class="controls">
-    <button onclick="this.parentElement.remove()">&times;</button>
+    <button style="position: absolute; top: 10px; right: 10px; font-size: 16px; background: transparent; color: #fff; border: none; cursor: pointer;" onclick="this.parentElement.remove()">&times;</button>
     <div class="control-group">
       <label class="control-label">Grid Rotation</label>
       <div class="control-row">
@@ -441,9 +406,9 @@
       <div class="layer textarea-layer">
         <div class="label label-textarea">Input Layer</div>
         <div class="markdown-text">
-          <span class="heading"># Welcome to Editor</span><span class="cursor"></span><br>
+          <span class="heading"># Welcome to the editor</span><span class="cursor"></span><br>
           <br>
-          This is <span class="bold">**bold text**</span> and *italic*<br>
+          This is <span class="bold">**bold text**</span> and *italic*<br><br>
           Here's some <span class="code">`inline code`</span><br>
           <br>
           - First item<br>
@@ -453,20 +418,13 @@
         <div class="glow"></div>
       </div>
 
-      <!-- Connection Lines -->
-      <div class="connection">
-        <div class="connection-line connection-line1"></div>
-        <div class="connection-line connection-line2"></div>
-        <div class="connection-line connection-line3"></div>
-      </div>
-
       <!-- Bottom Layer - Styled Preview -->
       <div class="layer preview-layer">
         <div class="label label-preview">Render Layer</div>
         <div class="rendered-content">
-          <h1>Welcome to Editor</h1>
-          <p>This is <strong>bold text</strong> and <em>italic</em></p>
-          <p>Here's some <code>inline code</code></p>
+          <h1># Welcome to the editor</h1>
+          <p>This is <strong>**bold text**</strong> and <em>*italic*</em></p>
+          <p>Here's some <code>`inline code`</code></p>
           <ul>
             <li>First item</li>
             <li>Second item</li>
