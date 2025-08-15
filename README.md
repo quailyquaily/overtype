@@ -2,29 +2,6 @@
 
 A lightweight markdown editor library with perfect WYSIWYG alignment using an invisible textarea overlay technique. Zero dependencies, ~21KB minified.
 
-## How the Invisible Textarea Overlay Works
-
-![OverType Architecture Diagram](diagram.png)
-
-We overlap an invisible textarea on top of styled output, giving the illusion of editing styled text using a plain textarea.
-
-## OverType vs HyperMD vs Milkdown
-
-OverType is a minimalist markdown editor that's 10x smaller than HyperMD and 5x smaller than Milkdown. While HyperMD and Milkdown require complex setup with CodeMirror/ProseMirror dependencies, OverType is a single file with zero dependencies that works immediately. Its unique invisible textarea overlay approach means native browser editing features like undo/redo, mobile keyboards, and spellcheck work perfectly without complex state management.
-
-Choose OverType when you need a tiny bundle size, dead-simple integration without build tools, and perfect mobile support with visible markdown syntax. Choose HyperMD or Milkdown when you need full WYSIWYG editing with hidden syntax, advanced features like tables and diagrams, or collaborative editing with rich plugin ecosystems.
-
-| Feature | OverType | HyperMD | Milkdown |
-|---------|----------|---------|----------|
-| **Size** | ~21KB | ~350KB+ | ~100KB+ |
-| **Dependencies** | Zero | CodeMirror | ProseMirror + plugins |
-| **Setup** | Single file | Complex config | Build step required |
-| **Approach** | Invisible textarea | ContentEditable | ContentEditable |
-| **Mobile** | Perfect native | Issues common | Issues common |
-| **Markdown syntax** | Visible | Hidden | Hidden |
-| **Advanced features** | Basic | Full | Full |
-| **Best for** | Simple, fast, mobile | Full WYSIWYG | Modern frameworks |
-
 ## Features
 
 - 👻 **Invisible textarea overlay** - Transparent input layer overlaid on styled preview for seamless editing
@@ -34,6 +11,41 @@ Choose OverType when you need a tiny bundle size, dead-simple integration withou
 - 🔄 **DOM persistence aware** - Recovers from existing DOM (perfect for HyperClay and similar platforms)
 - 🚀 **Lightweight** - ~21KB minified, zero dependencies
 - 🔧 **Framework agnostic** - Works with React, Vue, vanilla JS, and more
+
+## How it works
+
+![OverType Architecture Diagram](diagram.png)
+
+We overlap an invisible textarea on top of styled output, giving the illusion of editing styled text using a plain textarea.
+
+## Comparisons
+
+| Feature | OverType | HyperMD | Milkdown | TUI Editor | EasyMDE |
+|---------|----------|---------|----------|------------|---------|
+| **Size** | ~21KB | 364.02 KB | 344.51 KB | 560.99 KB | 323.69 KB |
+| **Dependencies** | Zero | CodeMirror | ProseMirror + plugins | Multiple libs | CodeMirror |
+| **Setup** | Single file | Complex config | Build step required | Complex config | Moderate |
+| **Approach** | Invisible textarea | ContentEditable | ContentEditable | ContentEditable | CodeMirror |
+| **Mobile** | Perfect native | Issues common | Issues common | Issues common | Limited |
+| **Markdown syntax** | Visible | Hidden | Hidden | Toggle | Visible |
+| **Advanced features** | Basic | Full | Full | Full | Moderate |
+| **Best for** | Simple, fast, mobile | Full WYSIWYG | Modern frameworks | Enterprise apps | Classic editing |
+
+**Choose OverType when you need:**
+- Tiny bundle size (10x smaller than alternatives)
+- Zero dependencies - single file that works immediately
+- Perfect native browser features (undo/redo, mobile keyboards, spellcheck)
+- Dead-simple integration without build tools
+- Easy to understand, modify, and extend
+- Excellent mobile support with visible markdown syntax
+
+**Choose other editors when you need:**
+- Full WYSIWYG with hidden markdown syntax
+- Advanced features like tables, diagrams, or collaborative editing
+- Rich plugin ecosystems
+- Enterprise features and extensive customization
+- Framework-specific integration (React, Vue, etc.)
+- Complex multi-layered architecture for deep customization
 
 ## Installation
 
@@ -46,9 +58,6 @@ npm install overtype
 ```html
 <script src="https://unpkg.com/overtype/dist/overtype.min.js"></script>
 ```
-
-### Direct Download
-Download the latest release from the `dist` folder.
 
 ## Quick Start
 

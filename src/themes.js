@@ -19,7 +19,7 @@ export const solar = {
     em: '#f95738',               // Tomato - italic text
     link: '#0d3b66',             // Yale Blue - links
     code: '#0d3b66',             // Yale Blue - inline code
-    codeBg: 'rgba(244, 211, 94, 0.2)', // Naples Yellow with transparency
+    codeBg: 'rgba(244, 211, 94, 0.4)', // Naples Yellow with transparency
     blockquote: '#5a7a9b',       // Muted blue - blockquotes
     hr: '#5a7a9b',               // Muted blue - horizontal rules
     syntaxMarker: 'rgba(13, 59, 102, 0.52)', // Yale Blue with transparency

@@ -331,20 +331,23 @@ class OverType {
         openFence.style.display = 'block';
         closeFence.style.display = 'block';
         
-        // Apply background to all divs between the fences
-        let currentDiv = openParent;
-        while (currentDiv) {
-          // Apply background
-          currentDiv.style.background = 'var(--code-bg, rgba(244, 211, 94, 0.2))';
-          
-          // Stop if we've reached the closing fence
-          if (currentDiv === closeParent) break;
+        // Apply class to parent divs
+        openParent.classList.add('code-block-line');
+        closeParent.classList.add('code-block-line');
+        
+        // Apply class to all divs between the parent divs
+        let currentDiv = openParent.nextElementSibling;
+        while (currentDiv && currentDiv !== closeParent) {
+          // Apply class to divs between the fences
+          if (currentDiv.tagName === 'DIV') {
+            currentDiv.classList.add('code-block-line');
+          }
           
           // Move to next sibling
           currentDiv = currentDiv.nextElementSibling;
           
           // Safety check to prevent infinite loop
-          if (!currentDiv || currentDiv.tagName !== 'DIV') break;
+          if (!currentDiv) break;
         }
       }
     }

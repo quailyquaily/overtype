@@ -408,7 +408,7 @@ var OverType = (() => {
       // Yale Blue - links
       code: "#0d3b66",
       // Yale Blue - inline code
-      codeBg: "rgba(244, 211, 94, 0.2)",
+      codeBg: "rgba(244, 211, 94, 0.4)",
       // Naples Yellow with transparency
       blockquote: "#5a7a9b",
       // Muted blue - blockquotes
@@ -703,7 +703,7 @@ var OverType = (() => {
 
     /* Inline code */
     .overtype-wrapper .overtype-preview code {
-      background: var(--code-bg, rgba(244, 211, 94, 0.2)) !important;
+      background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
       color: var(--code, #0d3b66) !important;
       padding: 0 !important;
       border-radius: 2px !important;
@@ -774,7 +774,16 @@ var OverType = (() => {
     /* Code fence markers */
     .overtype-wrapper .overtype-preview .code-fence {
       color: var(--code, #0d3b66) !important;
-      background: var(--code-bg, rgba(244, 211, 94, 0.2)) !important;
+    }
+    
+    /* Code block lines - background for entire code block */
+    .overtype-wrapper .overtype-preview .code-block-line {
+      background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
+    }
+    
+    /* Remove background from code fence when inside code block line */
+    .overtype-wrapper .overtype-preview .code-block-line .code-fence {
+      background: transparent !important;
     }
 
     /* Raw markdown line */
@@ -1080,13 +1089,15 @@ var OverType = (() => {
           continue;
         openFence.style.display = "block";
         closeFence.style.display = "block";
-        let currentDiv = openParent;
-        while (currentDiv) {
-          currentDiv.style.background = "var(--code-bg, rgba(244, 211, 94, 0.2))";
-          if (currentDiv === closeParent)
-            break;
+        openParent.classList.add("code-block-line");
+        closeParent.classList.add("code-block-line");
+        let currentDiv = openParent.nextElementSibling;
+        while (currentDiv && currentDiv !== closeParent) {
+          if (currentDiv.tagName === "DIV") {
+            currentDiv.classList.add("code-block-line");
+          }
           currentDiv = currentDiv.nextElementSibling;
-          if (!currentDiv || currentDiv.tagName !== "DIV")
+          if (!currentDiv)
             break;
         }
       }
@@ -1375,4 +1386,5 @@ var OverType = (() => {
  * @version 1.0.0
  * @license MIT
  */
+window.OverType = OverType.OverType || OverType.default || OverType;
 //# sourceMappingURL=overtype.js.map

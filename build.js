@@ -61,7 +61,10 @@ async function build() {
         entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.js',
         format: 'iife',
-        globalName: 'OverType'
+        globalName: 'OverType',
+        footer: {
+          js: 'window.OverType = OverType.OverType || OverType.default || OverType;'
+        }
       });
       console.log('✅ Built dist/overtype.js');
 
@@ -73,7 +76,10 @@ async function build() {
         format: 'iife',
         globalName: 'OverType',
         minify: true,
-        sourcemap: false
+        sourcemap: false,
+        footer: {
+          js: 'window.OverType = OverType.OverType || OverType.default || OverType;'
+        }
       });
       console.log('✅ Built dist/overtype.min.js');
 
