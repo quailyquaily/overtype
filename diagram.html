@@ -108,6 +108,7 @@
       position: relative;
       width: 600px;
       height: 400px;
+      transform: translateY(50px);
     }
 
     /* Grid Background */
@@ -134,7 +135,7 @@
     .layer {
       position: absolute;
       width: 600px;
-      height: 350px;
+      height: 276px;
       border-radius: 16px;
       padding: 30px;
       transform-style: preserve-3d;
@@ -165,7 +166,7 @@
     .markdown-text {
       font-family: 'SF Mono', 'Monaco', monospace;
       font-size: 14px;
-      line-height: 24px;
+      line-height: 18px;
       color: #b1aade;
       text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
     }
@@ -355,18 +356,37 @@
       <label class="control-label">Layers Rotation</label>
       <div class="control-row">
         <span class="axis-label">X</span>
-        <input type="range" id="layersX" min="-180" max="180" value="40">
+        <input type="range" id="layersX" min="-180" max="180" value="25">
         <span class="value-display" id="layersXVal">33°</span>
       </div>
       <div class="control-row">
         <span class="axis-label">Y</span>
-        <input type="range" id="layersY" min="-180" max="180" value="35">
+        <input type="range" id="layersY" min="-180" max="180" value="43">
         <span class="value-display" id="layersYVal">28°</span>
       </div>
       <div class="control-row">
         <span class="axis-label">Z</span>
-        <input type="range" id="layersZ" min="-180" max="180" value="-34">
+        <input type="range" id="layersZ" min="-180" max="180" value="-23">
         <span class="value-display" id="layersZVal">-34°</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">Input Layer Position</label>
+      <div class="control-row">
+        <span class="axis-label">X</span>
+        <input type="range" id="inputX" min="-200" max="200" value="0">
+        <span class="value-display" id="inputXVal">0px</span>
+      </div>
+      <div class="control-row">
+        <span class="axis-label">Y</span>
+        <input type="range" id="inputY" min="-200" max="200" value="-26">
+        <span class="value-display" id="inputYVal">0px</span>
+      </div>
+      <div class="control-row">
+        <span class="axis-label">Z</span>
+        <input type="range" id="inputZ" min="-200" max="400" value="120">
+        <span class="value-display" id="inputZVal">150px</span>
       </div>
     </div>
 
@@ -404,7 +424,7 @@
     <div class="layers-container" id="layersContainer">
       <!-- Top Layer - Invisible Textarea -->
       <div class="layer textarea-layer">
-        <div class="label label-textarea">Input Layer</div>
+        <div class="label label-textarea">Invisible Textarea</div>
         <div class="markdown-text">
           <span class="heading"># Welcome to the editor</span><span class="cursor"></span><br>
           <br>
@@ -420,7 +440,7 @@
 
       <!-- Bottom Layer - Styled Preview -->
       <div class="layer preview-layer">
-        <div class="label label-preview">Render Layer</div>
+        <div class="label label-preview">Rendered Markdown</div>
         <div class="rendered-content">
           <h1># Welcome to the editor</h1>
           <p>This is <strong>**bold text**</strong> and <em>*italic*</em></p>
@@ -447,6 +467,11 @@
     const layersY = document.getElementById('layersY');
     const layersZ = document.getElementById('layersZ');
     const layersContainer = document.getElementById('layersContainer');
+
+    // Input layer position controls
+    const inputX = document.getElementById('inputX');
+    const inputY = document.getElementById('inputY');
+    const inputZ = document.getElementById('inputZ');
 
     // Glass effect controls
     const glassOpacity = document.getElementById('glassOpacity');
@@ -476,6 +501,17 @@
       document.getElementById('layersXVal').textContent = x + '°';
       document.getElementById('layersYVal').textContent = y + '°';
       document.getElementById('layersZVal').textContent = z + '°';
+    }
+
+    // Update input layer position
+    function updateInputPosition() {
+      const x = inputX.value;
+      const y = inputY.value;
+      const z = inputZ.value;
+      textareaLayer.style.transform = `translateX(${x}px) translateY(${y}px) translateZ(${z}px)`;
+      document.getElementById('inputXVal').textContent = x + 'px';
+      document.getElementById('inputYVal').textContent = y + 'px';
+      document.getElementById('inputZVal').textContent = z + 'px';
     }
 
     // Convert hex to RGB
@@ -520,6 +556,10 @@
     layersY.addEventListener('input', updateLayers);
     layersZ.addEventListener('input', updateLayers);
 
+    inputX.addEventListener('input', updateInputPosition);
+    inputY.addEventListener('input', updateInputPosition);
+    inputZ.addEventListener('input', updateInputPosition);
+
     glassOpacity.addEventListener('input', updateGlass);
     glassBlur.addEventListener('input', updateGlass);
     glassColor.addEventListener('input', updateGlass);
@@ -529,6 +569,7 @@
     // Set initial values
     updateGrid();
     updateLayers();
+    updateInputPosition();
     updateGlass();
   </script>
 </body>

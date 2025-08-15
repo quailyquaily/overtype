@@ -214,13 +214,12 @@ export function generateStyles(options = {}) {
       font-weight: bold !important;
     }
 
-    /* Italic text - using underline instead of slant */
+    /* Italic text */
     .overtype-wrapper .overtype-preview em {
       color: var(--em, #f95738) !important;
-      text-decoration: underline !important;
       text-decoration-color: var(--em, #f95738) !important;
       text-decoration-thickness: 1px !important;
-      font-style: normal !important;
+      font-style: italic !important;
     }
 
     /* Inline code */

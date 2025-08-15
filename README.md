@@ -4,7 +4,9 @@ A lightweight markdown editor library with perfect WYSIWYG alignment using an in
 
 ## How the Invisible Textarea Overlay Works
 
-The invisible textarea overlay technique uses two perfectly overlapped layers: an invisible textarea on top where you actually type (only the cursor is visible), and a styled preview div below that shows your formatted text. Both layers must use identical monospace fonts and spacing so every character aligns perfectly - like tracing paper that matches exactly. When you type in the invisible textarea, JavaScript instantly updates the preview below with styled HTML, creating the illusion of typing directly into formatted text.
+![OverType Architecture Diagram](diagram.png)
+
+We overlap an invisible textarea on top of styled output, giving the illusion of editing styled text using a plain textarea.
 
 ## OverType vs HyperMD vs Milkdown
 

@@ -669,13 +669,12 @@ function generateStyles(options = {}) {
       font-weight: bold !important;
     }
 
-    /* Italic text - using underline instead of slant */
+    /* Italic text */
     .overtype-wrapper .overtype-preview em {
       color: var(--em, #f95738) !important;
-      text-decoration: underline !important;
       text-decoration-color: var(--em, #f95738) !important;
       text-decoration-thickness: 1px !important;
-      font-style: normal !important;
+      font-style: italic !important;
     }
 
     /* Inline code */
@@ -1034,11 +1033,38 @@ var _OverType = class _OverType {
     const activeLine = this._getCurrentLine(text, cursorPos);
     const html = MarkdownParser.parse(text, activeLine, this.options.showActiveLineRaw);
     this.preview.innerHTML = html || '<span style="color: #808080;">Start typing...</span>';
+    this._applyCodeBlockBackgrounds();
     if (this.options.showStats && this.statsBar) {
       this._updateStats();
     }
     if (this.options.onChange && this.initialized) {
       this.options.onChange(text, this);
+    }
+  }
+  /**
+   * Apply background styling to code blocks
+   * @private
+   */
+  _applyCodeBlockBackgrounds() {
+    const codeFences = this.preview.querySelectorAll(".code-fence");
+    for (let i = 0; i < codeFences.length - 1; i += 2) {
+      const openFence = codeFences[i];
+      const closeFence = codeFences[i + 1];
+      const openParent = openFence.parentElement;
+      const closeParent = closeFence.parentElement;
+      if (!openParent || !closeParent)
+        continue;
+      openFence.style.display = "block";
+      closeFence.style.display = "block";
+      let currentDiv = openParent;
+      while (currentDiv) {
+        currentDiv.style.background = "var(--code-bg, rgba(244, 211, 94, 0.2))";
+        if (currentDiv === closeParent)
+          break;
+        currentDiv = currentDiv.nextElementSibling;
+        if (!currentDiv || currentDiv.tagName !== "DIV")
+          break;
+      }
     }
   }
   /**

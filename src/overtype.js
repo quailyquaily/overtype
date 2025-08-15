@@ -294,6 +294,9 @@ class OverType {
       const html = MarkdownParser.parse(text, activeLine, this.options.showActiveLineRaw);
       this.preview.innerHTML = html || '<span style="color: #808080;">Start typing...</span>';
       
+      // Apply code block backgrounds
+      this._applyCodeBlockBackgrounds();
+      
       // Update stats if enabled
       if (this.options.showStats && this.statsBar) {
         this._updateStats();
@@ -302,6 +305,47 @@ class OverType {
       // Trigger onChange callback
       if (this.options.onChange && this.initialized) {
         this.options.onChange(text, this);
+      }
+    }
+
+    /**
+     * Apply background styling to code blocks
+     * @private
+     */
+    _applyCodeBlockBackgrounds() {
+      // Find all code fence elements
+      const codeFences = this.preview.querySelectorAll('.code-fence');
+      
+      // Process pairs of code fences
+      for (let i = 0; i < codeFences.length - 1; i += 2) {
+        const openFence = codeFences[i];
+        const closeFence = codeFences[i + 1];
+        
+        // Get parent divs
+        const openParent = openFence.parentElement;
+        const closeParent = closeFence.parentElement;
+        
+        if (!openParent || !closeParent) continue;
+        
+        // Make fences display: block
+        openFence.style.display = 'block';
+        closeFence.style.display = 'block';
+        
+        // Apply background to all divs between the fences
+        let currentDiv = openParent;
+        while (currentDiv) {
+          // Apply background
+          currentDiv.style.background = 'var(--code-bg, rgba(244, 211, 94, 0.2))';
+          
+          // Stop if we've reached the closing fence
+          if (currentDiv === closeParent) break;
+          
+          // Move to next sibling
+          currentDiv = currentDiv.nextElementSibling;
+          
+          // Safety check to prevent infinite loop
+          if (!currentDiv || currentDiv.tagName !== 'DIV') break;
+        }
       }
     }
 
