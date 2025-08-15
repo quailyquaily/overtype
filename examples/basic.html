@@ -104,6 +104,17 @@ This is a **lightweight** markdown editor with *perfect* character alignment.
 
 > The preview updates as you type!
 
+## Code Example
+
+\`\`\`
+// Code blocks now have background styling!
+function greet(name) {
+    return \`Hello, \${name}!\`;
+}
+\`\`\`
+
+Inline \`code\` also works great!
+
 [Learn more](https://github.com/demo/overtype)`,
             onChange: (value, instance) => {
                 console.log('Content changed:', value.length + ' characters');
@@ -114,7 +125,7 @@ This is a **lightweight** markdown editor with *perfect* character alignment.
 
         function toggleTheme() {
             currentTheme = currentTheme === 'solar' ? 'cave' : 'solar';
-            editor.setTheme(currentTheme);
+            OverType.setTheme(currentTheme);
             console.log('Theme changed to:', currentTheme);
         }
 

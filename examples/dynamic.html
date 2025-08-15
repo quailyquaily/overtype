@@ -302,7 +302,7 @@ This editor was **dynamically created** at runtime!
 ## Code
 Inline \`code\` and code blocks:
 
-\`\`\`javascript
+\`\`\`
 console.log("Hello, OverType!");
 \`\`\`
 
@@ -441,7 +441,7 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
             const editor = editorInstances.find(e => e.id === editorId);
             if (editor) {
                 editor.theme = editor.theme === 'solar' ? 'cave' : 'solar';
-                editor.instance.setTheme(editor.theme);
+                OverType.setTheme(editor.theme);
             }
         }
         
@@ -491,8 +491,11 @@ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
             editorInstances.forEach(editor => {
                 const randomTheme = themes[Math.floor(Math.random() * themes.length)];
                 editor.theme = randomTheme;
-                editor.instance.setTheme(randomTheme);
             });
+            // Apply the last theme globally (this will affect all editors)
+            if (editorInstances.length > 0) {
+                OverType.setTheme(editorInstances[editorInstances.length - 1].theme);
+            }
             
             console.log('Randomized all themes');
         }

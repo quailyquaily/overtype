@@ -518,8 +518,8 @@ function generateStyles(options = {}) {
       
       /* Font properties - any difference breaks alignment */
       font-family: ${fontFamily} !important;
-      font-size: ${fontSize} !important;
-      line-height: ${lineHeight} !important;
+      font-size: var(--instance-font-size, ${fontSize}) !important;
+      line-height: var(--instance-line-height, ${lineHeight}) !important;
       font-weight: normal !important;
       font-style: normal !important;
       font-variant: normal !important;
@@ -528,7 +528,7 @@ function generateStyles(options = {}) {
       font-feature-settings: normal !important;
       
       /* Box model - must match exactly */
-      padding: ${padding} !important;
+      padding: var(--instance-padding, ${padding}) !important;
       margin: 0 !important;
       border: none !important;
       outline: none !important;
@@ -952,6 +952,15 @@ var _OverType = class _OverType {
       return;
     }
     this.wrapper._instance = this;
+    if (this.options.fontSize) {
+      this.wrapper.style.setProperty("--instance-font-size", this.options.fontSize);
+    }
+    if (this.options.lineHeight) {
+      this.wrapper.style.setProperty("--instance-line-height", String(this.options.lineHeight));
+    }
+    if (this.options.padding) {
+      this.wrapper.style.setProperty("--instance-padding", this.options.padding);
+    }
     this._configureTextarea();
     this._applyOptions();
   }
@@ -992,6 +1001,15 @@ var _OverType = class _OverType {
     }
     if (this.options.showStats) {
       this.wrapper.classList.add("with-stats");
+    }
+    if (this.options.fontSize) {
+      this.wrapper.style.setProperty("--instance-font-size", this.options.fontSize);
+    }
+    if (this.options.lineHeight) {
+      this.wrapper.style.setProperty("--instance-line-height", String(this.options.lineHeight));
+    }
+    if (this.options.padding) {
+      this.wrapper.style.setProperty("--instance-padding", this.options.padding);
     }
     this.wrapper._instance = this;
     this.textarea = document.createElement("textarea");
@@ -1302,7 +1320,7 @@ var _OverType = class _OverType {
     if (_OverType.globalListenersInitialized)
       return;
     document.addEventListener("input", (e) => {
-      if (e.target.classList.contains("overtype-input")) {
+      if (e.target && e.target.classList && e.target.classList.contains("overtype-input")) {
         const wrapper = e.target.closest(".overtype-wrapper");
         const instance = wrapper == null ? void 0 : wrapper._instance;
         if (instance)
@@ -1310,7 +1328,7 @@ var _OverType = class _OverType {
       }
     });
     document.addEventListener("keydown", (e) => {
-      if (e.target.classList.contains("overtype-input")) {
+      if (e.target && e.target.classList && e.target.classList.contains("overtype-input")) {
         const wrapper = e.target.closest(".overtype-wrapper");
         const instance = wrapper == null ? void 0 : wrapper._instance;
         if (instance)
@@ -1318,7 +1336,7 @@ var _OverType = class _OverType {
       }
     });
     document.addEventListener("scroll", (e) => {
-      if (e.target.classList.contains("overtype-input")) {
+      if (e.target && e.target.classList && e.target.classList.contains("overtype-input")) {
         const wrapper = e.target.closest(".overtype-wrapper");
         const instance = wrapper == null ? void 0 : wrapper._instance;
         if (instance)

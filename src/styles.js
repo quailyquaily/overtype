@@ -63,8 +63,8 @@ export function generateStyles(options = {}) {
       
       /* Font properties - any difference breaks alignment */
       font-family: ${fontFamily} !important;
-      font-size: ${fontSize} !important;
-      line-height: ${lineHeight} !important;
+      font-size: var(--instance-font-size, ${fontSize}) !important;
+      line-height: var(--instance-line-height, ${lineHeight}) !important;
       font-weight: normal !important;
       font-style: normal !important;
       font-variant: normal !important;
@@ -73,7 +73,7 @@ export function generateStyles(options = {}) {
       font-feature-settings: normal !important;
       
       /* Box model - must match exactly */
-      padding: ${padding} !important;
+      padding: var(--instance-padding, ${padding}) !important;
       margin: 0 !important;
       border: none !important;
       outline: none !important;

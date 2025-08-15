@@ -162,6 +162,17 @@ class OverType {
 
       // Store reference on wrapper
       this.wrapper._instance = this;
+      
+      // Apply instance-specific styles via CSS custom properties
+      if (this.options.fontSize) {
+        this.wrapper.style.setProperty('--instance-font-size', this.options.fontSize);
+      }
+      if (this.options.lineHeight) {
+        this.wrapper.style.setProperty('--instance-line-height', String(this.options.lineHeight));
+      }
+      if (this.options.padding) {
+        this.wrapper.style.setProperty('--instance-padding', this.options.padding);
+      }
 
       // Disable autofill, spellcheck, and extensions
       this._configureTextarea();
@@ -226,6 +237,18 @@ class OverType {
       if (this.options.showStats) {
         this.wrapper.classList.add('with-stats');
       }
+      
+      // Apply instance-specific styles via CSS custom properties
+      if (this.options.fontSize) {
+        this.wrapper.style.setProperty('--instance-font-size', this.options.fontSize);
+      }
+      if (this.options.lineHeight) {
+        this.wrapper.style.setProperty('--instance-line-height', String(this.options.lineHeight));
+      }
+      if (this.options.padding) {
+        this.wrapper.style.setProperty('--instance-padding', this.options.padding);
+      }
+      
       this.wrapper._instance = this;
 
       // Create textarea
@@ -631,7 +654,7 @@ class OverType {
 
       // Input event
       document.addEventListener('input', (e) => {
-        if (e.target.classList.contains('overtype-input')) {
+        if (e.target && e.target.classList && e.target.classList.contains('overtype-input')) {
           const wrapper = e.target.closest('.overtype-wrapper');
           const instance = wrapper?._instance;
           if (instance) instance.handleInput(e);
@@ -640,7 +663,7 @@ class OverType {
 
       // Keydown event
       document.addEventListener('keydown', (e) => {
-        if (e.target.classList.contains('overtype-input')) {
+        if (e.target && e.target.classList && e.target.classList.contains('overtype-input')) {
           const wrapper = e.target.closest('.overtype-wrapper');
           const instance = wrapper?._instance;
           if (instance) instance.handleKeydown(e);
@@ -649,7 +672,7 @@ class OverType {
 
       // Scroll event
       document.addEventListener('scroll', (e) => {
-        if (e.target.classList.contains('overtype-input')) {
+        if (e.target && e.target.classList && e.target.classList.contains('overtype-input')) {
           const wrapper = e.target.closest('.overtype-wrapper');
           const instance = wrapper?._instance;
           if (instance) instance.handleScroll(e);

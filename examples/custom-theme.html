@@ -394,9 +394,9 @@ Happy theming! 🎨`,
             if (themeName === 'custom') {
                 applyCustomTheme();
             } else if (customThemes[themeName]) {
-                editor.setTheme(customThemes[themeName]);
+                OverType.setTheme(customThemes[themeName]);
             } else {
-                editor.setTheme(themeName);
+                OverType.setTheme(themeName);
             }
             
             currentTheme = themeName;
@@ -415,7 +415,7 @@ Happy theming! 🎨`,
                 colors: colors
             };
             
-            editor.setTheme(customTheme);
+            OverType.setTheme(customTheme);
             console.log('Applied custom theme:', customTheme);
         }
         
