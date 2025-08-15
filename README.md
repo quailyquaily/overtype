@@ -6,9 +6,25 @@ A lightweight markdown editor library with perfect WYSIWYG alignment using an in
 
 The invisible textarea overlay technique uses two perfectly overlapped layers: an invisible textarea on top where you actually type (only the cursor is visible), and a styled preview div below that shows your formatted text. Both layers must use identical monospace fonts and spacing so every character aligns perfectly - like tracing paper that matches exactly. When you type in the invisible textarea, JavaScript instantly updates the preview below with styled HTML, creating the illusion of typing directly into formatted text.
 
+## OverType vs HyperMD vs Milkdown
+
+OverType is a minimalist markdown editor that's 10x smaller than HyperMD and 5x smaller than Milkdown. While HyperMD and Milkdown require complex setup with CodeMirror/ProseMirror dependencies, OverType is a single file with zero dependencies that works immediately. Its unique invisible textarea overlay approach means native browser editing features like undo/redo, mobile keyboards, and spellcheck work perfectly without complex state management.
+
+Choose OverType when you need a tiny bundle size, dead-simple integration without build tools, and perfect mobile support with visible markdown syntax. Choose HyperMD or Milkdown when you need full WYSIWYG editing with hidden syntax, advanced features like tables and diagrams, or collaborative editing with rich plugin ecosystems.
+
+| Feature | OverType | HyperMD | Milkdown |
+|---------|----------|---------|----------|
+| **Size** | ~21KB | ~350KB+ | ~100KB+ |
+| **Dependencies** | Zero | CodeMirror | ProseMirror + plugins |
+| **Setup** | Single file | Complex config | Build step required |
+| **Approach** | Invisible textarea | ContentEditable | ContentEditable |
+| **Mobile** | Perfect native | Issues common | Issues common |
+| **Markdown syntax** | Visible | Hidden | Hidden |
+| **Advanced features** | Basic | Full | Full |
+| **Best for** | Simple, fast, mobile | Full WYSIWYG | Modern frameworks |
+
 ## Features
 
-- 🎯 **Perfect character alignment** - Every character in the preview occupies the exact same position as in the textarea
 - 👻 **Invisible textarea overlay** - Transparent input layer overlaid on styled preview for seamless editing
 - 🎨 **Built-in themes** - Solar (light) and Cave (dark) themes included, plus custom theme support
 - ⌨️ **Keyboard shortcuts** - Common markdown shortcuts (Cmd/Ctrl+B for bold, etc.)
@@ -110,6 +126,35 @@ const [editor] = new OverType('#editor', {
 });
 ```
 
+### Stats Bar
+
+Enable a built-in stats bar that shows character, word, and line counts:
+
+```javascript
+// Enable stats bar on initialization
+const [editor] = new OverType('#editor', {
+  showStats: true
+});
+
+// Show or hide stats bar dynamically
+editor.showStats(true);  // Show
+editor.showStats(false); // Hide
+
+// Custom stats format
+const [editor] = new OverType('#editor', {
+  showStats: true,
+  statsFormatter: (stats) => {
+    // stats object contains: { chars, words, lines, line, column }
+    return `<span>${stats.chars} characters</span>
+            <span>${stats.words} words</span>
+            <span>${stats.lines} lines</span>
+            <span>Line ${stats.line}, Col ${stats.column}</span>`;
+  }
+});
+```
+
+The stats bar automatically adapts to your theme colors using CSS variables.
+
 ### React Component
 
 ```jsx
@@ -183,6 +228,12 @@ new OverType(target, options)
   placeholder: 'Start typing...',
   value: '',
   
+  // Stats bar
+  showStats: false,  // Enable/disable stats bar
+  statsFormatter: (stats) => {  // Custom stats format
+    return `${stats.chars} chars | ${stats.words} words`;
+  },
+  
   // Callbacks
   onChange: (value, instance) => {},
   onKeydown: (event, instance) => {}
@@ -205,6 +256,10 @@ editor.setTheme(customThemeObject)  // Custom theme
 // Focus/blur
 editor.focus()
 editor.blur()
+
+// Show or hide stats bar
+editor.showStats(true)   // Show stats
+editor.showStats(false)  // Hide stats
 
 // Check if initialized
 editor.isInitialized()
@@ -337,6 +392,3 @@ MIT
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Credits
-
-Created with the invisible textarea overlay technique for perfect WYSIWYG markdown editing.

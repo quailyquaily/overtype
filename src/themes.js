@@ -73,7 +73,9 @@ export const themes = {
  */
 export function getTheme(theme) {
   if (typeof theme === 'string') {
-    return themes[theme] || themes.solar;
+    const themeObj = themes[theme] || themes.solar;
+    // Preserve the requested theme name (important for 'light' and 'dark' aliases)
+    return { ...themeObj, name: theme };
   }
   return theme;
 }

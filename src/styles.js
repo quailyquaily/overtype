@@ -317,6 +317,62 @@ export function generateStyles(options = {}) {
       color: var(--list-marker, #ee964b) !important;
     }
 
+    /* Stats bar */
+    .overtype-wrapper.with-stats {
+      padding-bottom: 40px !important;
+    }
+    
+    .overtype-wrapper .overtype-stats {
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 40px !important;
+      padding: 0 20px !important;
+      background: #f8f9fa !important;
+      border-top: 1px solid #e0e0e0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 0.85rem !important;
+      color: #666 !important;
+      z-index: 2 !important;
+    }
+    
+    /* Dark theme stats bar */
+    .overtype-wrapper[data-theme="cave"] .overtype-stats {
+      background: var(--bg-secondary, #1D2D3E) !important;
+      border-top: 1px solid rgba(197, 221, 232, 0.1) !important;
+      color: var(--text, #c5dde8) !important;
+    }
+    
+    .overtype-wrapper .overtype-stats .overtype-stat {
+      display: flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      white-space: nowrap !important;
+    }
+    
+    .overtype-wrapper .overtype-stats .live-dot {
+      width: 8px !important;
+      height: 8px !important;
+      background: #4caf50 !important;
+      border-radius: 50% !important;
+      animation: pulse 2s infinite !important;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.2); }
+    }
+    
+    /* Adjust textarea and preview for stats bar */
+    .overtype-wrapper.with-stats .overtype-input,
+    .overtype-wrapper.with-stats .overtype-preview {
+      height: calc(100% - 40px) !important;
+    }
+
     ${mobileStyles}
   `;
 }

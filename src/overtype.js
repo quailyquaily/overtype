@@ -133,7 +133,9 @@ class OverType {
         onKeydown: null,
         
         // Features
-        showActiveLineRaw: false
+        showActiveLineRaw: false,
+        showStats: false,
+        statsFormatter: null
       };
 
       // Process theme
@@ -224,6 +226,17 @@ class OverType {
       // Create wrapper
       this.wrapper = document.createElement('div');
       this.wrapper.className = 'overtype-wrapper';
+      
+      // Set theme data attribute
+      const themeName = typeof this.options.theme === 'string' ? this.options.theme : this.options.theme?.name;
+      if (themeName) {
+        this.wrapper.setAttribute('data-theme', themeName);
+      }
+      
+      // Add stats wrapper class if stats are enabled
+      if (this.options.showStats) {
+        this.wrapper.classList.add('with-stats');
+      }
       this.wrapper._instance = this;
 
       // Create textarea
@@ -240,6 +253,15 @@ class OverType {
       // Assemble DOM
       this.wrapper.appendChild(this.textarea);
       this.wrapper.appendChild(this.preview);
+      
+      // Add stats bar if enabled
+      if (this.options.showStats) {
+        this.statsBar = document.createElement('div');
+        this.statsBar.className = 'overtype-stats';
+        this.wrapper.appendChild(this.statsBar);
+        this._updateStats();
+      }
+      
       this.element.appendChild(this.wrapper);
     }
 
@@ -282,6 +304,11 @@ class OverType {
       // Parse markdown
       const html = MarkdownParser.parse(text, activeLine, this.options.showActiveLineRaw);
       this.preview.innerHTML = html || '<span style="color: #808080;">Start typing...</span>';
+      
+      // Update stats if enabled
+      if (this.options.showStats && this.statsBar) {
+        this._updateStats();
+      }
       
       // Trigger onChange callback
       if (this.options.onChange && this.initialized) {
@@ -354,6 +381,12 @@ class OverType {
     setTheme(theme) {
       this.options.theme = typeof theme === 'string' ? getTheme(theme) : theme;
       
+      // Update data-theme attribute
+      const themeName = typeof theme === 'string' ? theme : theme?.name;
+      if (themeName && this.wrapper) {
+        this.wrapper.setAttribute('data-theme', themeName);
+      }
+      
       // Re-inject styles with new theme
       OverType.injectStyles(this.options, true);
       
@@ -391,6 +424,68 @@ class OverType {
       this.options = this._mergeOptions({ ...this.options, ...options });
       this._applyOptions();
       this.updatePreview();
+    }
+
+    /**
+     * Update stats bar
+     * @private
+     */
+    _updateStats() {
+      if (!this.statsBar) return;
+      
+      const value = this.textarea.value;
+      const lines = value.split('\n');
+      const chars = value.length;
+      const words = value.split(/\s+/).filter(w => w.length > 0).length;
+      
+      // Calculate line and column
+      const selectionStart = this.textarea.selectionStart;
+      const beforeCursor = value.substring(0, selectionStart);
+      const linesBeforeCursor = beforeCursor.split('\n');
+      const currentLine = linesBeforeCursor.length;
+      const currentColumn = linesBeforeCursor[linesBeforeCursor.length - 1].length + 1;
+      
+      // Use custom formatter if provided
+      if (this.options.statsFormatter) {
+        this.statsBar.innerHTML = this.options.statsFormatter({
+          chars,
+          words,
+          lines: lines.length,
+          line: currentLine,
+          column: currentColumn
+        });
+      } else {
+        // Default format with live dot
+        this.statsBar.innerHTML = `
+          <div class="overtype-stat">
+            <span class="live-dot"></span>
+            <span>${chars} chars, ${words} words, ${lines.length} lines</span>
+          </div>
+          <div class="overtype-stat">Line ${currentLine}, Col ${currentColumn}</div>
+        `;
+      }
+    }
+    
+    /**
+     * Show or hide stats bar
+     * @param {boolean} show - Whether to show stats
+     */
+    showStats(show) {
+      this.options.showStats = show;
+      
+      if (show && !this.statsBar) {
+        // Create stats bar
+        this.statsBar = document.createElement('div');
+        this.statsBar.className = 'overtype-stats';
+        this.wrapper.appendChild(this.statsBar);
+        this.wrapper.classList.add('with-stats');
+        this._updateStats();
+      } else if (!show && this.statsBar) {
+        // Remove stats bar
+        this.statsBar.remove();
+        this.statsBar = null;
+        this.wrapper.classList.remove('with-stats');
+      }
     }
 
     /**
@@ -516,6 +611,10 @@ class OverType {
           const wrapper = activeElement.closest('.overtype-wrapper');
           const instance = wrapper?._instance;
           if (instance) {
+            // Update stats bar for cursor position
+            if (instance.options.showStats && instance.statsBar) {
+              instance._updateStats();
+            }
             // Debounce updates
             clearTimeout(instance._selectionTimeout);
             instance._selectionTimeout = setTimeout(() => {

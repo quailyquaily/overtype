@@ -472,7 +472,8 @@ var OverType = (() => {
   };
   function getTheme(theme) {
     if (typeof theme === "string") {
-      return themes[theme] || themes.solar;
+      const themeObj = themes[theme] || themes.solar;
+      return { ...themeObj, name: theme };
     }
     return theme;
   }
@@ -795,6 +796,62 @@ var OverType = (() => {
       color: var(--list-marker, #ee964b) !important;
     }
 
+    /* Stats bar */
+    .overtype-wrapper.with-stats {
+      padding-bottom: 40px !important;
+    }
+    
+    .overtype-wrapper .overtype-stats {
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 40px !important;
+      padding: 0 20px !important;
+      background: #f8f9fa !important;
+      border-top: 1px solid #e0e0e0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 0.85rem !important;
+      color: #666 !important;
+      z-index: 2 !important;
+    }
+    
+    /* Dark theme stats bar */
+    .overtype-wrapper[data-theme="cave"] .overtype-stats {
+      background: var(--bg-secondary, #1D2D3E) !important;
+      border-top: 1px solid rgba(197, 221, 232, 0.1) !important;
+      color: var(--text, #c5dde8) !important;
+    }
+    
+    .overtype-wrapper .overtype-stats .overtype-stat {
+      display: flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      white-space: nowrap !important;
+    }
+    
+    .overtype-wrapper .overtype-stats .live-dot {
+      width: 8px !important;
+      height: 8px !important;
+      background: #4caf50 !important;
+      border-radius: 50% !important;
+      animation: pulse 2s infinite !important;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.2); }
+    }
+    
+    /* Adjust textarea and preview for stats bar */
+    .overtype-wrapper.with-stats .overtype-input,
+    .overtype-wrapper.with-stats .overtype-preview {
+      height: calc(100% - 40px) !important;
+    }
+
     ${mobileStyles}
   `;
   }
@@ -888,7 +945,9 @@ var OverType = (() => {
         onChange: null,
         onKeydown: null,
         // Features
-        showActiveLineRaw: false
+        showActiveLineRaw: false,
+        showStats: false,
+        statsFormatter: null
       };
       let theme = options.theme || defaults.theme;
       if (typeof theme === "string") {
@@ -948,8 +1007,16 @@ var OverType = (() => {
      * @private
      */
     _createDOM() {
+      var _a;
       this.wrapper = document.createElement("div");
       this.wrapper.className = "overtype-wrapper";
+      const themeName = typeof this.options.theme === "string" ? this.options.theme : (_a = this.options.theme) == null ? void 0 : _a.name;
+      if (themeName) {
+        this.wrapper.setAttribute("data-theme", themeName);
+      }
+      if (this.options.showStats) {
+        this.wrapper.classList.add("with-stats");
+      }
       this.wrapper._instance = this;
       this.textarea = document.createElement("textarea");
       this.textarea.className = "overtype-input";
@@ -960,6 +1027,12 @@ var OverType = (() => {
       this.preview.setAttribute("aria-hidden", "true");
       this.wrapper.appendChild(this.textarea);
       this.wrapper.appendChild(this.preview);
+      if (this.options.showStats) {
+        this.statsBar = document.createElement("div");
+        this.statsBar.className = "overtype-stats";
+        this.wrapper.appendChild(this.statsBar);
+        this._updateStats();
+      }
       this.element.appendChild(this.wrapper);
     }
     /**
@@ -994,6 +1067,9 @@ var OverType = (() => {
       const activeLine = this._getCurrentLine(text, cursorPos);
       const html = MarkdownParser.parse(text, activeLine, this.options.showActiveLineRaw);
       this.preview.innerHTML = html || '<span style="color: #808080;">Start typing...</span>';
+      if (this.options.showStats && this.statsBar) {
+        this._updateStats();
+      }
       if (this.options.onChange && this.initialized) {
         this.options.onChange(text, this);
       }
@@ -1052,6 +1128,10 @@ var OverType = (() => {
      */
     setTheme(theme) {
       this.options.theme = typeof theme === "string" ? getTheme(theme) : theme;
+      const themeName = typeof theme === "string" ? theme : theme == null ? void 0 : theme.name;
+      if (themeName && this.wrapper) {
+        this.wrapper.setAttribute("data-theme", themeName);
+      }
       _OverType.injectStyles(this.options, true);
       this.updatePreview();
     }
@@ -1082,6 +1162,58 @@ var OverType = (() => {
       this.options = this._mergeOptions({ ...this.options, ...options });
       this._applyOptions();
       this.updatePreview();
+    }
+    /**
+     * Update stats bar
+     * @private
+     */
+    _updateStats() {
+      if (!this.statsBar)
+        return;
+      const value = this.textarea.value;
+      const lines = value.split("\n");
+      const chars = value.length;
+      const words = value.split(/\s+/).filter((w) => w.length > 0).length;
+      const selectionStart = this.textarea.selectionStart;
+      const beforeCursor = value.substring(0, selectionStart);
+      const linesBeforeCursor = beforeCursor.split("\n");
+      const currentLine = linesBeforeCursor.length;
+      const currentColumn = linesBeforeCursor[linesBeforeCursor.length - 1].length + 1;
+      if (this.options.statsFormatter) {
+        this.statsBar.innerHTML = this.options.statsFormatter({
+          chars,
+          words,
+          lines: lines.length,
+          line: currentLine,
+          column: currentColumn
+        });
+      } else {
+        this.statsBar.innerHTML = `
+          <div class="overtype-stat">
+            <span class="live-dot"></span>
+            <span>${chars} chars, ${words} words, ${lines.length} lines</span>
+          </div>
+          <div class="overtype-stat">Line ${currentLine}, Col ${currentColumn}</div>
+        `;
+      }
+    }
+    /**
+     * Show or hide stats bar
+     * @param {boolean} show - Whether to show stats
+     */
+    showStats(show) {
+      this.options.showStats = show;
+      if (show && !this.statsBar) {
+        this.statsBar = document.createElement("div");
+        this.statsBar.className = "overtype-stats";
+        this.wrapper.appendChild(this.statsBar);
+        this.wrapper.classList.add("with-stats");
+        this._updateStats();
+      } else if (!show && this.statsBar) {
+        this.statsBar.remove();
+        this.statsBar = null;
+        this.wrapper.classList.remove("with-stats");
+      }
     }
     /**
      * Destroy the editor instance
@@ -1184,6 +1316,9 @@ var OverType = (() => {
           const wrapper = activeElement.closest(".overtype-wrapper");
           const instance = wrapper == null ? void 0 : wrapper._instance;
           if (instance) {
+            if (instance.options.showStats && instance.statsBar) {
+              instance._updateStats();
+            }
             clearTimeout(instance._selectionTimeout);
             instance._selectionTimeout = setTimeout(() => {
               instance.updatePreview();

@@ -132,35 +132,7 @@
             position: relative;
         }
 
-        .stats-bar {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            color: #666;
-        }
 
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #4caf50;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
-        }
 
         .floating-controls {
             position: fixed;
@@ -344,10 +316,6 @@
                 <span>Perfect Alignment</span>
             </div>
             <div class="feature">
-                <span class="feature-icon">👻</span>
-                <span>Invisible Overlay</span>
-            </div>
-            <div class="feature">
                 <span class="feature-icon">🎨</span>
                 <span>Themeable</span>
             </div>
@@ -379,13 +347,6 @@
                 </div>
             </div>
             <div id="main-editor" class="editor-wrapper"></div>
-            <div class="stats-bar">
-                <div class="stat">
-                    <span class="live-dot"></span>
-                    <span id="main-stats">0 characters</span>
-                </div>
-                <div class="stat" id="main-pos">Line 1, Col 1</div>
-            </div>
         </div>
 
         <div class="demo-section">
@@ -400,13 +361,6 @@
                 </div>
             </div>
             <div id="preview-editor" class="editor-wrapper"></div>
-            <div class="stats-bar">
-                <div class="stat">
-                    <span class="live-dot"></span>
-                    <span id="preview-stats">0 characters</span>
-                </div>
-                <div class="stat" id="preview-pos">Line 1, Col 1</div>
-            </div>
         </div>
 
         <div class="demo-section">
@@ -421,13 +375,6 @@
                 </div>
             </div>
             <div id="notes-editor" class="editor-wrapper"></div>
-            <div class="stats-bar">
-                <div class="stat">
-                    <span class="live-dot"></span>
-                    <span id="notes-stats">0 characters</span>
-                </div>
-                <div class="stat" id="notes-pos">Line 1, Col 1</div>
-            </div>
         </div>
 
         <div class="demo-section">
@@ -442,19 +389,11 @@
                 </div>
             </div>
             <div id="code-editor" class="editor-wrapper"></div>
-            <div class="stats-bar">
-                <div class="stat">
-                    <span class="live-dot"></span>
-                    <span id="code-stats">0 characters</span>
-                </div>
-                <div class="stat" id="code-pos">Line 1, Col 1</div>
-            </div>
         </div>
     </div>
 
     <div class="floating-controls">
         <button class="fab" onclick="showShortcuts()" title="Keyboard Shortcuts">⌨️</button>
-        <button class="fab" onclick="syncAllEditors()" title="Sync All Editors">🔄</button>
         <button class="fab primary" onclick="showThemeModal()" title="Theme Settings">🎨</button>
     </div>
 
@@ -521,7 +460,6 @@
     <script>
         // Store editor instances
         const editors = {};
-        const themes = {};
         
         // Sample content for each editor
         const sampleContent = {
@@ -616,57 +554,39 @@ class OverType {
             [editors.main] = new OT('#main-editor', {
                 value: sampleContent.main,
                 theme: 'solar',
-                onChange: (value) => updateStats('main', value)
+                showStats: true
             });
-            themes.main = 'solar';
 
             // Preview editor
             [editors.preview] = new OT('#preview-editor', {
                 value: sampleContent.preview,
                 theme: 'cave',
-                onChange: (value) => updateStats('preview', value)
+                showStats: true
             });
-            themes.preview = 'cave';
 
             // Notes editor
             [editors.notes] = new OT('#notes-editor', {
                 value: sampleContent.notes,
                 theme: 'solar',
-                onChange: (value) => updateStats('notes', value)
+                showStats: true
             });
-            themes.notes = 'solar';
 
             // Code editor
             [editors.code] = new OT('#code-editor', {
                 value: sampleContent.code,
                 theme: 'cave',
                 fontSize: '13px',
-                onChange: (value) => updateStats('code', value)
+                showStats: true
             });
-            themes.code = 'cave';
 
-            // Initial stats
-            Object.keys(editors).forEach(key => {
-                updateStats(key, editors[key].getValue());
-            });
-        }
-
-        // Update stats for an editor
-        function updateStats(editorKey, value) {
-            const lines = value.split('\n');
-            const chars = value.length;
-            const words = value.split(/\s+/).filter(w => w.length > 0).length;
-            
-            document.getElementById(`${editorKey}-stats`).textContent = 
-                `${chars} chars, ${words} words, ${lines.length} lines`;
         }
 
         // Toggle theme for specific editor
         function toggleTheme(editorKey) {
-            const currentTheme = themes[editorKey];
-            const newTheme = currentTheme === 'solar' ? 'cave' : 'solar';
-            themes[editorKey] = newTheme;
-            editors[editorKey].setTheme(newTheme);
+            const editor = editors[editorKey];
+            const currentThemeName = editor.options.theme?.name || 'solar';
+            const newTheme = currentThemeName === 'solar' ? 'cave' : 'solar';
+            editor.setTheme(newTheme);
         }
 
         // Clear specific editor
@@ -695,7 +615,6 @@ class OverType {
         function applyGlobalTheme(theme) {
             Object.keys(editors).forEach(key => {
                 editors[key].setTheme(theme);
-                themes[key] = theme;
             });
             
             // Update theme modal UI
