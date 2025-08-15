@@ -76,7 +76,7 @@ class OverType {
       this.initialized = false;
 
       // Inject styles if needed
-      OverType.injectStyles(this.options);
+      OverType.injectStyles();
 
       // Initialize global listeners
       OverType.initGlobalListeners();
@@ -113,9 +113,6 @@ class OverType {
         fontFamily: "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
         padding: '16px',
         
-        // Theme
-        theme: 'solar',
-        
         // Mobile styles
         mobile: {
           fontSize: '16px',  // Prevent zoom on iOS
@@ -137,22 +134,13 @@ class OverType {
         showStats: false,
         statsFormatter: null
       };
-
-      // Process theme
-      let theme = options.theme || defaults.theme;
-      if (typeof theme === 'string') {
-        theme = getTheme(theme);
-      }
       
-      // Handle custom colors
-      if (options.colors) {
-        theme = mergeTheme(theme || solar, options.colors);
-      }
-
+      // Remove theme and colors from options - these are now global
+      const { theme, colors, ...cleanOptions } = options;
+      
       return {
         ...defaults,
-        ...options,
-        theme
+        ...cleanOptions
       };
     }
 
@@ -227,8 +215,9 @@ class OverType {
       this.wrapper = document.createElement('div');
       this.wrapper.className = 'overtype-wrapper';
       
-      // Set theme data attribute
-      const themeName = typeof this.options.theme === 'string' ? this.options.theme : this.options.theme?.name;
+      // Set current global theme
+      const currentTheme = OverType.currentTheme || solar;
+      const themeName = typeof currentTheme === 'string' ? currentTheme : currentTheme.name;
       if (themeName) {
         this.wrapper.setAttribute('data-theme', themeName);
       }
@@ -374,25 +363,6 @@ class OverType {
       this.updatePreview();
     }
 
-    /**
-     * Set theme
-     * @param {string|Object} theme - Theme name or custom theme object
-     */
-    setTheme(theme) {
-      this.options.theme = typeof theme === 'string' ? getTheme(theme) : theme;
-      
-      // Update data-theme attribute
-      const themeName = typeof theme === 'string' ? theme : theme?.name;
-      if (themeName && this.wrapper) {
-        this.wrapper.setAttribute('data-theme', themeName);
-      }
-      
-      // Re-inject styles with new theme
-      OverType.injectStyles(this.options, true);
-      
-      // Update preview
-      this.updatePreview();
-    }
 
     /**
      * Focus the editor
@@ -549,10 +519,9 @@ class OverType {
 
     /**
      * Inject styles into the document
-     * @param {Object} options - Options with theme
      * @param {boolean} force - Force re-injection
      */
-    static injectStyles(options = {}, force = false) {
+    static injectStyles(force = false) {
       if (OverType.stylesInjected && !force) return;
 
       // Remove any existing OverType styles
@@ -561,14 +530,50 @@ class OverType {
         existing.remove();
       }
 
-      // Generate and inject new styles
-      const styles = generateStyles(options);
+      // Generate and inject new styles with current theme
+      const theme = OverType.currentTheme || solar;
+      const styles = generateStyles({ theme });
       const styleEl = document.createElement('style');
       styleEl.className = 'overtype-styles';
       styleEl.textContent = styles;
       document.head.appendChild(styleEl);
 
       OverType.stylesInjected = true;
+    }
+    
+    /**
+     * Set global theme for all OverType instances
+     * @param {string|Object} theme - Theme name or custom theme object
+     * @param {Object} customColors - Optional color overrides
+     */
+    static setTheme(theme, customColors = null) {
+      // Process theme
+      let themeObj = typeof theme === 'string' ? getTheme(theme) : theme;
+      
+      // Apply custom colors if provided
+      if (customColors) {
+        themeObj = mergeTheme(themeObj, customColors);
+      }
+      
+      // Store as current theme
+      OverType.currentTheme = themeObj;
+      
+      // Re-inject styles with new theme
+      OverType.injectStyles(true);
+      
+      // Update all existing instances
+      document.querySelectorAll('.overtype-wrapper').forEach(wrapper => {
+        const themeName = typeof themeObj === 'string' ? themeObj : themeObj.name;
+        if (themeName) {
+          wrapper.setAttribute('data-theme', themeName);
+        }
+        
+        // Trigger preview update for the instance
+        const instance = wrapper._instance;
+        if (instance) {
+          instance.updatePreview();
+        }
+      });
     }
 
     /**
@@ -635,7 +640,9 @@ OverType.ShortcutsManager = ShortcutsManager;
 // Export theme utilities
 OverType.themes = { solar, cave: getTheme('cave') };
 OverType.getTheme = getTheme;
-OverType.mergeTheme = mergeTheme;
+
+// Set default theme
+OverType.currentTheme = solar;
 
 // For IIFE builds, esbuild needs the class as the default export
 export default OverType;

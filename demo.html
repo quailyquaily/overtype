@@ -342,7 +342,6 @@
                     Main Editor
                 </h2>
                 <div class="demo-controls">
-                    <button class="btn" onclick="toggleTheme('main')">Theme</button>
                     <button class="btn" onclick="clearEditor('main')">Clear</button>
                 </div>
             </div>
@@ -356,7 +355,6 @@
                     Preview Editor
                 </h2>
                 <div class="demo-controls">
-                    <button class="btn" onclick="toggleTheme('preview')">Theme</button>
                     <button class="btn" onclick="clearEditor('preview')">Clear</button>
                 </div>
             </div>
@@ -370,7 +368,6 @@
                     Notes
                 </h2>
                 <div class="demo-controls">
-                    <button class="btn" onclick="toggleTheme('notes')">Theme</button>
                     <button class="btn" onclick="clearEditor('notes')">Clear</button>
                 </div>
             </div>
@@ -384,7 +381,6 @@
                     Code Editor
                 </h2>
                 <div class="demo-controls">
-                    <button class="btn" onclick="toggleTheme('code')">Theme</button>
                     <button class="btn" onclick="clearEditor('code')">Clear</button>
                 </div>
             </div>
@@ -550,43 +546,42 @@ class OverType {
             // Handle both direct class and module.default scenarios
             const OT = window.OverType.default || window.OverType;
             
+            // Set global theme
+            OT.setTheme('solar');
+            
             // Main editor
             [editors.main] = new OT('#main-editor', {
                 value: sampleContent.main,
-                theme: 'solar',
                 showStats: true
             });
 
             // Preview editor
             [editors.preview] = new OT('#preview-editor', {
                 value: sampleContent.preview,
-                theme: 'cave',
                 showStats: true
             });
 
             // Notes editor
             [editors.notes] = new OT('#notes-editor', {
                 value: sampleContent.notes,
-                theme: 'solar',
                 showStats: true
             });
 
             // Code editor
             [editors.code] = new OT('#code-editor', {
                 value: sampleContent.code,
-                theme: 'cave',
                 fontSize: '13px',
                 showStats: true
             });
 
         }
 
-        // Toggle theme for specific editor
-        function toggleTheme(editorKey) {
-            const editor = editors[editorKey];
-            const currentThemeName = editor.options.theme?.name || 'solar';
-            const newTheme = currentThemeName === 'solar' ? 'cave' : 'solar';
-            editor.setTheme(newTheme);
+        // Toggle theme globally
+        function toggleTheme() {
+            const OT = window.OverType.default || window.OverType;
+            const currentTheme = OT.currentTheme?.name || 'solar';
+            const newTheme = currentTheme === 'solar' ? 'cave' : 'solar';
+            OT.setTheme(newTheme);
         }
 
         // Clear specific editor
@@ -611,11 +606,10 @@ class OverType {
             }, 2000);
         }
 
-        // Apply theme to all editors
+        // Apply theme globally
         function applyGlobalTheme(theme) {
-            Object.keys(editors).forEach(key => {
-                editors[key].setTheme(theme);
-            });
+            const OT = window.OverType.default || window.OverType;
+            OT.setTheme(theme);
             
             // Update theme modal UI
             document.querySelectorAll('.theme-option').forEach(opt => {

@@ -26,7 +26,7 @@ Choose OverType when you need a tiny bundle size, dead-simple integration withou
 ## Features
 
 - 👻 **Invisible textarea overlay** - Transparent input layer overlaid on styled preview for seamless editing
-- 🎨 **Built-in themes** - Solar (light) and Cave (dark) themes included, plus custom theme support
+- 🎨 **Global theming** - Solar (light) and Cave (dark) themes that apply to all instances
 - ⌨️ **Keyboard shortcuts** - Common markdown shortcuts (Cmd/Ctrl+B for bold, etc.)
 - 📱 **Mobile optimized** - Responsive design with mobile-specific styles
 - 🔄 **DOM persistence aware** - Recovers from existing DOM (perfect for HyperClay and similar platforms)
@@ -274,6 +274,11 @@ editor.destroy()
 ### Static Methods
 
 ```javascript
+// Set global theme (affects all instances)
+OverType.setTheme('cave')  // Built-in theme
+OverType.setTheme(customTheme)  // Custom theme object
+OverType.setTheme('solar', { h1: '#custom' })  // Override specific colors
+
 // Initialize multiple editors (same as constructor)
 OverType.init(target, options)
 

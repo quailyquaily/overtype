@@ -879,7 +879,7 @@ var _OverType = class _OverType {
     this.options = this._mergeOptions(options);
     this.instanceId = ++_OverType.instanceCount;
     this.initialized = false;
-    _OverType.injectStyles(this.options);
+    _OverType.injectStyles();
     _OverType.initGlobalListeners();
     const wrapper = element.querySelector(".overtype-wrapper");
     if (wrapper) {
@@ -904,8 +904,6 @@ var _OverType = class _OverType {
       lineHeight: 1.6,
       fontFamily: "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
       padding: "16px",
-      // Theme
-      theme: "solar",
       // Mobile styles
       mobile: {
         fontSize: "16px",
@@ -925,17 +923,10 @@ var _OverType = class _OverType {
       showStats: false,
       statsFormatter: null
     };
-    let theme = options.theme || defaults.theme;
-    if (typeof theme === "string") {
-      theme = getTheme(theme);
-    }
-    if (options.colors) {
-      theme = mergeTheme(theme || solar, options.colors);
-    }
+    const { theme, colors, ...cleanOptions } = options;
     return {
       ...defaults,
-      ...options,
-      theme
+      ...cleanOptions
     };
   }
   /**
@@ -983,10 +974,10 @@ var _OverType = class _OverType {
    * @private
    */
   _createDOM() {
-    var _a;
     this.wrapper = document.createElement("div");
     this.wrapper.className = "overtype-wrapper";
-    const themeName = typeof this.options.theme === "string" ? this.options.theme : (_a = this.options.theme) == null ? void 0 : _a.name;
+    const currentTheme = _OverType.currentTheme || solar;
+    const themeName = typeof currentTheme === "string" ? currentTheme : currentTheme.name;
     if (themeName) {
       this.wrapper.setAttribute("data-theme", themeName);
     }
@@ -1096,19 +1087,6 @@ var _OverType = class _OverType {
    */
   setValue(value) {
     this.textarea.value = value;
-    this.updatePreview();
-  }
-  /**
-   * Set theme
-   * @param {string|Object} theme - Theme name or custom theme object
-   */
-  setTheme(theme) {
-    this.options.theme = typeof theme === "string" ? getTheme(theme) : theme;
-    const themeName = typeof theme === "string" ? theme : theme == null ? void 0 : theme.name;
-    if (themeName && this.wrapper) {
-      this.wrapper.setAttribute("data-theme", themeName);
-    }
-    _OverType.injectStyles(this.options, true);
     this.updatePreview();
   }
   /**
@@ -1239,22 +1217,45 @@ var _OverType = class _OverType {
   }
   /**
    * Inject styles into the document
-   * @param {Object} options - Options with theme
    * @param {boolean} force - Force re-injection
    */
-  static injectStyles(options = {}, force = false) {
+  static injectStyles(force = false) {
     if (_OverType.stylesInjected && !force)
       return;
     const existing = document.querySelector("style.overtype-styles");
     if (existing) {
       existing.remove();
     }
-    const styles = generateStyles(options);
+    const theme = _OverType.currentTheme || solar;
+    const styles = generateStyles({ theme });
     const styleEl = document.createElement("style");
     styleEl.className = "overtype-styles";
     styleEl.textContent = styles;
     document.head.appendChild(styleEl);
     _OverType.stylesInjected = true;
+  }
+  /**
+   * Set global theme for all OverType instances
+   * @param {string|Object} theme - Theme name or custom theme object
+   * @param {Object} customColors - Optional color overrides
+   */
+  static setTheme(theme, customColors = null) {
+    let themeObj = typeof theme === "string" ? getTheme(theme) : theme;
+    if (customColors) {
+      themeObj = mergeTheme(themeObj, customColors);
+    }
+    _OverType.currentTheme = themeObj;
+    _OverType.injectStyles(true);
+    document.querySelectorAll(".overtype-wrapper").forEach((wrapper) => {
+      const themeName = typeof themeObj === "string" ? themeObj : themeObj.name;
+      if (themeName) {
+        wrapper.setAttribute("data-theme", themeName);
+      }
+      const instance = wrapper._instance;
+      if (instance) {
+        instance.updatePreview();
+      }
+    });
   }
   /**
    * Initialize global event listeners
@@ -1315,7 +1316,7 @@ OverType.MarkdownParser = MarkdownParser;
 OverType.ShortcutsManager = ShortcutsManager;
 OverType.themes = { solar, cave: getTheme("cave") };
 OverType.getTheme = getTheme;
-OverType.mergeTheme = mergeTheme;
+OverType.currentTheme = solar;
 var overtype_default = OverType;
 export {
   OverType,
