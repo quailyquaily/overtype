@@ -1,15 +1,15 @@
 # OverType
 
-A lightweight markdown editor library with perfect WYSIWYG alignment using a "ghost caret" approach. Zero dependencies, ~21KB minified.
+A lightweight markdown editor library with perfect WYSIWYG alignment using an invisible textarea overlay technique. Zero dependencies, ~21KB minified.
 
-## How the Ghost Caret Works
+## How the Invisible Textarea Overlay Works
 
-The ghost caret technique uses two perfectly overlapped layers: an invisible textarea on top where you actually type (only the cursor is visible), and a styled preview div below that shows your formatted text. Both layers must use identical monospace fonts and spacing so every character aligns perfectly - like tracing paper that matches exactly. When you type in the invisible textarea, JavaScript instantly updates the preview below with styled HTML, creating the illusion of typing directly into formatted text.
+The invisible textarea overlay technique uses two perfectly overlapped layers: an invisible textarea on top where you actually type (only the cursor is visible), and a styled preview div below that shows your formatted text. Both layers must use identical monospace fonts and spacing so every character aligns perfectly - like tracing paper that matches exactly. When you type in the invisible textarea, JavaScript instantly updates the preview below with styled HTML, creating the illusion of typing directly into formatted text.
 
 ## Features
 
 - 🎯 **Perfect character alignment** - Every character in the preview occupies the exact same position as in the textarea
-- 👻 **Ghost caret technique** - Invisible textarea overlaid on styled preview for seamless editing
+- 👻 **Invisible textarea overlay** - Transparent input layer overlaid on styled preview for seamless editing
 - 🎨 **Built-in themes** - Solar (light) and Cave (dark) themes included, plus custom theme support
 - ⌨️ **Keyboard shortcuts** - Common markdown shortcuts (Cmd/Ctrl+B for bold, etc.)
 - 📱 **Mobile optimized** - Responsive design with mobile-specific styles
@@ -314,7 +314,7 @@ Requires support for:
 
 ## Architecture
 
-OverType uses a unique "ghost caret" approach:
+OverType uses a unique invisible textarea overlay approach:
 
 1. **Two perfectly aligned layers:**
    - Invisible textarea (top) - handles input and cursor
@@ -339,4 +339,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Credits
 
-Created with the ghost caret technique for perfect WYSIWYG markdown editing.
+Created with the invisible textarea overlay technique for perfect WYSIWYG markdown editing.
