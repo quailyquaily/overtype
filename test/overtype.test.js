@@ -224,7 +224,8 @@ console.log('\n🔧 Integration Tests\n');
   tests.forEach(test => {
     const actual = MarkdownParser.parseLine(test);
     assert(!actual.includes('<script'), `XSS prevention: ${test.substring(0, 20)}...`, 'Should escape dangerous HTML');
-    assert(!actual.includes('onerror'), `XSS prevention events: ${test.substring(0, 20)}...`, 'Should escape event handlers');
+    assert(!actual.includes('<img src=x onerror='), `XSS prevention events: ${test.substring(0, 20)}...`, 'Should escape event handlers');
+    assert(actual.includes('&lt;') || !test.includes('<'), `XSS escaping: ${test.substring(0, 20)}...`, 'Should escape HTML tags');
   });
 })();
 
