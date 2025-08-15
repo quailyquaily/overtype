@@ -523,6 +523,7 @@ var OverType = (() => {
       width: 100% !important;
       height: 100% !important;
       overflow: hidden !important;
+      background: var(--bg-secondary, #ffffff) !important;
       ${themeVars ? `
       /* Theme Variables */
       ${themeVars}` : ""}
@@ -1212,5 +1213,4 @@ var OverType = (() => {
  * @version 1.0.0
  * @license MIT
  */
-if(typeof module!=="undefined")module.exports=OverType;
 //# sourceMappingURL=overtype.js.map

@@ -331,6 +331,13 @@
         <h1>✨ OverType</h1>
         <p class="tagline">A lightweight markdown editor with perfect WYSIWYG alignment</p>
         
+        <div style="max-width: 800px; margin: 20px auto; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; backdrop-filter: blur(10px);">
+            <h3 style="margin-bottom: 10px; font-size: 1.2rem;">👻 How the Ghost Caret Works</h3>
+            <p style="line-height: 1.6; opacity: 0.95;">
+                The ghost caret technique uses two perfectly overlapped layers: an invisible textarea on top where you actually type (only the cursor is visible), and a styled preview div below that shows your formatted text. Both layers must use identical monospace fonts and spacing so every character aligns perfectly - like tracing paper that matches exactly. When you type in the invisible textarea, JavaScript instantly updates the preview below with styled HTML, creating the illusion of typing directly into formatted text.
+            </p>
+        </div>
+        
         <div class="features">
             <div class="feature">
                 <span class="feature-icon">🎯</span>
@@ -602,8 +609,11 @@ class OverType {
 
         // Initialize all editors
         function initEditors() {
+            // Handle both direct class and module.default scenarios
+            const OT = window.OverType.default || window.OverType;
+            
             // Main editor
-            [editors.main] = new OverType('#main-editor', {
+            [editors.main] = new OT('#main-editor', {
                 value: sampleContent.main,
                 theme: 'solar',
                 onChange: (value) => updateStats('main', value)
@@ -611,7 +621,7 @@ class OverType {
             themes.main = 'solar';
 
             // Preview editor
-            [editors.preview] = new OverType('#preview-editor', {
+            [editors.preview] = new OT('#preview-editor', {
                 value: sampleContent.preview,
                 theme: 'cave',
                 onChange: (value) => updateStats('preview', value)
@@ -619,7 +629,7 @@ class OverType {
             themes.preview = 'cave';
 
             // Notes editor
-            [editors.notes] = new OverType('#notes-editor', {
+            [editors.notes] = new OT('#notes-editor', {
                 value: sampleContent.notes,
                 theme: 'solar',
                 onChange: (value) => updateStats('notes', value)
@@ -627,7 +637,7 @@ class OverType {
             themes.notes = 'solar';
 
             // Code editor
-            [editors.code] = new OverType('#code-editor', {
+            [editors.code] = new OT('#code-editor', {
                 value: sampleContent.code,
                 theme: 'cave',
                 fontSize: '13px',

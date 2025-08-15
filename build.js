@@ -17,7 +17,6 @@ const banner = `/**
 
 // Base configuration
 const baseConfig = {
-  entryPoints: ['src/overtype.js'],
   bundle: true,
   sourcemap: true,
   target: ['es2020', 'chrome62', 'firefox78', 'safari16'],
@@ -59,32 +58,29 @@ async function build() {
       // UMD Development Build
       await esbuild.build({
         ...baseConfig,
+        entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.js',
         format: 'iife',
-        globalName: 'OverType',
-        footer: {
-          js: 'if(typeof module!=="undefined")module.exports=OverType;'
-        }
+        globalName: 'OverType'
       });
       console.log('✅ Built dist/overtype.js');
 
       // UMD Production Build (minified)
       await esbuild.build({
         ...baseConfig,
+        entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.min.js',
         format: 'iife',
         globalName: 'OverType',
         minify: true,
-        sourcemap: false,
-        footer: {
-          js: 'if(typeof module!=="undefined")module.exports=OverType;'
-        }
+        sourcemap: false
       });
       console.log('✅ Built dist/overtype.min.js');
 
       // ESM Build
       await esbuild.build({
         ...baseConfig,
+        entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.esm.js',
         format: 'esm'
       });

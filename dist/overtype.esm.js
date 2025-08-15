@@ -499,6 +499,7 @@ function generateStyles(options = {}) {
       width: 100% !important;
       height: 100% !important;
       overflow: hidden !important;
+      background: var(--bg-secondary, #ffffff) !important;
       ${themeVars ? `
       /* Theme Variables */
       ${themeVars}` : ""}

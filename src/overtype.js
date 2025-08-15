@@ -538,8 +538,7 @@ OverType.themes = { solar, cave: getTheme('cave') };
 OverType.getTheme = getTheme;
 OverType.mergeTheme = mergeTheme;
 
-// Default export
+// For IIFE builds, esbuild needs the class as the default export
 export default OverType;
-
-// Named export
+// Also export as named for ESM compatibility
 export { OverType };
