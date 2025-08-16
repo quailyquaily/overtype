@@ -426,7 +426,7 @@ export function generateStyles(options = {}) {
     
     /* Special sizing for code block icon */
     .overtype-toolbar-button[data-action="insertCodeBlock"] svg {
-      width: 24px;
+      width: 22px;
       height: 18px;
       fill: transparent !important;
     }

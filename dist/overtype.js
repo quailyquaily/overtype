@@ -239,7 +239,57 @@ var OverType = (() => {
       }
     return a;
   };
-  function getDefaultStyleArgs() {
+  var FORMATS = {
+    bold: {
+      prefix: "**",
+      suffix: "**",
+      trimFirst: true
+    },
+    italic: {
+      prefix: "_",
+      suffix: "_",
+      trimFirst: true
+    },
+    code: {
+      prefix: "`",
+      suffix: "`",
+      blockPrefix: "```",
+      blockSuffix: "```"
+    },
+    link: {
+      prefix: "[",
+      suffix: "](url)",
+      replaceNext: "url",
+      scanFor: "https?://"
+    },
+    bulletList: {
+      prefix: "- ",
+      multiline: true,
+      unorderedList: true
+    },
+    numberedList: {
+      prefix: "1. ",
+      multiline: true,
+      orderedList: true
+    },
+    quote: {
+      prefix: "> ",
+      multiline: true,
+      surroundWithNewlines: true
+    },
+    taskList: {
+      prefix: "- [ ] ",
+      multiline: true,
+      surroundWithNewlines: true
+    },
+    header1: { prefix: "# " },
+    header2: { prefix: "## " },
+    header3: { prefix: "### " },
+    header4: { prefix: "#### " },
+    header5: { prefix: "##### " },
+    header6: { prefix: "###### " }
+  };
+  function getDefaultStyle() {
     return {
       prefix: "",
       suffix: "",
@@ -255,14 +305,49 @@ var OverType = (() => {
       trimFirst: false
     };
   }
-  function mergeStyleWithDefaults(style) {
-    return __spreadValues(__spreadValues({}, getDefaultStyleArgs()), style);
+  function mergeWithDefaults(format) {
+    return __spreadValues(__spreadValues({}, getDefaultStyle()), format);
+  }
+  var canInsertText = null;
+  function insertText(textarea, { text, selectionStart, selectionEnd }) {
+    const originalSelectionStart = textarea.selectionStart;
+    const before = textarea.value.slice(0, originalSelectionStart);
+    const after = textarea.value.slice(textarea.selectionEnd);
+    const originalValue = textarea.value;
+    if (canInsertText === null || canInsertText === true) {
+      textarea.contentEditable = "true";
+      try {
+        canInsertText = document.execCommand("insertText", false, text);
+      } catch (error) {
+        canInsertText = false;
+      }
+      textarea.contentEditable = "false";
+    }
+    if (canInsertText && !textarea.value.slice(0, textarea.selectionStart).endsWith(text)) {
+      canInsertText = false;
+    }
+    if (!canInsertText) {
+      if (textarea.value === originalValue) {
+        try {
+          document.execCommand("ms-beginUndoUnit");
+        } catch (e) {
+        }
+        textarea.value = before + text + after;
+        try {
+          document.execCommand("ms-endUndoUnit");
+        } catch (e) {
+        }
+        textarea.dispatchEvent(new CustomEvent("input", { bubbles: true, cancelable: true }));
+      }
+    }
+    if (selectionStart != null && selectionEnd != null) {
+      textarea.setSelectionRange(selectionStart, selectionEnd);
+    } else {
+      textarea.setSelectionRange(originalSelectionStart, textarea.selectionEnd);
+    }
   }
   function isMultipleLines(string) {
     return string.trim().split("\n").length > 1;
-  }
-  function repeat(string, n) {
-    return Array(n + 1).join(string);
   }
   function wordSelectionStart(text, i) {
     let index = i;
@@ -288,7 +373,11 @@ var OverType = (() => {
         textarea.selectionStart = counter;
       }
       if (textarea.selectionEnd >= counter && textarea.selectionEnd < counter + lineLength) {
-        textarea.selectionEnd = counter + lineLength - 1;
+        if (index === lines.length - 1) {
+          textarea.selectionEnd = Math.min(counter + lines[index].length, textarea.value.length);
+        } else {
+          textarea.selectionEnd = counter + lineLength - 1;
+        }
       }
       counter += lineLength;
     }
@@ -316,67 +405,26 @@ var OverType = (() => {
     const breaksAfter = afterSelection.match(/^\n*/);
     const newlinesBeforeSelection = breaksBefore ? breaksBefore[0].length : 0;
     const newlinesAfterSelection = breaksAfter ? breaksAfter[0].length : 0;
-    let newlinesToAppend;
-    let newlinesToPrepend;
+    let newlinesToAppend = "";
+    let newlinesToPrepend = "";
     if (beforeSelection.match(/\S/) && newlinesBeforeSelection < 2) {
-      newlinesToAppend = repeat("\n", 2 - newlinesBeforeSelection);
+      newlinesToAppend = "\n".repeat(2 - newlinesBeforeSelection);
     }
     if (afterSelection.match(/\S/) && newlinesAfterSelection < 2) {
-      newlinesToPrepend = repeat("\n", 2 - newlinesAfterSelection);
-    }
-    if (newlinesToAppend == null) {
-      newlinesToAppend = "";
-    }
-    if (newlinesToPrepend == null) {
-      newlinesToPrepend = "";
+      newlinesToPrepend = "\n".repeat(2 - newlinesAfterSelection);
     }
     return { newlinesToAppend, newlinesToPrepend };
   }
-  var canInsertText = null;
-  function insertText(textarea, { text, selectionStart, selectionEnd }) {
-    const originalSelectionStart = textarea.selectionStart;
-    const before = textarea.value.slice(0, originalSelectionStart);
-    const after = textarea.value.slice(textarea.selectionEnd);
-    if (canInsertText === null || canInsertText === true) {
-      textarea.contentEditable = "true";
-      try {
-        canInsertText = document.execCommand("insertText", false, text);
-      } catch (error) {
-        canInsertText = false;
-      }
-      textarea.contentEditable = "false";
-    }
-    if (canInsertText && !textarea.value.slice(0, textarea.selectionStart).endsWith(text)) {
-      canInsertText = false;
-    }
-    if (!canInsertText) {
-      try {
-        document.execCommand("ms-beginUndoUnit");
-      } catch (e) {
-      }
-      textarea.value = before + text + after;
-      try {
-        document.execCommand("ms-endUndoUnit");
-      } catch (e) {
-      }
-      textarea.dispatchEvent(new CustomEvent("input", { bubbles: true, cancelable: true }));
-    }
-    if (selectionStart != null && selectionEnd != null) {
-      textarea.setSelectionRange(selectionStart, selectionEnd);
-    } else {
-      textarea.setSelectionRange(originalSelectionStart, textarea.selectionEnd);
-    }
-  }
-  function blockStyle(textarea, arg) {
+  function blockStyle(textarea, style) {
     let newlinesToAppend;
     let newlinesToPrepend;
-    const { prefix, suffix, blockPrefix, blockSuffix, replaceNext, prefixSpace, scanFor, surroundWithNewlines } = arg;
+    const { prefix, suffix, blockPrefix, blockSuffix, replaceNext, prefixSpace, scanFor, surroundWithNewlines, trimFirst } = style;
     const originalSelectionStart = textarea.selectionStart;
     const originalSelectionEnd = textarea.selectionEnd;
     let selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    let prefixToUse = isMultipleLines(selectedText) && blockPrefix.length > 0 ? `${blockPrefix}
+    let prefixToUse = isMultipleLines(selectedText) && blockPrefix && blockPrefix.length > 0 ? `${blockPrefix}
 ` : prefix;
-    let suffixToUse = isMultipleLines(selectedText) && blockSuffix.length > 0 ? `
+    let suffixToUse = isMultipleLines(selectedText) && blockSuffix && blockSuffix.length > 0 ? `
 ${blockSuffix}` : suffix;
     if (prefixSpace) {
       const beforeSelection = textarea.value[textarea.selectionStart - 1];
@@ -384,10 +432,10 @@ ${blockSuffix}` : suffix;
         prefixToUse = ` ${prefixToUse}`;
       }
     }
-    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline);
+    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, style.multiline);
     let selectionStart = textarea.selectionStart;
     let selectionEnd = textarea.selectionEnd;
-    const hasReplaceNext = replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
+    const hasReplaceNext = replaceNext && replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
     if (surroundWithNewlines) {
       const ref = newlinesToSurroundSelectedText(textarea);
       newlinesToAppend = ref.newlinesToAppend;
@@ -411,7 +459,7 @@ ${blockSuffix}` : suffix;
       selectionStart = originalSelectionStart + prefixToUse.length;
       selectionEnd = originalSelectionEnd + prefixToUse.length;
       const whitespaceEdges = selectedText.match(/^\s*|\s*$/g);
-      if (arg.trimFirst && whitespaceEdges) {
+      if (trimFirst && whitespaceEdges) {
         const leadingWhitespace = whitespaceEdges[0] || "";
         const trailingWhitespace = whitespaceEdges[1] || "";
         replacementText = leadingWhitespace + prefixToUse + selectedText.trim() + suffixToUse + trailingWhitespace;
@@ -419,9 +467,9 @@ ${blockSuffix}` : suffix;
         selectionEnd -= trailingWhitespace.length;
       }
       return { text: replacementText, selectionStart, selectionEnd };
-    } else if (scanFor.length > 0 && selectedText.match(scanFor)) {
+    } else if (scanFor && scanFor.length > 0 && selectedText.match(scanFor)) {
       suffixToUse = suffixToUse.replace(replaceNext, selectedText);
-      const replacementText = prefixToUse + selectedText + suffixToUse;
+      const replacementText = prefixToUse + suffixToUse;
       selectionStart = selectionEnd = selectionStart + prefixToUse.length;
       return { text: replacementText, selectionStart, selectionEnd };
     } else {
@@ -431,18 +479,24 @@ ${blockSuffix}` : suffix;
       return { text: replacementText, selectionStart, selectionEnd };
     }
   }
-  function multilineStyle(textarea, arg) {
-    const { prefix, suffix, surroundWithNewlines } = arg;
+  function multilineStyle(textarea, style) {
+    const { prefix, suffix, surroundWithNewlines } = style;
     let text = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
     let selectionStart = textarea.selectionStart;
     let selectionEnd = textarea.selectionEnd;
     const lines = text.split("\n");
-    const undoStyle = lines.every((line) => line.startsWith(prefix) && line.endsWith(suffix));
+    const undoStyle = lines.every((line) => line.startsWith(prefix) && (!suffix || line.endsWith(suffix)));
     if (undoStyle) {
-      text = lines.map((line) => line.slice(prefix.length, line.length - suffix.length)).join("\n");
+      text = lines.map((line) => {
+        let result = line.slice(prefix.length);
+        if (suffix) {
+          result = result.slice(0, result.length - suffix.length);
+        }
+        return result;
+      }).join("\n");
       selectionEnd = selectionStart + text.length;
     } else {
-      text = lines.map((line) => prefix + line + suffix).join("\n");
+      text = lines.map((line) => prefix + line + (suffix || "")).join("\n");
       if (surroundWithNewlines) {
         const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
         selectionStart += newlinesToAppend.length;
@@ -471,7 +525,7 @@ ${blockSuffix}` : suffix;
     const shouldUndoUnorderedList = lines.every((line) => line.startsWith(unorderedListPrefix));
     let result = lines;
     if (shouldUndoUnorderedList) {
-      result = lines.map((line) => line.slice(unorderedListPrefix.length, line.length));
+      result = lines.map((line) => line.slice(unorderedListPrefix.length));
     }
     return {
       text: result.join("\n"),
@@ -486,19 +540,19 @@ ${blockSuffix}` : suffix;
     }
   }
   function clearExistingListStyle(style, selectedText) {
-    let undoResultOpositeList;
     let undoResult;
+    let undoResultOppositeList;
     let pristineText;
     if (style.orderedList) {
       undoResult = undoOrderedListStyle(selectedText);
-      undoResultOpositeList = undoUnorderedListStyle(undoResult.text);
-      pristineText = undoResultOpositeList.text;
+      undoResultOppositeList = undoUnorderedListStyle(undoResult.text);
+      pristineText = undoResultOppositeList.text;
     } else {
       undoResult = undoUnorderedListStyle(selectedText);
-      undoResultOpositeList = undoOrderedListStyle(undoResult.text);
-      pristineText = undoResultOpositeList.text;
+      undoResultOppositeList = undoOrderedListStyle(undoResult.text);
+      pristineText = undoResultOppositeList.text;
     }
-    return [undoResult, undoResultOpositeList, pristineText];
+    return [undoResult, undoResultOppositeList, pristineText];
   }
   function listStyle(textarea, style) {
     const noInitialSelection = textarea.selectionStart === textarea.selectionEnd;
@@ -506,14 +560,14 @@ ${blockSuffix}` : suffix;
     let selectionEnd = textarea.selectionEnd;
     expandSelectionToLine(textarea);
     const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    const [undoResult, undoResultOpositeList, pristineText] = clearExistingListStyle(style, selectedText);
+    const [undoResult, undoResultOppositeList, pristineText] = clearExistingListStyle(style, selectedText);
     const prefixedLines = pristineText.split("\n").map((value, index) => {
       return `${makePrefix(index, style.unorderedList)}${value}`;
     });
     const totalPrefixLength = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
       return previousValue + makePrefix(currentIndex, style.unorderedList).length;
     }, 0);
-    const totalPrefixLengthOpositeList = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
+    const totalPrefixLengthOppositeList = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
       return previousValue + makePrefix(currentIndex, !style.unorderedList).length;
     }, 0);
     if (undoResult.processed) {
@@ -532,9 +586,9 @@ ${blockSuffix}` : suffix;
       selectionStart = Math.max(selectionStart + makePrefix(0, style.unorderedList).length + newlinesToAppend.length, 0);
       selectionEnd = selectionStart;
     } else {
-      if (undoResultOpositeList.processed) {
+      if (undoResultOppositeList.processed) {
         selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
-        selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength - totalPrefixLengthOpositeList;
+        selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength - totalPrefixLengthOppositeList;
       } else {
         selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
         selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength;
@@ -542,16 +596,10 @@ ${blockSuffix}` : suffix;
     }
     return { text, selectionStart, selectionEnd };
   }
-  function styleSelectedText(textarea, styleArgs) {
-    const text = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    let result;
-    if (styleArgs.orderedList || styleArgs.unorderedList) {
-      result = listStyle(textarea, styleArgs);
-    } else if (styleArgs.multiline && isMultipleLines(text)) {
-      result = multilineStyle(textarea, styleArgs);
-    } else {
-      result = blockStyle(textarea, styleArgs);
-    }
+  function applyListStyle(textarea, style) {
+    const originalStart = textarea.selectionStart;
+    const originalEnd = textarea.selectionEnd;
+    const result = listStyle(textarea, style);
     insertText(textarea, result);
   }
   function getActiveFormats(textarea) {
@@ -630,96 +678,97 @@ ${blockSuffix}` : suffix;
     }
     return formats;
   }
-  var FORMATS2 = {
-    bold: { prefix: "**", suffix: "**", trimFirst: true },
-    italic: { prefix: "_", suffix: "_", trimFirst: true },
-    code: {
-      prefix: "`",
-      suffix: "`",
-      blockPrefix: "```",
-      blockSuffix: "```"
-    },
-    link: {
-      prefix: "[",
-      suffix: "](url)",
-      replaceNext: "url",
-      scanFor: "https?://"
-    },
-    quote: {
-      prefix: "> ",
-      multiline: true,
-      surroundWithNewlines: true
-    },
-    bulletList: {
-      prefix: "- ",
-      multiline: true,
-      unorderedList: true
-    },
-    numberedList: {
-      prefix: "1. ",
-      multiline: true,
-      orderedList: true
-    },
-    header1: { prefix: "# " },
-    header2: { prefix: "## " },
-    header3: { prefix: "### " },
-    header4: { prefix: "#### " },
-    header5: { prefix: "##### " },
-    header6: { prefix: "###### " }
-  };
-  function applyStyle(textarea, format) {
-    const style = mergeStyleWithDefaults(format);
-    textarea.focus();
-    styleSelectedText(textarea, style);
-  }
   function toggleBold(textarea) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
-    applyStyle(textarea, FORMATS2.bold);
+    const style = mergeWithDefaults(FORMATS.bold);
+    const result = blockStyle(textarea, style);
+    insertText(textarea, result);
   }
   function toggleItalic(textarea) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
-    applyStyle(textarea, FORMATS2.italic);
+    const style = mergeWithDefaults(FORMATS.italic);
+    const result = blockStyle(textarea, style);
+    insertText(textarea, result);
   }
   function toggleCode(textarea) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
-    applyStyle(textarea, FORMATS2.code);
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    const style = mergeWithDefaults(FORMATS.code);
+    let result;
+    if (isMultipleLines(selectedText)) {
+      const blockStyle2 = {
+        prefix: "```\n",
+        suffix: "\n```",
+        surroundWithNewlines: true
+      };
+      result = multilineStyle(textarea, mergeWithDefaults(blockStyle2));
+    } else {
+      result = blockStyle(textarea, style);
+    }
+    insertText(textarea, result);
   }
   function insertLink(textarea, options = {}) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
-    let format = __spreadValues({}, FORMATS2.link);
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    let style = mergeWithDefaults(FORMATS.link);
     if (options.url) {
-      format.suffix = `](${options.url})`;
-      format.replaceNext = "";
+      style.suffix = `](${options.url})`;
+      style.replaceNext = "";
     }
-    if (options.text && !textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)) {
+    if (options.text && !selectedText) {
       const pos = textarea.selectionStart;
       textarea.value = textarea.value.slice(0, pos) + options.text + textarea.value.slice(pos);
       textarea.selectionStart = pos;
       textarea.selectionEnd = pos + options.text.length;
     }
-    applyStyle(textarea, format);
+    const result = blockStyle(textarea, style);
+    insertText(textarea, result);
   }
   function toggleBulletList(textarea) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
-    applyStyle(textarea, FORMATS2.bulletList);
+    const style = mergeWithDefaults(FORMATS.bulletList);
+    applyListStyle(textarea, style);
   }
   function toggleNumberedList(textarea) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
-    applyStyle(textarea, FORMATS2.numberedList);
+    const style = mergeWithDefaults(FORMATS.numberedList);
+    applyListStyle(textarea, style);
+  }
+  function toggleQuote(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    const style = mergeWithDefaults(FORMATS.quote);
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    if (isMultipleLines(selectedText)) {
+      expandSelectionToLine(textarea);
+    }
+    const result = multilineStyle(textarea, style);
+    insertText(textarea, result);
+  }
+  function toggleTaskList(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    const style = mergeWithDefaults(FORMATS.taskList);
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    if (isMultipleLines(selectedText)) {
+      expandSelectionToLine(textarea);
+    }
+    const result = multilineStyle(textarea, style);
+    insertText(textarea, result);
   }
   function insertHeader(textarea, level = 1) {
     if (!textarea || textarea.disabled || textarea.readOnly)
       return;
     if (level < 1 || level > 6)
       level = 1;
-    const headerKey = `header${level}`;
-    const format = FORMATS2[headerKey] || FORMATS2.header1;
+    const headerKey = `header${level === 1 ? "1" : level}`;
+    const style = mergeWithDefaults(FORMATS[headerKey] || FORMATS.header1);
     const value = textarea.value;
     const start = textarea.selectionStart;
     let lineStart = start;
@@ -734,11 +783,13 @@ ${blockSuffix}` : suffix;
     textarea.selectionEnd = lineEnd;
     const currentLine = value.slice(lineStart, lineEnd);
     const cleanedLine = currentLine.replace(/^#{1,6}\s*/, "");
-    const newLine = format.prefix + cleanedLine;
-    const tempSelection = textarea.selectionStart;
-    textarea.value = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
-    textarea.selectionStart = lineStart + format.prefix.length;
-    textarea.selectionEnd = lineStart + newLine.length;
+    const newLine = style.prefix + cleanedLine;
+    const result = {
+      text: newLine,
+      selectionStart: lineStart + style.prefix.length,
+      selectionEnd: lineStart + newLine.length
+    };
+    insertText(textarea, result);
   }
   function getActiveFormats2(textarea) {
     return getActiveFormats(textarea);
@@ -1381,7 +1432,7 @@ ${blockSuffix}` : suffix;
     
     /* Special sizing for code block icon */
     .overtype-toolbar-button[data-action="insertCodeBlock"] svg {
-      width: 24px;
+      width: 22px;
       height: 18px;
       fill: transparent !important;
     }
@@ -1490,6 +1541,18 @@ ${blockSuffix}` : suffix;
   <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.5,10.5h-2c0-.234,1.85-1.076,1.85-2.234A0.959,0.959,0,0,0,2.5,8.156"></path>
   <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.5,14.846a0.959,0.959,0,0,0,1.85-.109A0.7,0.7,0,0,0,3.75,14a0.688,0.688,0,0,0,.6-0.736,0.959,0.959,0,0,0-1.85-.109"></path>
 </svg>`;
+  var quoteIcon = `<svg viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 10.8182L9 10.8182C8.80222 10.8182 8.60888 10.7649 8.44443 10.665C8.27998 10.5651 8.15181 10.4231 8.07612 10.257C8.00043 10.0909 7.98063 9.90808 8.01922 9.73174C8.0578 9.55539 8.15304 9.39341 8.29289 9.26627C8.43275 9.13913 8.61093 9.05255 8.80491 9.01747C8.99889 8.98239 9.19996 9.00039 9.38268 9.0692C9.56541 9.13801 9.72159 9.25453 9.83147 9.40403C9.94135 9.55353 10 9.72929 10 9.90909L10 12.1818C10 12.664 9.78929 13.1265 9.41421 13.4675C9.03914 13.8084 8.53043 14 8 14"></path>
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 10.8182L15 10.8182C14.8022 10.8182 14.6089 10.7649 14.4444 10.665C14.28 10.5651 14.1518 10.4231 14.0761 10.257C14.0004 10.0909 13.9806 9.90808 14.0192 9.73174C14.0578 9.55539 14.153 9.39341 14.2929 9.26627C14.4327 9.13913 14.6109 9.05255 14.8049 9.01747C14.9989 8.98239 15.2 9.00039 15.3827 9.0692C15.5654 9.13801 15.7216 9.25453 15.8315 9.40403C15.9414 9.55353 16 9.72929 16 9.90909L16 12.1818C16 12.664 15.7893 13.1265 15.4142 13.4675C15.0391 13.8084 14.5304 14 14 14"></path>
+</svg>`;
+  var taskListIcon = `<svg viewBox="0 0 18 18">
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="8" x2="16" y1="4" y2="4"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="8" x2="16" y1="9" y2="9"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="8" x2="16" y1="14" y2="14"></line>
+  <rect stroke="currentColor" fill="none" stroke-width="1.5" x="2" y="3" width="3" height="3" rx="0.5"></rect>
+  <rect stroke="currentColor" fill="none" stroke-width="1.5" x="2" y="13" width="3" height="3" rx="0.5"></rect>
+  <polyline stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" points="2.65 9.5 3.5 10.5 5 8.5"></polyline>
+</svg>`;
 
   // src/toolbar.js
   var Toolbar = class {
@@ -1518,8 +1581,11 @@ ${blockSuffix}` : suffix;
         { name: "code", icon: codeIcon, title: "Inline Code", action: "toggleCode" },
         { name: "codeBlock", icon: codeBlockIcon, title: "Code Block", action: "insertCodeBlock" },
         { separator: true },
+        { name: "quote", icon: quoteIcon, title: "Quote", action: "toggleQuote" },
+        { separator: true },
         { name: "bulletList", icon: bulletListIcon, title: "Bullet List", action: "toggleBulletList" },
-        { name: "orderedList", icon: orderedListIcon, title: "Numbered List", action: "toggleNumberedList" }
+        { name: "orderedList", icon: orderedListIcon, title: "Numbered List", action: "toggleNumberedList" },
+        { name: "taskList", icon: taskListIcon, title: "Task List", action: "toggleTaskList" }
       ];
       buttonConfig.forEach((config) => {
         if (config.separator) {
@@ -1601,6 +1667,12 @@ ${blockSuffix}` : suffix;
           case "toggleNumberedList":
             toggleNumberedList(textarea);
             break;
+          case "toggleQuote":
+            toggleQuote(textarea);
+            break;
+          case "toggleTaskList":
+            toggleTaskList(textarea);
+            break;
         }
         textarea.dispatchEvent(new Event("input", { bubbles: true }));
       } catch (error) {
@@ -1633,6 +1705,12 @@ ${blockSuffix}` : suffix;
               break;
             case "orderedList":
               isActive = activeFormats.includes("orderedList");
+              break;
+            case "quote":
+              isActive = activeFormats.includes("quote");
+              break;
+            case "taskList":
+              isActive = activeFormats.includes("taskList");
               break;
             case "h1":
               isActive = activeFormats.includes("header1");

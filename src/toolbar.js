@@ -36,8 +36,11 @@ export class Toolbar {
       { name: 'code', icon: icons.codeIcon, title: 'Inline Code', action: 'toggleCode' },
       { name: 'codeBlock', icon: icons.codeBlockIcon, title: 'Code Block', action: 'insertCodeBlock' },
       { separator: true },
+      { name: 'quote', icon: icons.quoteIcon, title: 'Quote', action: 'toggleQuote' },
+      { separator: true },
       { name: 'bulletList', icon: icons.bulletListIcon, title: 'Bullet List', action: 'toggleBulletList' },
-      { name: 'orderedList', icon: icons.orderedListIcon, title: 'Numbered List', action: 'toggleNumberedList' }
+      { name: 'orderedList', icon: icons.orderedListIcon, title: 'Numbered List', action: 'toggleNumberedList' },
+      { name: 'taskList', icon: icons.taskListIcon, title: 'Task List', action: 'toggleTaskList' }
     ];
 
     // Create buttons
@@ -133,6 +136,12 @@ export class Toolbar {
         case 'toggleNumberedList':
           markdownActions.toggleNumberedList(textarea);
           break;
+        case 'toggleQuote':
+          markdownActions.toggleQuote(textarea);
+          break;
+        case 'toggleTaskList':
+          markdownActions.toggleTaskList(textarea);
+          break;
       }
 
       // Trigger input event to update preview
@@ -171,6 +180,12 @@ export class Toolbar {
             break;
           case 'orderedList':
             isActive = activeFormats.includes('orderedList');
+            break;
+          case 'quote':
+            isActive = activeFormats.includes('quote');
+            break;
+          case 'taskList':
+            isActive = activeFormats.includes('taskList');
             break;
           case 'h1':
             isActive = activeFormats.includes('header1');
