@@ -40,15 +40,21 @@ export function generateStyles(options = {}) {
 
   return `
     /* OverType Editor Styles */
+    .overtype-container {
+      position: relative !important;
+      width: 100% !important;
+      height: 100% !important;
+      ${themeVars ? `
+      /* Theme Variables */
+      ${themeVars}` : ''}
+    }
+    
     .overtype-wrapper {
       position: relative !important;
       width: 100% !important;
       height: 100% !important;
       overflow: hidden !important;
       background: var(--bg-secondary, #ffffff) !important;
-      ${themeVars ? `
-      /* Theme Variables */
-      ${themeVars}` : ''}
     }
 
     /* Critical alignment styles - must be identical for both layers */
@@ -388,8 +394,8 @@ export function generateStyles(options = {}) {
       align-items: center;
       gap: 4px;
       padding: 8px;
-      background: var(--bg-primary, #f8f9fa);
-      border: 1px solid var(--border, #e0e0e0);
+      background: var(--toolbar-bg, var(--bg-primary, #f8f9fa));
+      border: 1px solid var(--toolbar-border, var(--border, #e0e0e0));
       border-bottom: none;
       border-radius: 8px 8px 0 0;
       overflow-x: auto;
@@ -406,7 +412,7 @@ export function generateStyles(options = {}) {
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary, #666);
+      color: var(--toolbar-icon, var(--text-secondary, #666));
       cursor: pointer;
       transition: all 0.2s ease;
       flex-shrink: 0;
@@ -426,8 +432,8 @@ export function generateStyles(options = {}) {
     }
 
     .overtype-toolbar-button:hover {
-      background: var(--bg-secondary, #e9ecef);
-      color: var(--text-primary, #333);
+      background: var(--toolbar-hover, var(--bg-secondary, #e9ecef));
+      color: var(--toolbar-icon, var(--text-primary, #333));
     }
 
     .overtype-toolbar-button:active {
@@ -435,8 +441,8 @@ export function generateStyles(options = {}) {
     }
 
     .overtype-toolbar-button.active {
-      background: var(--primary, #007bff);
-      color: white;
+      background: var(--toolbar-active, var(--primary, #007bff));
+      color: var(--toolbar-icon, var(--text-primary, #333));
     }
 
     .overtype-toolbar-button:disabled {
@@ -453,7 +459,7 @@ export function generateStyles(options = {}) {
     }
 
     /* Adjust wrapper when toolbar is present */
-    .overtype-toolbar + .overtype-wrapper {
+    .overtype-container .overtype-toolbar + .overtype-wrapper {
       border-radius: 0 0 8px 8px;
       border-top: none;
     }

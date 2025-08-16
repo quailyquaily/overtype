@@ -26,6 +26,12 @@ export const solar = {
     cursor: '#f95738',           // Tomato - cursor
     selection: 'rgba(244, 211, 94, 0.4)', // Naples Yellow with transparency
     listMarker: '#ee964b',       // Sandy Brown - list markers
+    // Toolbar colors
+    toolbarBg: '#ffffff',        // White - toolbar background
+    toolbarBorder: 'rgba(13, 59, 102, 0.15)', // Yale Blue border
+    toolbarIcon: '#0d3b66',      // Yale Blue - icon color
+    toolbarHover: '#f5f5f5',     // Light gray - hover background
+    toolbarActive: '#faf0ca',    // Lemon Chiffon - active button background
   }
 };
 
@@ -52,6 +58,12 @@ export const cave = {
     cursor: '#f26419',           // Orange Pantone - cursor
     selection: 'rgba(51, 101, 138, 0.4)', // Lapis Lazuli with transparency
     listMarker: '#f6ae2d',       // Hunyadi Yellow - list markers
+    // Toolbar colors for dark theme
+    toolbarBg: '#1D2D3E',        // Darker charcoal - toolbar background
+    toolbarBorder: 'rgba(197, 221, 232, 0.1)', // Light blue-gray border
+    toolbarIcon: '#c5dde8',      // Light blue-gray - icon color
+    toolbarHover: '#243546',     // Slightly lighter charcoal - hover background
+    toolbarActive: '#2a3f52',    // Even lighter - active button background
   }
 };
 

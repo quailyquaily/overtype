@@ -83,9 +83,10 @@ class OverType {
       OverType.initGlobalListeners();
 
       // Check for existing OverType DOM structure
+      const container = element.querySelector('.overtype-container');
       const wrapper = element.querySelector('.overtype-wrapper');
-      if (wrapper) {
-        this._recoverFromDOM(wrapper);
+      if (container || wrapper) {
+        this._recoverFromDOM(container, wrapper);
       } else {
         this._buildFromScratch();
       }
@@ -164,14 +165,40 @@ class OverType {
      * Recover from existing DOM structure
      * @private
      */
-    _recoverFromDOM(wrapper) {
-      this.wrapper = wrapper;
-      this.textarea = wrapper.querySelector('.overtype-input');
-      this.preview = wrapper.querySelector('.overtype-preview');
+    _recoverFromDOM(container, wrapper) {
+      // Handle old structure (wrapper only) or new structure (container + wrapper)
+      if (container && container.classList.contains('overtype-container')) {
+        this.container = container;
+        this.wrapper = container.querySelector('.overtype-wrapper');
+      } else if (wrapper) {
+        // Old structure - just wrapper, no container
+        this.wrapper = wrapper;
+        // Wrap it in a container for consistency
+        this.container = document.createElement('div');
+        this.container.className = 'overtype-container';
+        const currentTheme = OverType.currentTheme || solar;
+        const themeName = typeof currentTheme === 'string' ? currentTheme : currentTheme.name;
+        if (themeName) {
+          this.container.setAttribute('data-theme', themeName);
+        }
+        wrapper.parentNode.insertBefore(this.container, wrapper);
+        this.container.appendChild(wrapper);
+      }
+      
+      if (!this.wrapper) {
+        // No valid structure found
+        if (container) container.remove();
+        if (wrapper) wrapper.remove();
+        this._buildFromScratch();
+        return;
+      }
+      
+      this.textarea = this.wrapper.querySelector('.overtype-input');
+      this.preview = this.wrapper.querySelector('.overtype-preview');
 
       if (!this.textarea || !this.preview) {
         // Partial DOM - clear and rebuild
-        wrapper.remove();
+        this.container.remove();
         this._buildFromScratch();
         return;
       }
@@ -238,16 +265,20 @@ class OverType {
      * @private
      */
     _createDOM() {
-      // Create wrapper
-      this.wrapper = document.createElement('div');
-      this.wrapper.className = 'overtype-wrapper';
+      // Create container that will hold toolbar and editor
+      this.container = document.createElement('div');
+      this.container.className = 'overtype-container';
       
-      // Set current global theme
+      // Set current global theme on container
       const currentTheme = OverType.currentTheme || solar;
       const themeName = typeof currentTheme === 'string' ? currentTheme : currentTheme.name;
       if (themeName) {
-        this.wrapper.setAttribute('data-theme', themeName);
+        this.container.setAttribute('data-theme', themeName);
       }
+      
+      // Create wrapper for editor
+      this.wrapper = document.createElement('div');
+      this.wrapper.className = 'overtype-wrapper';
       
       // Add stats wrapper class if stats are enabled
       if (this.options.showStats) {
@@ -290,7 +321,11 @@ class OverType {
         this._updateStats();
       }
       
-      this.element.appendChild(this.wrapper);
+      // Add wrapper to container
+      this.container.appendChild(this.wrapper);
+      
+      // Add container to element
+      this.element.appendChild(this.container);
     }
 
     /**
@@ -647,11 +682,21 @@ class OverType {
       // Re-inject styles with new theme
       OverType.injectStyles(true);
       
-      // Update all existing instances
-      document.querySelectorAll('.overtype-wrapper').forEach(wrapper => {
+      // Update all existing instances - update container theme attribute
+      document.querySelectorAll('.overtype-container').forEach(container => {
         const themeName = typeof themeObj === 'string' ? themeObj : themeObj.name;
         if (themeName) {
-          wrapper.setAttribute('data-theme', themeName);
+          container.setAttribute('data-theme', themeName);
+        }
+      });
+      
+      // Also handle any old-style wrappers without containers
+      document.querySelectorAll('.overtype-wrapper').forEach(wrapper => {
+        if (!wrapper.closest('.overtype-container')) {
+          const themeName = typeof themeObj === 'string' ? themeObj : themeObj.name;
+          if (themeName) {
+            wrapper.setAttribute('data-theme', themeName);
+          }
         }
         
         // Trigger preview update for the instance

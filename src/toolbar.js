@@ -54,10 +54,11 @@ export class Toolbar {
       }
     });
 
-    // Insert toolbar before editor wrapper
+    // Insert toolbar into container before editor wrapper
+    const container = this.editor.element.querySelector('.overtype-container');
     const wrapper = this.editor.element.querySelector('.overtype-wrapper');
-    if (wrapper) {
-      this.editor.element.insertBefore(this.container, wrapper);
+    if (container && wrapper) {
+      container.insertBefore(this.container, wrapper);
     }
 
     return this.container;

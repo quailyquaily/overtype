@@ -850,8 +850,19 @@ var solar = {
     // Tomato - cursor
     selection: "rgba(244, 211, 94, 0.4)",
     // Naples Yellow with transparency
-    listMarker: "#ee964b"
+    listMarker: "#ee964b",
     // Sandy Brown - list markers
+    // Toolbar colors
+    toolbarBg: "#ffffff",
+    // White - toolbar background
+    toolbarBorder: "rgba(13, 59, 102, 0.15)",
+    // Yale Blue border
+    toolbarIcon: "#0d3b66",
+    // Yale Blue - icon color
+    toolbarHover: "#f5f5f5",
+    // Light gray - hover background
+    toolbarActive: "#faf0ca"
+    // Lemon Chiffon - active button background
   }
 };
 var cave = {
@@ -889,8 +900,19 @@ var cave = {
     // Orange Pantone - cursor
     selection: "rgba(51, 101, 138, 0.4)",
     // Lapis Lazuli with transparency
-    listMarker: "#f6ae2d"
+    listMarker: "#f6ae2d",
     // Hunyadi Yellow - list markers
+    // Toolbar colors for dark theme
+    toolbarBg: "#1D2D3E",
+    // Darker charcoal - toolbar background
+    toolbarBorder: "rgba(197, 221, 232, 0.1)",
+    // Light blue-gray border
+    toolbarIcon: "#c5dde8",
+    // Light blue-gray - icon color
+    toolbarHover: "#243546",
+    // Slightly lighter charcoal - hover background
+    toolbarActive: "#2a3f52"
+    // Even lighter - active button background
   }
 };
 var themes = {
@@ -949,15 +971,21 @@ function generateStyles(options = {}) {
   const themeVars = theme && theme.colors ? themeToCSSVars(theme.colors) : "";
   return `
     /* OverType Editor Styles */
+    .overtype-container {
+      position: relative !important;
+      width: 100% !important;
+      height: 100% !important;
+      ${themeVars ? `
+      /* Theme Variables */
+      ${themeVars}` : ""}
+    }
+    
     .overtype-wrapper {
       position: relative !important;
       width: 100% !important;
       height: 100% !important;
       overflow: hidden !important;
       background: var(--bg-secondary, #ffffff) !important;
-      ${themeVars ? `
-      /* Theme Variables */
-      ${themeVars}` : ""}
     }
 
     /* Critical alignment styles - must be identical for both layers */
@@ -1297,8 +1325,8 @@ function generateStyles(options = {}) {
       align-items: center;
       gap: 4px;
       padding: 8px;
-      background: var(--bg-primary, #f8f9fa);
-      border: 1px solid var(--border, #e0e0e0);
+      background: var(--toolbar-bg, var(--bg-primary, #f8f9fa));
+      border: 1px solid var(--toolbar-border, var(--border, #e0e0e0));
       border-bottom: none;
       border-radius: 8px 8px 0 0;
       overflow-x: auto;
@@ -1315,7 +1343,7 @@ function generateStyles(options = {}) {
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary, #666);
+      color: var(--toolbar-icon, var(--text-secondary, #666));
       cursor: pointer;
       transition: all 0.2s ease;
       flex-shrink: 0;
@@ -1335,8 +1363,8 @@ function generateStyles(options = {}) {
     }
 
     .overtype-toolbar-button:hover {
-      background: var(--bg-secondary, #e9ecef);
-      color: var(--text-primary, #333);
+      background: var(--toolbar-hover, var(--bg-secondary, #e9ecef));
+      color: var(--toolbar-icon, var(--text-primary, #333));
     }
 
     .overtype-toolbar-button:active {
@@ -1344,8 +1372,8 @@ function generateStyles(options = {}) {
     }
 
     .overtype-toolbar-button.active {
-      background: var(--primary, #007bff);
-      color: white;
+      background: var(--toolbar-active, var(--primary, #007bff));
+      color: var(--toolbar-icon, var(--text-primary, #333));
     }
 
     .overtype-toolbar-button:disabled {
@@ -1362,7 +1390,7 @@ function generateStyles(options = {}) {
     }
 
     /* Adjust wrapper when toolbar is present */
-    .overtype-toolbar + .overtype-wrapper {
+    .overtype-container .overtype-toolbar + .overtype-wrapper {
       border-radius: 0 0 8px 8px;
       border-top: none;
     }
@@ -1481,9 +1509,10 @@ var Toolbar = class {
         this.container.appendChild(button);
       }
     });
+    const container = this.editor.element.querySelector(".overtype-container");
     const wrapper = this.editor.element.querySelector(".overtype-wrapper");
-    if (wrapper) {
-      this.editor.element.insertBefore(this.container, wrapper);
+    if (container && wrapper) {
+      container.insertBefore(this.container, wrapper);
     }
     return this.container;
   }
@@ -1658,9 +1687,10 @@ var _OverType = class _OverType {
     this.initialized = false;
     _OverType.injectStyles();
     _OverType.initGlobalListeners();
+    const container = element.querySelector(".overtype-container");
     const wrapper = element.querySelector(".overtype-wrapper");
-    if (wrapper) {
-      this._recoverFromDOM(wrapper);
+    if (container || wrapper) {
+      this._recoverFromDOM(container, wrapper);
     } else {
       this._buildFromScratch();
     }
@@ -1721,12 +1751,34 @@ var _OverType = class _OverType {
    * Recover from existing DOM structure
    * @private
    */
-  _recoverFromDOM(wrapper) {
-    this.wrapper = wrapper;
-    this.textarea = wrapper.querySelector(".overtype-input");
-    this.preview = wrapper.querySelector(".overtype-preview");
+  _recoverFromDOM(container, wrapper) {
+    if (container && container.classList.contains("overtype-container")) {
+      this.container = container;
+      this.wrapper = container.querySelector(".overtype-wrapper");
+    } else if (wrapper) {
+      this.wrapper = wrapper;
+      this.container = document.createElement("div");
+      this.container.className = "overtype-container";
+      const currentTheme = _OverType.currentTheme || solar;
+      const themeName = typeof currentTheme === "string" ? currentTheme : currentTheme.name;
+      if (themeName) {
+        this.container.setAttribute("data-theme", themeName);
+      }
+      wrapper.parentNode.insertBefore(this.container, wrapper);
+      this.container.appendChild(wrapper);
+    }
+    if (!this.wrapper) {
+      if (container)
+        container.remove();
+      if (wrapper)
+        wrapper.remove();
+      this._buildFromScratch();
+      return;
+    }
+    this.textarea = this.wrapper.querySelector(".overtype-input");
+    this.preview = this.wrapper.querySelector(".overtype-preview");
     if (!this.textarea || !this.preview) {
-      wrapper.remove();
+      this.container.remove();
       this._buildFromScratch();
       return;
     }
@@ -1771,13 +1823,15 @@ var _OverType = class _OverType {
    * @private
    */
   _createDOM() {
-    this.wrapper = document.createElement("div");
-    this.wrapper.className = "overtype-wrapper";
+    this.container = document.createElement("div");
+    this.container.className = "overtype-container";
     const currentTheme = _OverType.currentTheme || solar;
     const themeName = typeof currentTheme === "string" ? currentTheme : currentTheme.name;
     if (themeName) {
-      this.wrapper.setAttribute("data-theme", themeName);
+      this.container.setAttribute("data-theme", themeName);
     }
+    this.wrapper = document.createElement("div");
+    this.wrapper.className = "overtype-wrapper";
     if (this.options.showStats) {
       this.wrapper.classList.add("with-stats");
     }
@@ -1806,7 +1860,8 @@ var _OverType = class _OverType {
       this.wrapper.appendChild(this.statsBar);
       this._updateStats();
     }
-    this.element.appendChild(this.wrapper);
+    this.container.appendChild(this.wrapper);
+    this.element.appendChild(this.container);
   }
   /**
    * Configure textarea attributes
@@ -2081,10 +2136,18 @@ var _OverType = class _OverType {
     }
     _OverType.currentTheme = themeObj;
     _OverType.injectStyles(true);
-    document.querySelectorAll(".overtype-wrapper").forEach((wrapper) => {
+    document.querySelectorAll(".overtype-container").forEach((container) => {
       const themeName = typeof themeObj === "string" ? themeObj : themeObj.name;
       if (themeName) {
-        wrapper.setAttribute("data-theme", themeName);
+        container.setAttribute("data-theme", themeName);
+      }
+    });
+    document.querySelectorAll(".overtype-wrapper").forEach((wrapper) => {
+      if (!wrapper.closest(".overtype-container")) {
+        const themeName = typeof themeObj === "string" ? themeObj : themeObj.name;
+        if (themeName) {
+          wrapper.setAttribute("data-theme", themeName);
+        }
       }
       const instance = wrapper._instance;
       if (instance) {
