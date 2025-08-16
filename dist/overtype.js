@@ -11,6 +11,9 @@ var OverType = (() => {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
@@ -28,6 +31,622 @@ var OverType = (() => {
     __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
     return value;
   };
+
+  // ../markdown-actions/dist/markdown-actions.esm.js
+  var markdown_actions_esm_exports = {};
+  __export(markdown_actions_esm_exports, {
+    applyCustomFormat: () => applyCustomFormat,
+    default: () => index_new_default,
+    expandSelection: () => expandSelection,
+    getActiveFormats: () => getActiveFormats2,
+    hasFormat: () => hasFormat2,
+    insertHeader: () => insertHeader,
+    insertLink: () => insertLink,
+    preserveSelection: () => preserveSelection,
+    setUndoMethod: () => setUndoMethod,
+    toggleBold: () => toggleBold,
+    toggleBulletList: () => toggleBulletList,
+    toggleCode: () => toggleCode,
+    toggleItalic: () => toggleItalic,
+    toggleNumberedList: () => toggleNumberedList,
+    toggleQuote: () => toggleQuote
+  });
+  function getDefaultStyleArgs() {
+    return {
+      prefix: "",
+      suffix: "",
+      blockPrefix: "",
+      blockSuffix: "",
+      multiline: false,
+      replaceNext: "",
+      prefixSpace: false,
+      scanFor: "",
+      surroundWithNewlines: false,
+      orderedList: false,
+      unorderedList: false,
+      trimFirst: false
+    };
+  }
+  function mergeStyleWithDefaults(style) {
+    return __spreadValues(__spreadValues({}, getDefaultStyleArgs()), style);
+  }
+  function isMultipleLines(string) {
+    return string.trim().split("\n").length > 1;
+  }
+  function repeat(string, n) {
+    return Array(n + 1).join(string);
+  }
+  function wordSelectionStart(text, i) {
+    let index = i;
+    while (text[index] && text[index - 1] != null && !text[index - 1].match(/\s/)) {
+      index--;
+    }
+    return index;
+  }
+  function wordSelectionEnd(text, i, multiline) {
+    let index = i;
+    const breakpoint = multiline ? /\n/ : /\s/;
+    while (text[index] && !text[index].match(breakpoint)) {
+      index++;
+    }
+    return index;
+  }
+  function expandSelectionToLine(textarea) {
+    const lines = textarea.value.split("\n");
+    let counter = 0;
+    for (let index = 0; index < lines.length; index++) {
+      const lineLength = lines[index].length + 1;
+      if (textarea.selectionStart >= counter && textarea.selectionStart < counter + lineLength) {
+        textarea.selectionStart = counter;
+      }
+      if (textarea.selectionEnd >= counter && textarea.selectionEnd < counter + lineLength) {
+        textarea.selectionEnd = counter + lineLength - 1;
+      }
+      counter += lineLength;
+    }
+  }
+  function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false) {
+    if (textarea.selectionStart === textarea.selectionEnd) {
+      textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
+      textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+    } else {
+      const expandedSelectionStart = textarea.selectionStart - prefixToUse.length;
+      const expandedSelectionEnd = textarea.selectionEnd + suffixToUse.length;
+      const beginsWithPrefix = textarea.value.slice(expandedSelectionStart, textarea.selectionStart) === prefixToUse;
+      const endsWithSuffix = textarea.value.slice(textarea.selectionEnd, expandedSelectionEnd) === suffixToUse;
+      if (beginsWithPrefix && endsWithSuffix) {
+        textarea.selectionStart = expandedSelectionStart;
+        textarea.selectionEnd = expandedSelectionEnd;
+      }
+    }
+    return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  }
+  function newlinesToSurroundSelectedText(textarea) {
+    const beforeSelection = textarea.value.slice(0, textarea.selectionStart);
+    const afterSelection = textarea.value.slice(textarea.selectionEnd);
+    const breaksBefore = beforeSelection.match(/\n*$/);
+    const breaksAfter = afterSelection.match(/^\n*/);
+    const newlinesBeforeSelection = breaksBefore ? breaksBefore[0].length : 0;
+    const newlinesAfterSelection = breaksAfter ? breaksAfter[0].length : 0;
+    let newlinesToAppend;
+    let newlinesToPrepend;
+    if (beforeSelection.match(/\S/) && newlinesBeforeSelection < 2) {
+      newlinesToAppend = repeat("\n", 2 - newlinesBeforeSelection);
+    }
+    if (afterSelection.match(/\S/) && newlinesAfterSelection < 2) {
+      newlinesToPrepend = repeat("\n", 2 - newlinesAfterSelection);
+    }
+    if (newlinesToAppend == null) {
+      newlinesToAppend = "";
+    }
+    if (newlinesToPrepend == null) {
+      newlinesToPrepend = "";
+    }
+    return { newlinesToAppend, newlinesToPrepend };
+  }
+  function preserveSelection(textarea, callback) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const scrollTop = textarea.scrollTop;
+    callback();
+    textarea.selectionStart = start;
+    textarea.selectionEnd = end;
+    textarea.scrollTop = scrollTop;
+  }
+  function insertText(textarea, { text, selectionStart, selectionEnd }) {
+    const originalSelectionStart = textarea.selectionStart;
+    const before = textarea.value.slice(0, originalSelectionStart);
+    const after = textarea.value.slice(textarea.selectionEnd);
+    if (canInsertText === null || canInsertText === true) {
+      textarea.contentEditable = "true";
+      try {
+        canInsertText = document.execCommand("insertText", false, text);
+      } catch (error) {
+        canInsertText = false;
+      }
+      textarea.contentEditable = "false";
+    }
+    if (canInsertText && !textarea.value.slice(0, textarea.selectionStart).endsWith(text)) {
+      canInsertText = false;
+    }
+    if (!canInsertText) {
+      try {
+        document.execCommand("ms-beginUndoUnit");
+      } catch (e) {
+      }
+      textarea.value = before + text + after;
+      try {
+        document.execCommand("ms-endUndoUnit");
+      } catch (e) {
+      }
+      textarea.dispatchEvent(new CustomEvent("input", { bubbles: true, cancelable: true }));
+    }
+    if (selectionStart != null && selectionEnd != null) {
+      textarea.setSelectionRange(selectionStart, selectionEnd);
+    } else {
+      textarea.setSelectionRange(originalSelectionStart, textarea.selectionEnd);
+    }
+  }
+  function setUndoMethod(method) {
+    if (method === "native") {
+      canInsertText = true;
+    } else if (method === "manual") {
+      canInsertText = false;
+    } else {
+      canInsertText = null;
+    }
+  }
+  function blockStyle(textarea, arg) {
+    let newlinesToAppend;
+    let newlinesToPrepend;
+    const { prefix, suffix, blockPrefix, blockSuffix, replaceNext, prefixSpace, scanFor, surroundWithNewlines } = arg;
+    const originalSelectionStart = textarea.selectionStart;
+    const originalSelectionEnd = textarea.selectionEnd;
+    let selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    let prefixToUse = isMultipleLines(selectedText) && blockPrefix.length > 0 ? `${blockPrefix}
+` : prefix;
+    let suffixToUse = isMultipleLines(selectedText) && blockSuffix.length > 0 ? `
+${blockSuffix}` : suffix;
+    if (prefixSpace) {
+      const beforeSelection = textarea.value[textarea.selectionStart - 1];
+      if (textarea.selectionStart !== 0 && beforeSelection != null && !beforeSelection.match(/\s/)) {
+        prefixToUse = ` ${prefixToUse}`;
+      }
+    }
+    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, arg.multiline);
+    let selectionStart = textarea.selectionStart;
+    let selectionEnd = textarea.selectionEnd;
+    const hasReplaceNext = replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
+    if (surroundWithNewlines) {
+      const ref = newlinesToSurroundSelectedText(textarea);
+      newlinesToAppend = ref.newlinesToAppend;
+      newlinesToPrepend = ref.newlinesToPrepend;
+      prefixToUse = newlinesToAppend + prefix;
+      suffixToUse += newlinesToPrepend;
+    }
+    if (selectedText.startsWith(prefixToUse) && selectedText.endsWith(suffixToUse)) {
+      const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length);
+      if (originalSelectionStart === originalSelectionEnd) {
+        let position = originalSelectionStart - prefixToUse.length;
+        position = Math.max(position, selectionStart);
+        position = Math.min(position, selectionStart + replacementText.length);
+        selectionStart = selectionEnd = position;
+      } else {
+        selectionEnd = selectionStart + replacementText.length;
+      }
+      return { text: replacementText, selectionStart, selectionEnd };
+    } else if (!hasReplaceNext) {
+      let replacementText = prefixToUse + selectedText + suffixToUse;
+      selectionStart = originalSelectionStart + prefixToUse.length;
+      selectionEnd = originalSelectionEnd + prefixToUse.length;
+      const whitespaceEdges = selectedText.match(/^\s*|\s*$/g);
+      if (arg.trimFirst && whitespaceEdges) {
+        const leadingWhitespace = whitespaceEdges[0] || "";
+        const trailingWhitespace = whitespaceEdges[1] || "";
+        replacementText = leadingWhitespace + prefixToUse + selectedText.trim() + suffixToUse + trailingWhitespace;
+        selectionStart += leadingWhitespace.length;
+        selectionEnd -= trailingWhitespace.length;
+      }
+      return { text: replacementText, selectionStart, selectionEnd };
+    } else if (scanFor.length > 0 && selectedText.match(scanFor)) {
+      suffixToUse = suffixToUse.replace(replaceNext, selectedText);
+      const replacementText = prefixToUse + selectedText + suffixToUse;
+      selectionStart = selectionEnd = selectionStart + prefixToUse.length;
+      return { text: replacementText, selectionStart, selectionEnd };
+    } else {
+      const replacementText = prefixToUse + selectedText + suffixToUse;
+      selectionStart = selectionStart + prefixToUse.length + selectedText.length + suffixToUse.indexOf(replaceNext);
+      selectionEnd = selectionStart + replaceNext.length;
+      return { text: replacementText, selectionStart, selectionEnd };
+    }
+  }
+  function multilineStyle(textarea, arg) {
+    const { prefix, suffix, surroundWithNewlines } = arg;
+    let text = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    let selectionStart = textarea.selectionStart;
+    let selectionEnd = textarea.selectionEnd;
+    const lines = text.split("\n");
+    const undoStyle = lines.every((line) => line.startsWith(prefix) && line.endsWith(suffix));
+    if (undoStyle) {
+      text = lines.map((line) => line.slice(prefix.length, line.length - suffix.length)).join("\n");
+      selectionEnd = selectionStart + text.length;
+    } else {
+      text = lines.map((line) => prefix + line + suffix).join("\n");
+      if (surroundWithNewlines) {
+        const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
+        selectionStart += newlinesToAppend.length;
+        selectionEnd = selectionStart + text.length;
+        text = newlinesToAppend + text + newlinesToPrepend;
+      }
+    }
+    return { text, selectionStart, selectionEnd };
+  }
+  function undoOrderedListStyle(text) {
+    const lines = text.split("\n");
+    const orderedListRegex = /^\d+\.\s+/;
+    const shouldUndoOrderedList = lines.every((line) => orderedListRegex.test(line));
+    let result = lines;
+    if (shouldUndoOrderedList) {
+      result = lines.map((line) => line.replace(orderedListRegex, ""));
+    }
+    return {
+      text: result.join("\n"),
+      processed: shouldUndoOrderedList
+    };
+  }
+  function undoUnorderedListStyle(text) {
+    const lines = text.split("\n");
+    const unorderedListPrefix = "- ";
+    const shouldUndoUnorderedList = lines.every((line) => line.startsWith(unorderedListPrefix));
+    let result = lines;
+    if (shouldUndoUnorderedList) {
+      result = lines.map((line) => line.slice(unorderedListPrefix.length, line.length));
+    }
+    return {
+      text: result.join("\n"),
+      processed: shouldUndoUnorderedList
+    };
+  }
+  function makePrefix(index, unorderedList) {
+    if (unorderedList) {
+      return "- ";
+    } else {
+      return `${index + 1}. `;
+    }
+  }
+  function clearExistingListStyle(style, selectedText) {
+    let undoResultOpositeList;
+    let undoResult;
+    let pristineText;
+    if (style.orderedList) {
+      undoResult = undoOrderedListStyle(selectedText);
+      undoResultOpositeList = undoUnorderedListStyle(undoResult.text);
+      pristineText = undoResultOpositeList.text;
+    } else {
+      undoResult = undoUnorderedListStyle(selectedText);
+      undoResultOpositeList = undoOrderedListStyle(undoResult.text);
+      pristineText = undoResultOpositeList.text;
+    }
+    return [undoResult, undoResultOpositeList, pristineText];
+  }
+  function listStyle(textarea, style) {
+    const noInitialSelection = textarea.selectionStart === textarea.selectionEnd;
+    let selectionStart = textarea.selectionStart;
+    let selectionEnd = textarea.selectionEnd;
+    expandSelectionToLine(textarea);
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    const [undoResult, undoResultOpositeList, pristineText] = clearExistingListStyle(style, selectedText);
+    const prefixedLines = pristineText.split("\n").map((value, index) => {
+      return `${makePrefix(index, style.unorderedList)}${value}`;
+    });
+    const totalPrefixLength = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
+      return previousValue + makePrefix(currentIndex, style.unorderedList).length;
+    }, 0);
+    const totalPrefixLengthOpositeList = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
+      return previousValue + makePrefix(currentIndex, !style.unorderedList).length;
+    }, 0);
+    if (undoResult.processed) {
+      if (noInitialSelection) {
+        selectionStart = Math.max(selectionStart - makePrefix(0, style.unorderedList).length, 0);
+        selectionEnd = selectionStart;
+      } else {
+        selectionStart = textarea.selectionStart;
+        selectionEnd = textarea.selectionEnd - totalPrefixLength;
+      }
+      return { text: pristineText, selectionStart, selectionEnd };
+    }
+    const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
+    const text = newlinesToAppend + prefixedLines.join("\n") + newlinesToPrepend;
+    if (noInitialSelection) {
+      selectionStart = Math.max(selectionStart + makePrefix(0, style.unorderedList).length + newlinesToAppend.length, 0);
+      selectionEnd = selectionStart;
+    } else {
+      if (undoResultOpositeList.processed) {
+        selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
+        selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength - totalPrefixLengthOpositeList;
+      } else {
+        selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
+        selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength;
+      }
+    }
+    return { text, selectionStart, selectionEnd };
+  }
+  function styleSelectedText(textarea, styleArgs) {
+    const text = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    let result;
+    if (styleArgs.orderedList || styleArgs.unorderedList) {
+      result = listStyle(textarea, styleArgs);
+    } else if (styleArgs.multiline && isMultipleLines(text)) {
+      result = multilineStyle(textarea, styleArgs);
+    } else {
+      result = blockStyle(textarea, styleArgs);
+    }
+    insertText(textarea, result);
+  }
+  function getActiveFormats(textarea) {
+    if (!textarea)
+      return [];
+    const formats = [];
+    const { selectionStart, selectionEnd, value } = textarea;
+    const lines = value.split("\n");
+    let lineStart = 0;
+    let currentLine = "";
+    for (const line of lines) {
+      if (selectionStart >= lineStart && selectionStart <= lineStart + line.length) {
+        currentLine = line;
+        break;
+      }
+      lineStart += line.length + 1;
+    }
+    if (currentLine.startsWith("- ")) {
+      if (currentLine.startsWith("- [ ] ") || currentLine.startsWith("- [x] ")) {
+        formats.push("task-list");
+      } else {
+        formats.push("bullet-list");
+      }
+    }
+    if (/^\d+\.\s/.test(currentLine)) {
+      formats.push("numbered-list");
+    }
+    if (currentLine.startsWith("> ")) {
+      formats.push("quote");
+    }
+    if (currentLine.startsWith("# "))
+      formats.push("header");
+    if (currentLine.startsWith("## "))
+      formats.push("header-2");
+    if (currentLine.startsWith("### "))
+      formats.push("header-3");
+    const lookBehind = Math.max(0, selectionStart - 10);
+    const lookAhead = Math.min(value.length, selectionEnd + 10);
+    const surrounding = value.slice(lookBehind, lookAhead);
+    if (surrounding.includes("**")) {
+      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+      const lastOpenBold = beforeCursor.lastIndexOf("**");
+      const nextCloseBold = afterCursor.indexOf("**");
+      if (lastOpenBold !== -1 && nextCloseBold !== -1) {
+        formats.push("bold");
+      }
+    }
+    if (surrounding.includes("_")) {
+      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+      const lastOpenItalic = beforeCursor.lastIndexOf("_");
+      const nextCloseItalic = afterCursor.indexOf("_");
+      if (lastOpenItalic !== -1 && nextCloseItalic !== -1) {
+        formats.push("italic");
+      }
+    }
+    if (surrounding.includes("`")) {
+      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+      if (beforeCursor.includes("`") && afterCursor.includes("`")) {
+        formats.push("code");
+      }
+    }
+    if (surrounding.includes("[") && surrounding.includes("]")) {
+      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+      const lastOpenBracket = beforeCursor.lastIndexOf("[");
+      const nextCloseBracket = afterCursor.indexOf("]");
+      if (lastOpenBracket !== -1 && nextCloseBracket !== -1) {
+        const afterBracket = value.slice(selectionEnd + nextCloseBracket + 1, selectionEnd + nextCloseBracket + 10);
+        if (afterBracket.startsWith("(")) {
+          formats.push("link");
+        }
+      }
+    }
+    return formats;
+  }
+  function hasFormat(textarea, format) {
+    const activeFormats = getActiveFormats(textarea);
+    return activeFormats.includes(format);
+  }
+  function applyStyle(textarea, format) {
+    const style = mergeStyleWithDefaults(format);
+    textarea.focus();
+    styleSelectedText(textarea, style);
+  }
+  function toggleBold(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, FORMATS2.bold);
+  }
+  function toggleItalic(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, FORMATS2.italic);
+  }
+  function toggleCode(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, FORMATS2.code);
+  }
+  function insertLink(textarea, options = {}) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    let format = __spreadValues({}, FORMATS2.link);
+    if (options.url) {
+      format.suffix = `](${options.url})`;
+      format.replaceNext = "";
+    }
+    if (options.text && !textarea.value.slice(textarea.selectionStart, textarea.selectionEnd)) {
+      const pos = textarea.selectionStart;
+      textarea.value = textarea.value.slice(0, pos) + options.text + textarea.value.slice(pos);
+      textarea.selectionStart = pos;
+      textarea.selectionEnd = pos + options.text.length;
+    }
+    applyStyle(textarea, format);
+  }
+  function toggleBulletList(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, FORMATS2.bulletList);
+  }
+  function toggleNumberedList(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, FORMATS2.numberedList);
+  }
+  function toggleQuote(textarea) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, FORMATS2.quote);
+  }
+  function insertHeader(textarea, level = 1) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    if (level < 1 || level > 6)
+      level = 1;
+    const headerKey = `header${level}`;
+    const format = FORMATS2[headerKey] || FORMATS2.header1;
+    const value = textarea.value;
+    const start = textarea.selectionStart;
+    let lineStart = start;
+    let lineEnd = start;
+    while (lineStart > 0 && value[lineStart - 1] !== "\n") {
+      lineStart--;
+    }
+    while (lineEnd < value.length && value[lineEnd] !== "\n") {
+      lineEnd++;
+    }
+    textarea.selectionStart = lineStart;
+    textarea.selectionEnd = lineEnd;
+    const currentLine = value.slice(lineStart, lineEnd);
+    const cleanedLine = currentLine.replace(/^#{1,6}\s*/, "");
+    const newLine = format.prefix + cleanedLine;
+    const tempSelection = textarea.selectionStart;
+    textarea.value = value.slice(0, lineStart) + newLine + value.slice(lineEnd);
+    textarea.selectionStart = lineStart + format.prefix.length;
+    textarea.selectionEnd = lineStart + newLine.length;
+  }
+  function getActiveFormats2(textarea) {
+    return getActiveFormats(textarea);
+  }
+  function hasFormat2(textarea, format) {
+    return hasFormat(textarea, format);
+  }
+  function expandSelection(textarea, options = {}) {
+    if (!textarea)
+      return;
+    const { toWord, toLine } = options;
+    const { selectionStart, selectionEnd, value } = textarea;
+    if (toLine) {
+      expandSelectionToLine(textarea);
+    } else if (toWord && selectionStart === selectionEnd) {
+      let start = selectionStart;
+      let end = selectionEnd;
+      while (start > 0 && !/\s/.test(value[start - 1])) {
+        start--;
+      }
+      while (end < value.length && !/\s/.test(value[end])) {
+        end++;
+      }
+      textarea.selectionStart = start;
+      textarea.selectionEnd = end;
+    }
+  }
+  function applyCustomFormat(textarea, format) {
+    if (!textarea || textarea.disabled || textarea.readOnly)
+      return;
+    applyStyle(textarea, format);
+  }
+  var __defProp2, __getOwnPropSymbols, __hasOwnProp2, __propIsEnum, __defNormalProp2, __spreadValues, canInsertText, FORMATS2, index_new_default;
+  var init_markdown_actions_esm = __esm({
+    "../markdown-actions/dist/markdown-actions.esm.js"() {
+      __defProp2 = Object.defineProperty;
+      __getOwnPropSymbols = Object.getOwnPropertySymbols;
+      __hasOwnProp2 = Object.prototype.hasOwnProperty;
+      __propIsEnum = Object.prototype.propertyIsEnumerable;
+      __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+      __spreadValues = (a, b) => {
+        for (var prop in b || (b = {}))
+          if (__hasOwnProp2.call(b, prop))
+            __defNormalProp2(a, prop, b[prop]);
+        if (__getOwnPropSymbols)
+          for (var prop of __getOwnPropSymbols(b)) {
+            if (__propIsEnum.call(b, prop))
+              __defNormalProp2(a, prop, b[prop]);
+          }
+        return a;
+      };
+      canInsertText = null;
+      FORMATS2 = {
+        bold: { prefix: "**", suffix: "**", trimFirst: true },
+        italic: { prefix: "_", suffix: "_", trimFirst: true },
+        code: {
+          prefix: "`",
+          suffix: "`",
+          blockPrefix: "```",
+          blockSuffix: "```"
+        },
+        link: {
+          prefix: "[",
+          suffix: "](url)",
+          replaceNext: "url",
+          scanFor: "https?://"
+        },
+        quote: {
+          prefix: "> ",
+          multiline: true,
+          surroundWithNewlines: true
+        },
+        bulletList: {
+          prefix: "- ",
+          multiline: true,
+          unorderedList: true
+        },
+        numberedList: {
+          prefix: "1. ",
+          multiline: true,
+          orderedList: true
+        },
+        header1: { prefix: "# " },
+        header2: { prefix: "## " },
+        header3: { prefix: "### " },
+        header4: { prefix: "#### " },
+        header5: { prefix: "##### " },
+        header6: { prefix: "###### " }
+      };
+      index_new_default = {
+        toggleBold,
+        toggleItalic,
+        toggleCode,
+        insertLink,
+        toggleBulletList,
+        toggleNumberedList,
+        toggleQuote,
+        insertHeader,
+        getActiveFormats: getActiveFormats2,
+        hasFormat: hasFormat2,
+        expandSelection,
+        applyCustomFormat,
+        preserveSelection,
+        setUndoMethod
+      };
+    }
+  });
 
   // src/overtype.js
   var overtype_exports = {};
@@ -861,9 +1480,339 @@ var OverType = (() => {
       height: calc(100% - 40px) !important;
     }
 
+    /* Toolbar Styles */
+    .overtype-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      background: var(--bg-primary, #f8f9fa);
+      border: 1px solid var(--border, #e0e0e0);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .overtype-toolbar-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-secondary, #666);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .overtype-toolbar-button svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+    
+    /* Special sizing for code block icon */
+    .overtype-toolbar-button[data-action="insertCodeBlock"] svg {
+      width: 24px;
+      height: 18px;
+      fill: transparent !important;
+    }
+
+    .overtype-toolbar-button:hover {
+      background: var(--bg-secondary, #e9ecef);
+      color: var(--text-primary, #333);
+    }
+
+    .overtype-toolbar-button:active {
+      transform: scale(0.95);
+    }
+
+    .overtype-toolbar-button.active {
+      background: var(--primary, #007bff);
+      color: white;
+    }
+
+    .overtype-toolbar-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .overtype-toolbar-separator {
+      width: 1px;
+      height: 24px;
+      background: var(--border, #e0e0e0);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* Adjust wrapper when toolbar is present */
+    .overtype-toolbar + .overtype-wrapper {
+      border-radius: 0 0 8px 8px;
+      border-top: none;
+    }
+
+    /* Mobile toolbar adjustments */
+    @media (max-width: 640px) {
+      .overtype-toolbar {
+        padding: 6px;
+        gap: 2px;
+      }
+
+      .overtype-toolbar-button {
+        width: 36px;
+        height: 36px;
+      }
+
+      .overtype-toolbar-separator {
+        margin: 0 2px;
+      }
+    }
+
     ${mobileStyles}
   `;
   }
+
+  // src/icons.js
+  var boldIcon = `<svg viewBox="0 0 18 18">
+  <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5,4H9.5A2.5,2.5,0,0,1,12,6.5v0A2.5,2.5,0,0,1,9.5,9H5A0,0,0,0,1,5,9V4A0,0,0,0,1,5,4Z"></path>
+  <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5,9h5.5A2.5,2.5,0,0,1,13,11.5v0A2.5,2.5,0,0,1,10.5,14H5a0,0,0,0,1,0,0V9A0,0,0,0,1,5,9Z"></path>
+</svg>`;
+  var italicIcon = `<svg viewBox="0 0 18 18">
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="7" x2="13" y1="4" y2="4"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="5" x2="11" y1="14" y2="14"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="8" x2="10" y1="14" y2="4"></line>
+</svg>`;
+  var h1Icon = `<svg viewBox="0 0 18 18">
+  <path fill="currentColor" d="M10,4V14a1,1,0,0,1-2,0V10H3v4a1,1,0,0,1-2,0V4A1,1,0,0,1,3,4V8H8V4a1,1,0,0,1,2,0Zm6.06787,9.209H14.98975V7.59863a.54085.54085,0,0,0-.605-.60547h-.62744a1.01119,1.01119,0,0,0-.748.29688L11.645,8.56641a.5435.5435,0,0,0-.022.8584l.28613.30762a.53861.53861,0,0,0,.84717.0332l.09912-.08789a1.2137,1.2137,0,0,0,.2417-.35254h.02246s-.01123.30859-.01123.60547V13.209H12.041a.54085.54085,0,0,0-.605.60547v.43945a.54085.54085,0,0,0,.605.60547h4.02686a.54085.54085,0,0,0,.605-.60547v-.43945A.54085.54085,0,0,0,16.06787,13.209Z"></path>
+</svg>`;
+  var h2Icon = `<svg viewBox="0 0 18 18">
+  <path fill="currentColor" d="M16.73975,13.81445v.43945a.54085.54085,0,0,1-.605.60547H11.855a.58392.58392,0,0,1-.64893-.60547V14.0127c0-2.90527,3.39941-3.42187,3.39941-4.55469a.77675.77675,0,0,0-.84717-.78125,1.17684,1.17684,0,0,0-.83594.38477c-.2749.26367-.561.374-.85791.13184l-.4292-.34082c-.30811-.24219-.38525-.51758-.1543-.81445a2.97155,2.97155,0,0,1,2.45361-1.17676,2.45393,2.45393,0,0,1,2.68408,2.40918c0,2.45312-3.1792,2.92676-3.27832,3.93848h2.79443A.54085.54085,0,0,1,16.73975,13.81445ZM9,3A.99974.99974,0,0,0,8,4V8H3V4A1,1,0,0,0,1,4V14a1,1,0,0,0,2,0V10H8v4a1,1,0,0,0,2,0V4A.99974.99974,0,0,0,9,3Z"></path>
+</svg>`;
+  var h3Icon = `<svg viewBox="0 0 18 18">
+  <path fill="currentColor" d="M16.65186,12.30664a2.6742,2.6742,0,0,1-2.915,2.68457,3.96592,3.96592,0,0,1-2.25537-.6709.56007.56007,0,0,1-.13232-.83594L11.64648,13c.209-.34082.48389-.36328.82471-.1543a2.32654,2.32654,0,0,0,1.12256.33008c.71484,0,1.12207-.35156,1.12207-.78125,0-.61523-.61621-.86816-1.46338-.86816H13.2085a.65159.65159,0,0,1-.68213-.41895l-.05518-.10937a.67114.67114,0,0,1,.14307-.78125l.71533-.86914a8.55289,8.55289,0,0,1,.68213-.7373V8.58887a3.93913,3.93913,0,0,1-.748.05469H11.9873a.54085.54085,0,0,1-.605-.60547V7.59863a.54085.54085,0,0,1,.605-.60547h3.75146a.53773.53773,0,0,1,.60547.59375v.17676a1.03723,1.03723,0,0,1-.27539.748L14.74854,10.0293A2.31132,2.31132,0,0,1,16.65186,12.30664ZM9,3A.99974.99974,0,0,0,8,4V8H3V4A1,1,0,0,0,1,4V14a1,1,0,0,0,2,0V10H8v4a1,1,0,0,0,2,0V4A.99974.99974,0,0,0,9,3Z"></path>
+</svg>`;
+  var linkIcon = `<svg viewBox="0 0 18 18">
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="7" x2="11" y1="7" y2="11"></line>
+  <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.9,4.577a3.476,3.476,0,0,1,.36,4.679A3.476,3.476,0,0,1,4.577,8.9C3.185,7.5,2.035,6.4,4.217,4.217S7.5,3.185,8.9,4.577Z"></path>
+  <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.423,9.1a3.476,3.476,0,0,0-4.679-.36,3.476,3.476,0,0,0,.36,4.679c1.392,1.392,2.5,2.542,4.679.36S14.815,10.5,13.423,9.1Z"></path>
+</svg>`;
+  var codeIcon = `<svg viewBox="0 0 18 18">
+  <polyline stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="5 7 3 9 5 11"></polyline>
+  <polyline stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="13 7 15 9 13 11"></polyline>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="10" x2="8" y1="5" y2="13"></line>
+</svg>`;
+  var codeBlockIcon = `<svg viewBox="0 0 46 33" fill="transparent" xmlns="http://www.w3.org/2000/svg">
+  <path d="M35 8h3a5 5 0 0 1 5 5v12a5 5 0 0 1-5 5H18a5 5 0 0 1-5-5v-2" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+  <path d="m9 2.5-6 6L9 14M20 2.5l6 6-6 5.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>`;
+  var bulletListIcon = `<svg viewBox="0 0 18 18">
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6" x2="15" y1="4" y2="4"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6" x2="15" y1="9" y2="9"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6" x2="15" y1="14" y2="14"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="3" x2="3" y1="4" y2="4"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="3" x2="3" y1="9" y2="9"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="3" x2="3" y1="14" y2="14"></line>
+</svg>`;
+  var orderedListIcon = `<svg viewBox="0 0 18 18">
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="7" x2="15" y1="4" y2="4"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="7" x2="15" y1="9" y2="9"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="7" x2="15" y1="14" y2="14"></line>
+  <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" x1="2.5" x2="4.5" y1="5.5" y2="5.5"></line>
+  <path fill="currentColor" d="M3.5,6A0.5,0.5,0,0,1,3,5.5V3.085l-0.276.138A0.5,0.5,0,0,1,2.053,3c-0.124-.247-0.023-0.324.224-0.447l1-.5A0.5,0.5,0,0,1,4,2.5v3A0.5,0.5,0,0,1,3.5,6Z"></path>
+  <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.5,10.5h-2c0-.234,1.85-1.076,1.85-2.234A0.959,0.959,0,0,0,2.5,8.156"></path>
+  <path stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.5,14.846a0.959,0.959,0,0,0,1.85-.109A0.7,0.7,0,0,0,3.75,14a0.688,0.688,0,0,0,.6-0.736,0.959,0.959,0,0,0-1.85-.109"></path>
+</svg>`;
+
+  // src/toolbar.js
+  var Toolbar = class {
+    constructor(editor) {
+      this.editor = editor;
+      this.container = null;
+      this.buttons = {};
+    }
+    /**
+     * Create and attach toolbar to editor
+     */
+    create() {
+      this.container = document.createElement("div");
+      this.container.className = "overtype-toolbar";
+      this.container.setAttribute("role", "toolbar");
+      this.container.setAttribute("aria-label", "Text formatting");
+      const buttonConfig = [
+        { name: "bold", icon: boldIcon, title: "Bold (Ctrl+B)", action: "toggleBold" },
+        { name: "italic", icon: italicIcon, title: "Italic (Ctrl+I)", action: "toggleItalic" },
+        { separator: true },
+        { name: "h1", icon: h1Icon, title: "Heading 1", action: "insertH1" },
+        { name: "h2", icon: h2Icon, title: "Heading 2", action: "insertH2" },
+        { name: "h3", icon: h3Icon, title: "Heading 3", action: "insertH3" },
+        { separator: true },
+        { name: "link", icon: linkIcon, title: "Insert Link (Ctrl+K)", action: "insertLink" },
+        { name: "code", icon: codeIcon, title: "Inline Code", action: "toggleCode" },
+        { name: "codeBlock", icon: codeBlockIcon, title: "Code Block", action: "insertCodeBlock" },
+        { separator: true },
+        { name: "bulletList", icon: bulletListIcon, title: "Bullet List", action: "toggleBulletList" },
+        { name: "orderedList", icon: orderedListIcon, title: "Numbered List", action: "toggleNumberedList" }
+      ];
+      buttonConfig.forEach((config) => {
+        if (config.separator) {
+          const separator = document.createElement("div");
+          separator.className = "overtype-toolbar-separator";
+          separator.setAttribute("role", "separator");
+          this.container.appendChild(separator);
+        } else {
+          const button = this.createButton(config);
+          this.buttons[config.name] = button;
+          this.container.appendChild(button);
+        }
+      });
+      const wrapper = this.editor.element.querySelector(".overtype-wrapper");
+      if (wrapper) {
+        this.editor.element.insertBefore(this.container, wrapper);
+      }
+      return this.container;
+    }
+    /**
+     * Create individual toolbar button
+     */
+    createButton(config) {
+      const button = document.createElement("button");
+      button.className = "overtype-toolbar-button";
+      button.type = "button";
+      button.title = config.title;
+      button.setAttribute("aria-label", config.title);
+      button.setAttribute("data-action", config.action);
+      button.innerHTML = config.icon;
+      button.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.handleAction(config.action);
+      });
+      return button;
+    }
+    /**
+     * Handle toolbar button actions
+     */
+    async handleAction(action) {
+      const textarea = this.editor.textarea;
+      if (!textarea)
+        return;
+      textarea.focus();
+      try {
+        let markdownActions;
+        try {
+          markdownActions = await Promise.resolve().then(() => (init_markdown_actions_esm(), markdown_actions_esm_exports));
+        } catch (e) {
+          if (window.markdownActions) {
+            markdownActions = window.markdownActions;
+          } else {
+            throw new Error("markdown-actions not available");
+          }
+        }
+        switch (action) {
+          case "toggleBold":
+            markdownActions.toggleBold(textarea);
+            break;
+          case "toggleItalic":
+            markdownActions.toggleItalic(textarea);
+            break;
+          case "insertH1":
+            markdownActions.insertHeader(textarea, 1);
+            break;
+          case "insertH2":
+            markdownActions.insertHeader(textarea, 2);
+            break;
+          case "insertH3":
+            markdownActions.insertHeader(textarea, 3);
+            break;
+          case "insertLink":
+            markdownActions.insertLink(textarea);
+            break;
+          case "toggleCode":
+            markdownActions.toggleCode(textarea);
+            break;
+          case "insertCodeBlock":
+            markdownActions.insertCodeBlock(textarea);
+            break;
+          case "toggleBulletList":
+            markdownActions.toggleBulletList(textarea);
+            break;
+          case "toggleNumberedList":
+            markdownActions.toggleNumberedList(textarea);
+            break;
+        }
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      } catch (error) {
+        console.error("Error loading markdown-actions:", error);
+      }
+    }
+    /**
+     * Update toolbar button states based on current selection
+     */
+    async updateButtonStates() {
+      const textarea = this.editor.textarea;
+      if (!textarea)
+        return;
+      try {
+        let markdownActions;
+        try {
+          markdownActions = await Promise.resolve().then(() => (init_markdown_actions_esm(), markdown_actions_esm_exports));
+        } catch (e) {
+          if (window.markdownActions) {
+            markdownActions = window.markdownActions;
+          } else {
+            return;
+          }
+        }
+        const activeFormats = markdownActions.getActiveFormats(textarea);
+        Object.entries(this.buttons).forEach(([name, button]) => {
+          let isActive = false;
+          switch (name) {
+            case "bold":
+              isActive = activeFormats.includes("bold");
+              break;
+            case "italic":
+              isActive = activeFormats.includes("italic");
+              break;
+            case "code":
+              isActive = activeFormats.includes("code");
+              break;
+            case "bulletList":
+              isActive = activeFormats.includes("bulletList");
+              break;
+            case "orderedList":
+              isActive = activeFormats.includes("orderedList");
+              break;
+            case "h1":
+              isActive = activeFormats.includes("header1");
+              break;
+            case "h2":
+              isActive = activeFormats.includes("header2");
+              break;
+            case "h3":
+              isActive = activeFormats.includes("header3");
+              break;
+          }
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-pressed", isActive.toString());
+        });
+      } catch (error) {
+      }
+    }
+    /**
+     * Destroy toolbar
+     */
+    destroy() {
+      if (this.container) {
+        this.container.remove();
+        this.container = null;
+        this.buttons = {};
+      }
+    }
+  };
 
   // src/overtype.js
   var _OverType = class _OverType {
@@ -921,6 +1870,16 @@ var OverType = (() => {
         this._buildFromScratch();
       }
       this.shortcuts = new ShortcutsManager(this);
+      if (this.options.toolbar) {
+        this.toolbar = new Toolbar(this);
+        this.toolbar.create();
+        this.textarea.addEventListener("selectionchange", () => {
+          this.toolbar.updateButtonStates();
+        });
+        this.textarea.addEventListener("input", () => {
+          this.toolbar.updateButtonStates();
+        });
+      }
       this.initialized = true;
       if (this.options.onChange) {
         this.options.onChange(this.getValue(), this);
@@ -954,6 +1913,7 @@ var OverType = (() => {
         // Features
         showActiveLineRaw: false,
         showStats: false,
+        toolbar: false,
         statsFormatter: null
       };
       const { theme, colors, ...cleanOptions } = options;

@@ -452,6 +452,7 @@
     </div>
 
     <script src="dist/overtype.js"></script>
+    <script src="../markdown-actions/dist/markdown-actions.js"></script>
     <script>
         // Store editor instances
         const editors = {};
@@ -548,16 +549,18 @@ class OverType {
             // Set global theme
             OT.setTheme('solar');
             
-            // Main editor
+            // Main editor with toolbar
             [editors.main] = new OT('#main-editor', {
                 value: sampleContent.main,
-                showStats: true
+                showStats: true,
+                toolbar: true
             });
 
-            // Preview editor
+            // Preview editor with toolbar
             [editors.preview] = new OT('#preview-editor', {
                 value: sampleContent.preview,
-                showStats: true
+                showStats: true,
+                toolbar: true
             });
 
             // Notes editor

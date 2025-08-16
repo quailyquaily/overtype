@@ -8,6 +8,7 @@ import { MarkdownParser } from './parser.js';
 import { ShortcutsManager } from './shortcuts.js';
 import { generateStyles } from './styles.js';
 import { getTheme, mergeTheme, solar } from './themes.js';
+import { Toolbar } from './toolbar.js';
 
 /**
  * OverType Editor Class
@@ -92,6 +93,20 @@ class OverType {
       // Setup shortcuts manager
       this.shortcuts = new ShortcutsManager(this);
 
+      // Setup toolbar if enabled
+      if (this.options.toolbar) {
+        this.toolbar = new Toolbar(this);
+        this.toolbar.create();
+        
+        // Update toolbar states on selection change
+        this.textarea.addEventListener('selectionchange', () => {
+          this.toolbar.updateButtonStates();
+        });
+        this.textarea.addEventListener('input', () => {
+          this.toolbar.updateButtonStates();
+        });
+      }
+
       // Mark as initialized
       this.initialized = true;
 
@@ -132,6 +147,7 @@ class OverType {
         // Features
         showActiveLineRaw: false,
         showStats: false,
+        toolbar: false,
         statsFormatter: null
       };
       

@@ -382,6 +382,99 @@ export function generateStyles(options = {}) {
       height: calc(100% - 40px) !important;
     }
 
+    /* Toolbar Styles */
+    .overtype-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      background: var(--bg-primary, #f8f9fa);
+      border: 1px solid var(--border, #e0e0e0);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .overtype-toolbar-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-secondary, #666);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .overtype-toolbar-button svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+    
+    /* Special sizing for code block icon */
+    .overtype-toolbar-button[data-action="insertCodeBlock"] svg {
+      width: 24px;
+      height: 18px;
+      fill: transparent !important;
+    }
+
+    .overtype-toolbar-button:hover {
+      background: var(--bg-secondary, #e9ecef);
+      color: var(--text-primary, #333);
+    }
+
+    .overtype-toolbar-button:active {
+      transform: scale(0.95);
+    }
+
+    .overtype-toolbar-button.active {
+      background: var(--primary, #007bff);
+      color: white;
+    }
+
+    .overtype-toolbar-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .overtype-toolbar-separator {
+      width: 1px;
+      height: 24px;
+      background: var(--border, #e0e0e0);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* Adjust wrapper when toolbar is present */
+    .overtype-toolbar + .overtype-wrapper {
+      border-radius: 0 0 8px 8px;
+      border-top: none;
+    }
+
+    /* Mobile toolbar adjustments */
+    @media (max-width: 640px) {
+      .overtype-toolbar {
+        padding: 6px;
+        gap: 2px;
+      }
+
+      .overtype-toolbar-button {
+        width: 36px;
+        height: 36px;
+      }
+
+      .overtype-toolbar-separator {
+        margin: 0 2px;
+      }
+    }
+
     ${mobileStyles}
   `;
 }
