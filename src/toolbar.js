@@ -4,6 +4,7 @@
  */
 
 import * as icons from './icons.js';
+import * as markdownActions from 'markdown-actions';
 
 export class Toolbar {
   constructor(editor) {
@@ -93,13 +94,6 @@ export class Toolbar {
     // Focus textarea
     textarea.focus();
 
-    // Get markdown-actions functions - use global since we're in browser
-    const markdownActions = window.markdownActions;
-    if (!markdownActions) {
-      console.error('markdown-actions not available');
-      return;
-    }
-    
     try {
       
       switch (action) {
@@ -125,7 +119,12 @@ export class Toolbar {
           markdownActions.toggleCode(textarea);
           break;
         case 'insertCodeBlock':
-          markdownActions.insertCodeBlock(textarea);
+          // For code blocks, we'll insert the markdown directly
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const selectedText = textarea.value.slice(start, end);
+          const codeBlock = '```\n' + selectedText + '\n```';
+          textarea.setRangeText(codeBlock, start, end, 'end');
           break;
         case 'toggleBulletList':
           markdownActions.toggleBulletList(textarea);
@@ -148,12 +147,6 @@ export class Toolbar {
   async updateButtonStates() {
     const textarea = this.editor.textarea;
     if (!textarea) return;
-
-    // Get markdown-actions functions - use global since we're in browser
-    const markdownActions = window.markdownActions;
-    if (!markdownActions) {
-      return; // Silently fail if markdown-actions not available
-    }
 
     try {
       const activeFormats = markdownActions.getActiveFormats(textarea);

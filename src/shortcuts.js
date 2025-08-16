@@ -3,6 +3,8 @@
  * Uses the same handleAction method as toolbar for consistency
  */
 
+import * as markdownActions from 'markdown-actions';
+
 /**
  * ShortcutsManager - Handles keyboard shortcuts for the editor
  */
@@ -87,13 +89,6 @@ export class ShortcutsManager {
 
     // Focus textarea
     textarea.focus();
-
-    // Get markdown-actions functions - use global since we're in browser
-    const markdownActions = window.markdownActions;
-    if (!markdownActions) {
-      console.error('markdown-actions not available');
-      return;
-    }
     
     try {
       switch (action) {

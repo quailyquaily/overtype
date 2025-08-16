@@ -43,5 +43,8 @@
   "bugs": {
     "url": "https://github.com/demo/overtype/issues"
   },
-  "homepage": "https://github.com/demo/overtype#readme"
+  "homepage": "https://github.com/demo/overtype#readme",
+  "dependencies": {
+    "markdown-actions": "^1.0.0"
+  }
 }
