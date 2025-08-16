@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Keyboard Shortcuts</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .editor-wrapper {
+      height: 300px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    
+    #debug-output {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Debug Keyboard Shortcuts</h1>
+  
+  <div id="editor" class="editor-wrapper"></div>
+  
+  <h2>Debug Output:</h2>
+  <div id="debug-output"></div>
+
+  <!-- Load markdown-actions first -->
+  <script src="markdown-actions-dist/markdown-actions.js"></script>
+  
+  <!-- Load OverType -->
+  <script src="dist/overtype.js"></script>
+  
+  <script>
+    const debugOutput = document.getElementById('debug-output');
+    
+    function log(msg) {
+      debugOutput.textContent += msg + '\n';
+      console.log(msg);
+    }
+    
+    // Check if markdown-actions is loaded
+    log('window.markdownActions available: ' + (!!window.markdownActions));
+    if (window.markdownActions) {
+      log('Available functions: ' + Object.keys(window.markdownActions).join(', '));
+    }
+    
+    // Initialize editor
+    const OT = window.OverType;
+    const [editor] = new OT('#editor', {
+      value: 'Select this text and try keyboard shortcuts',
+      toolbar: true
+    });
+    
+    log('Editor initialized');
+    
+    // Add direct keyboard listener to debug
+    editor.textarea.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform.toLowerCase().includes('mac');
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+      
+      if (modKey) {
+        log(`Key pressed: ${e.key}, Shift: ${e.shiftKey}, Ctrl: ${e.ctrlKey}, Meta: ${e.metaKey}`);
+        
+        // Test direct markdown-actions calls
+        if (e.key === 'b' && !e.shiftKey) {
+          log('Testing direct toggleBold call...');
+          e.preventDefault();
+          try {
+            const before = editor.textarea.value;
+            const selStart = editor.textarea.selectionStart;
+            const selEnd = editor.textarea.selectionEnd;
+            log(`Before: selection ${selStart}-${selEnd}, text: "${before.slice(selStart, selEnd)}"`);
+            
+            window.markdownActions.toggleBold(editor.textarea);
+            
+            const after = editor.textarea.value;
+            const newSelStart = editor.textarea.selectionStart;
+            const newSelEnd = editor.textarea.selectionEnd;
+            log(`After: selection ${newSelStart}-${newSelEnd}, text: "${after.slice(newSelStart, newSelEnd)}"`);
+            log('Direct call successful');
+          } catch (err) {
+            log('Error: ' + err.message);
+          }
+        }
+      }
+    }, true); // Use capture phase to get event first
+    
+    // Test markdown-actions directly
+    window.testBold = function() {
+      log('\n=== Testing Bold Directly ===');
+      editor.textarea.value = 'test text';
+      editor.textarea.setSelectionRange(0, 4); // Select "test"
+      window.markdownActions.toggleBold(editor.textarea);
+      log('Result: ' + editor.textarea.value);
+      log('Selection: ' + editor.textarea.selectionStart + '-' + editor.textarea.selectionEnd);
+    };
+    
+    window.testLink = function() {
+      log('\n=== Testing Link Directly ===');
+      editor.textarea.value = 'test text';
+      editor.textarea.setSelectionRange(0, 4); // Select "test"
+      window.markdownActions.insertLink(editor.textarea);
+      log('Result: ' + editor.textarea.value);
+      log('Selection: ' + editor.textarea.selectionStart + '-' + editor.textarea.selectionEnd);
+    };
+    
+    log('\nRun testBold() or testLink() in console to test directly');
+  </script>
+</body>
+</html>

@@ -93,20 +93,14 @@ export class Toolbar {
     // Focus textarea
     textarea.focus();
 
-    // Get markdown-actions functions
+    // Get markdown-actions functions - use global since we're in browser
+    const markdownActions = window.markdownActions;
+    if (!markdownActions) {
+      console.error('markdown-actions not available');
+      return;
+    }
+    
     try {
-      // Try dynamic import first, fall back to global
-      let markdownActions;
-      try {
-        markdownActions = await import('../../markdown-actions/dist/markdown-actions.esm.js');
-      } catch {
-        // Fallback to global if module import fails (e.g., in browser)
-        if (window.markdownActions) {
-          markdownActions = window.markdownActions;
-        } else {
-          throw new Error('markdown-actions not available');
-        }
-      }
       
       switch (action) {
         case 'toggleBold':
@@ -155,19 +149,13 @@ export class Toolbar {
     const textarea = this.editor.textarea;
     if (!textarea) return;
 
+    // Get markdown-actions functions - use global since we're in browser
+    const markdownActions = window.markdownActions;
+    if (!markdownActions) {
+      return; // Silently fail if markdown-actions not available
+    }
+
     try {
-      // Try dynamic import first, fall back to global
-      let markdownActions;
-      try {
-        markdownActions = await import('../../markdown-actions/dist/markdown-actions.esm.js');
-      } catch {
-        // Fallback to global if module import fails (e.g., in browser)
-        if (window.markdownActions) {
-          markdownActions = window.markdownActions;
-        } else {
-          return; // Silently fail if markdown-actions not available
-        }
-      }
       const activeFormats = markdownActions.getActiveFormats(textarea);
 
       // Update button states

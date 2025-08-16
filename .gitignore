@@ -28,3 +28,6 @@ temp/
 
 # OS files
 Thumbs.db
+
+# Local copies of dependencies
+markdown-actions-dist/
