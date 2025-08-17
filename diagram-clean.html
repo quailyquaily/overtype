@@ -120,14 +120,14 @@
       color: #d65820;
       font-size: 14px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .rendered-content p {
       color: #475569;
       font-size: 14px;
-      line-height: 24px;
-      margin-bottom: 12px;
+      line-height: 20px;
+      margin-bottom: 8px;
     }
 
     .rendered-content strong {
@@ -262,7 +262,7 @@ Here's some \`inline code\`
       
       // Empty line
       if (html.trim() === '') {
-        return '<br>';
+        return '<div style="height: 8px;"></div>';
       }
       
       return `<p>${html}</p>`;
@@ -309,8 +309,8 @@ Here's some \`inline code\`
           currentIndex = Math.min(charactersToShow, fullText.length);
           const currentText = fullText.substring(0, currentIndex);
           
-          // Update the textarea display
-          typedElement.textContent = currentText;
+          // Update the textarea display - preserve newlines as line breaks
+          typedElement.innerHTML = currentText.replace(/\n/g, '<br>');
           
           // Update the rendered preview
           renderedElement.innerHTML = renderMarkdown(currentText);
