@@ -95,7 +95,16 @@
       border-radius: 3px;
     }
 
-    .cursor {
+    .char {
+      visibility: hidden;
+    }
+    
+    .char.visible {
+      visibility: visible;
+    }
+    
+    .char.current:not(.no-cursor)::after {
+      content: '';
       display: inline-block;
       width: 2px;
       height: 18px;
@@ -103,31 +112,37 @@
       margin-left: 2px;
       box-shadow: 0 0 10px #6366f1;
       animation: blink 1s infinite;
+      position: absolute;
     }
 
     @keyframes blink {
       0%, 50% { opacity: 1; }
       51%, 100% { opacity: 0; }
     }
+    
+    .char.newline {
+      display: block;
+      height: 0;
+    }
 
     .list-item {
       color: #64748b;
       margin-left: 20px;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
     }
 
     .rendered-content h1 {
       color: #d65820;
       font-size: 14px;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
     }
 
     .rendered-content p {
       color: #475569;
       font-size: 14px;
       line-height: 20px;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
     }
 
     .rendered-content strong {
@@ -147,7 +162,7 @@
     .rendered-content li {
       color: #64748b;
       margin-left: 20px;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
     }
 
     /* Labels */
@@ -227,12 +242,17 @@
     // The full text to type
     const fullText = `# Welcome to the editor
 
+
 This is **bold text** and *italic*
+
 
 Here's some \`inline code\`
 
+
 - First item
+
 - Second item
+
 - Third item`;
 
     // Parse markdown to HTML as we type
@@ -275,15 +295,64 @@ Here's some \`inline code\`
       return htmlLines.join('');
     }
 
+    // Pre-process text into character spans
+    function createCharacterSpans(text) {
+      const container = document.createDocumentFragment();
+      let previousWasNewline = false;
+      
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        
+        if (char === '\n') {
+          if (previousWasNewline) {
+            // Add spacer div for the second consecutive newline
+            const spacer = document.createElement('div');
+            spacer.className = 'char no-cursor';
+            spacer.dataset.index = i;
+            spacer.innerHTML = '&nbsp;';
+            spacer.style.height = '18px';
+            container.appendChild(spacer);
+            previousWasNewline = false;
+          } else {
+            // First newline - just add a line break
+            const span = document.createElement('span');
+            span.className = 'char newline no-cursor';
+            span.dataset.index = i;
+            span.innerHTML = '<br>';
+            container.appendChild(span);
+            previousWasNewline = true;
+          }
+        } else {
+          const span = document.createElement('span');
+          span.className = 'char';
+          span.dataset.index = i;
+          span.textContent = char;
+          container.appendChild(span);
+          previousWasNewline = false;
+        }
+      }
+      
+      return container;
+    }
+
     // Animation variables
     const typedElement = document.getElementById('typed-text');
     const renderedElement = document.getElementById('rendered-content');
+    let charElements = [];
     let currentIndex = 0;
     let startTime = null;
     const charactersPerSecond = 30; // Typing speed
     const restartDelay = 3000; // Delay before restarting (ms)
     let isWaiting = false;
     let waitStartTime = null;
+
+    // Initialize with all characters hidden
+    function initialize() {
+      typedElement.innerHTML = '';
+      typedElement.appendChild(createCharacterSpans(fullText));
+      charElements = typedElement.querySelectorAll('.char');
+      renderedElement.innerHTML = '';
+    }
 
     function animate(timestamp) {
       if (!startTime) startTime = timestamp;
@@ -298,7 +367,12 @@ Here's some \`inline code\`
           startTime = timestamp;
           isWaiting = false;
           waitStartTime = null;
-          typedElement.innerHTML = '';
+          
+          // Hide all characters
+          charElements.forEach(el => {
+            el.classList.remove('visible', 'current');
+          });
+          
           renderedElement.innerHTML = '';
         }
       } else {
@@ -306,14 +380,23 @@ Here's some \`inline code\`
         const charactersToShow = Math.floor((elapsed / 1000) * charactersPerSecond);
         
         if (charactersToShow > currentIndex && currentIndex < fullText.length) {
+          // Show new characters
+          for (let i = currentIndex; i < Math.min(charactersToShow, fullText.length); i++) {
+            if (i > 0 && charElements[i - 1]) {
+              charElements[i - 1].classList.remove('current');
+            }
+            if (charElements[i]) {
+              charElements[i].classList.add('visible');
+              charElements[i].classList.add('current');
+            }
+          }
+          
           currentIndex = Math.min(charactersToShow, fullText.length);
           const currentText = fullText.substring(0, currentIndex);
           
-          // Update the textarea display - preserve newlines as line breaks
-          typedElement.innerHTML = currentText.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
-          
-          // Update the rendered preview
-          renderedElement.innerHTML = renderMarkdown(currentText);
+          // Update the rendered preview - filter out double newlines for markdown
+          const textForMarkdown = currentText.replace(/\n\n+/g, '\n');
+          renderedElement.innerHTML = renderMarkdown(textForMarkdown);
         }
         
         // Check if we've finished typing
@@ -326,6 +409,7 @@ Here's some \`inline code\`
     }
 
     // Start the animation
+    initialize();
     requestAnimationFrame(animate);
   </script>
 </body>
