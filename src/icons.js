@@ -38,10 +38,6 @@ export const codeIcon = `<svg viewBox="0 0 18 18">
   <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="10" x2="8" y1="5" y2="13"></line>
 </svg>`;
 
-export const codeBlockIcon = `<svg viewBox="0 0 46 33" fill="transparent" xmlns="http://www.w3.org/2000/svg">
-  <path d="M35 8h3a5 5 0 0 1 5 5v12a5 5 0 0 1-5 5H18a5 5 0 0 1-5-5v-2" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-  <path d="m9 2.5-6 6L9 14M20 2.5l6 6-6 5.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
-</svg>`;
 
 export const bulletListIcon = `<svg viewBox="0 0 18 18">
   <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6" x2="15" y1="4" y2="4"></line>

@@ -33,8 +33,7 @@ export class Toolbar {
       { name: 'h3', icon: icons.h3Icon, title: 'Heading 3', action: 'insertH3' },
       { separator: true },
       { name: 'link', icon: icons.linkIcon, title: 'Insert Link (Ctrl+K)', action: 'insertLink' },
-      { name: 'code', icon: icons.codeIcon, title: 'Inline Code', action: 'toggleCode' },
-      { name: 'codeBlock', icon: icons.codeBlockIcon, title: 'Code Block', action: 'insertCodeBlock' },
+      { name: 'code', icon: icons.codeIcon, title: 'Code (Ctrl+`)', action: 'toggleCode' },
       { separator: true },
       { name: 'quote', icon: icons.quoteIcon, title: 'Quote', action: 'toggleQuote' },
       { separator: true },
@@ -121,14 +120,6 @@ export class Toolbar {
           break;
         case 'toggleCode':
           markdownActions.toggleCode(textarea);
-          break;
-        case 'insertCodeBlock':
-          // For code blocks, we'll insert the markdown directly
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const selectedText = textarea.value.slice(start, end);
-          const codeBlock = '```\n' + selectedText + '\n```';
-          textarea.setRangeText(codeBlock, start, end, 'end');
           break;
         case 'toggleBulletList':
           markdownActions.toggleBulletList(textarea);

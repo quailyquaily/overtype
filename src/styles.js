@@ -420,13 +420,6 @@ export function generateStyles(options = {}) {
       height: 20px;
       fill: currentColor;
     }
-    
-    /* Special sizing for code block icon */
-    .overtype-toolbar-button[data-action="insertCodeBlock"] svg {
-      width: 22px;
-      height: 18px;
-      fill: transparent !important;
-    }
 
     .overtype-toolbar-button:hover {
       background: var(--toolbar-hover, var(--bg-secondary, #e9ecef));

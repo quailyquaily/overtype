@@ -1,5 +1,5 @@
 /**
- * OverType v1.0.1
+ * OverType v1.0.3
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -1672,13 +1672,6 @@ function generateStyles(options = {}) {
       height: 20px;
       fill: currentColor;
     }
-    
-    /* Special sizing for code block icon */
-    .overtype-toolbar-button[data-action="insertCodeBlock"] svg {
-      width: 22px;
-      height: 18px;
-      fill: transparent !important;
-    }
 
     .overtype-toolbar-button:hover {
       background: var(--toolbar-hover, var(--bg-secondary, #e9ecef));
@@ -1761,10 +1754,6 @@ var codeIcon = `<svg viewBox="0 0 18 18">
   <polyline stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="13 7 15 9 13 11"></polyline>
   <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="10" x2="8" y1="5" y2="13"></line>
 </svg>`;
-var codeBlockIcon = `<svg viewBox="0 0 46 33" fill="transparent" xmlns="http://www.w3.org/2000/svg">
-  <path d="M35 8h3a5 5 0 0 1 5 5v12a5 5 0 0 1-5 5H18a5 5 0 0 1-5-5v-2" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
-  <path d="m9 2.5-6 6L9 14M20 2.5l6 6-6 5.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
-</svg>`;
 var bulletListIcon = `<svg viewBox="0 0 18 18">
   <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6" x2="15" y1="4" y2="4"></line>
   <line stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" x1="6" x2="15" y1="9" y2="9"></line>
@@ -1819,8 +1808,7 @@ var Toolbar = class {
       { name: "h3", icon: h3Icon, title: "Heading 3", action: "insertH3" },
       { separator: true },
       { name: "link", icon: linkIcon, title: "Insert Link (Ctrl+K)", action: "insertLink" },
-      { name: "code", icon: codeIcon, title: "Inline Code", action: "toggleCode" },
-      { name: "codeBlock", icon: codeBlockIcon, title: "Code Block", action: "insertCodeBlock" },
+      { name: "code", icon: codeIcon, title: "Code (Ctrl+`)", action: "toggleCode" },
       { separator: true },
       { name: "quote", icon: quoteIcon, title: "Quote", action: "toggleQuote" },
       { separator: true },
@@ -1894,13 +1882,6 @@ var Toolbar = class {
           break;
         case "toggleCode":
           toggleCode(textarea);
-          break;
-        case "insertCodeBlock":
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const selectedText = textarea.value.slice(start, end);
-          const codeBlock = "```\n" + selectedText + "\n```";
-          textarea.setRangeText(codeBlock, start, end, "end");
           break;
         case "toggleBulletList":
           toggleBulletList(textarea);
