@@ -1,5 +1,5 @@
 /**
- * OverType v1.0.3
+ * OverType v1.0.6
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -1273,7 +1273,7 @@ function generateStyles(options = {}) {
   const {
     fontSize = "14px",
     lineHeight = 1.6,
-    fontFamily = "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
+    fontFamily = "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
     padding = "20px",
     theme = null,
     mobile = {}
@@ -2044,7 +2044,7 @@ var _OverType = class _OverType {
       // Typography
       fontSize: "14px",
       lineHeight: 1.6,
-      fontFamily: "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
+      fontFamily: "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
       padding: "16px",
       // Mobile styles
       mobile: {

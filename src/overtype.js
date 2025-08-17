@@ -130,7 +130,7 @@ class OverType {
         // Typography
         fontSize: '14px',
         lineHeight: 1.6,
-        fontFamily: "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace",
+        fontFamily: "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
         padding: '16px',
         
         // Mobile styles
