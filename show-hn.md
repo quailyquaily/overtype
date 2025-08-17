@@ -43,8 +43,13 @@ textarea.addEventListener('input', () => {
 
 A week ago I started playing with version 2, while working on a simple CRM for my business. And then I discovered the excellent <markdown-toolbar> element by GitHub, which does a fantastic job of abstracting away markdown toolbar actions in a plain <textarea>.
 
-That experiment turned into OverType, that I'm showing you today -- it's a rich markdown editor that's really just a textarea. The key insight was that once you solve the alignment challenges, you get everything native textareas provide for free: undo/redo, mobile keyboards, accessibility, and native performance.
+That experiment turned into OverType (https://overtype.dev), that I'm showing you today -- it's a rich markdown editor that's really just a textarea. The key insight was that once you solve the alignment challenges, you get everything native textareas provide for free: undo/redo, mobile keyboards, accessibility, and native performance.
 
 So far, in all my cross browser and mobile testing, it works surprisingly well. I get performant rich text editing in one small package (45KB total). It's kind of a dumb idea, but it works! So, for the foreseeable future, I'm planning to use it in all my projects and continue developing it. I plan to keep it very simple and minimal.
 
 I would love it if you would kick the tires and let me know what you think of it. Happy editing!
+
+---
+
+Demo & docs: https://overtype.dev
+GitHub: https://github.com/panphora/overtype

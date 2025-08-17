@@ -209,7 +209,7 @@
       <div class="layer textarea-layer">
         <div class="label label-textarea">Invisible Textarea</div>
         <div class="markdown-text" id="markdown-text">
-          <span id="typed-text"></span><span class="cursor"></span>
+          <span id="typed-text"></span>
         </div>
         <div class="glow"></div>
       </div>
@@ -310,7 +310,7 @@ Here's some \`inline code\`
           const currentText = fullText.substring(0, currentIndex);
           
           // Update the textarea display - preserve newlines as line breaks
-          typedElement.innerHTML = currentText.replace(/\n/g, '<br>');
+          typedElement.innerHTML = currentText.replace(/\n/g, '<br>') + '<span class="cursor"></span>';
           
           // Update the rendered preview
           renderedElement.innerHTML = renderMarkdown(currentText);
