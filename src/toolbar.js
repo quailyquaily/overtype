@@ -108,13 +108,13 @@ export class Toolbar {
           markdownActions.toggleItalic(textarea);
           break;
         case 'insertH1':
-          markdownActions.insertHeader(textarea, 1);
+          markdownActions.toggleH1(textarea);
           break;
         case 'insertH2':
-          markdownActions.insertHeader(textarea, 2);
+          markdownActions.toggleH2(textarea);
           break;
         case 'insertH3':
-          markdownActions.insertHeader(textarea, 3);
+          markdownActions.toggleH3(textarea);
           break;
         case 'insertLink':
           markdownActions.insertLink(textarea);
@@ -173,28 +173,30 @@ export class Toolbar {
             isActive = activeFormats.includes('italic');
             break;
           case 'code':
-            isActive = activeFormats.includes('code');
+            // Disabled: code detection is unreliable in code blocks
+            // isActive = activeFormats.includes('code');
+            isActive = false;
             break;
           case 'bulletList':
-            isActive = activeFormats.includes('bulletList');
+            isActive = activeFormats.includes('bullet-list');
             break;
           case 'orderedList':
-            isActive = activeFormats.includes('orderedList');
+            isActive = activeFormats.includes('numbered-list');
             break;
           case 'quote':
             isActive = activeFormats.includes('quote');
             break;
           case 'taskList':
-            isActive = activeFormats.includes('taskList');
+            isActive = activeFormats.includes('task-list');
             break;
           case 'h1':
-            isActive = activeFormats.includes('header1');
+            isActive = activeFormats.includes('header');
             break;
           case 'h2':
-            isActive = activeFormats.includes('header2');
+            isActive = activeFormats.includes('header-2');
             break;
           case 'h3':
-            isActive = activeFormats.includes('header3');
+            isActive = activeFormats.includes('header-3');
             break;
         }
 

@@ -45,6 +45,6 @@
   },
   "homepage": "https://github.com/demo/overtype#readme",
   "dependencies": {
-    "markdown-actions": "^1.0.0"
+    "markdown-actions": "^1.0.1"
   }
 }
