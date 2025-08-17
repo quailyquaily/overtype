@@ -7,7 +7,7 @@
 import { MarkdownParser } from './parser.js';
 import { ShortcutsManager } from './shortcuts.js';
 import { generateStyles } from './styles.js';
-import { getTheme, mergeTheme, solar } from './themes.js';
+import { getTheme, mergeTheme, solar, themeToCSSVars } from './themes.js';
 import { Toolbar } from './toolbar.js';
 
 /**
@@ -72,6 +72,10 @@ class OverType {
      */
     _init(element, options = {}) {
       this.element = element;
+      
+      // Store the original theme option before merging
+      this.instanceTheme = options.theme || null;
+      
       this.options = this._mergeOptions(options);
       this.instanceId = ++OverType.instanceCount;
       this.initialized = false;
@@ -176,10 +180,20 @@ class OverType {
         // Wrap it in a container for consistency
         this.container = document.createElement('div');
         this.container.className = 'overtype-container';
-        const currentTheme = OverType.currentTheme || solar;
-        const themeName = typeof currentTheme === 'string' ? currentTheme : currentTheme.name;
+        // Use instance theme if provided, otherwise use global theme
+        const themeToUse = this.instanceTheme || OverType.currentTheme || solar;
+        const themeName = typeof themeToUse === 'string' ? themeToUse : themeToUse.name;
         if (themeName) {
           this.container.setAttribute('data-theme', themeName);
+        }
+        
+        // If using instance theme, apply CSS variables to container
+        if (this.instanceTheme) {
+          const themeObj = typeof this.instanceTheme === 'string' ? getTheme(this.instanceTheme) : this.instanceTheme;
+          if (themeObj && themeObj.colors) {
+            const cssVars = themeToCSSVars(themeObj.colors);
+            this.container.style.cssText += cssVars;
+          }
         }
         wrapper.parentNode.insertBefore(this.container, wrapper);
         this.container.appendChild(wrapper);
@@ -269,11 +283,20 @@ class OverType {
       this.container = document.createElement('div');
       this.container.className = 'overtype-container';
       
-      // Set current global theme on container
-      const currentTheme = OverType.currentTheme || solar;
-      const themeName = typeof currentTheme === 'string' ? currentTheme : currentTheme.name;
+      // Set theme on container - use instance theme if provided
+      const themeToUse = this.instanceTheme || OverType.currentTheme || solar;
+      const themeName = typeof themeToUse === 'string' ? themeToUse : themeToUse.name;
       if (themeName) {
         this.container.setAttribute('data-theme', themeName);
+      }
+      
+      // If using instance theme, apply CSS variables to container
+      if (this.instanceTheme) {
+        const themeObj = typeof this.instanceTheme === 'string' ? getTheme(this.instanceTheme) : this.instanceTheme;
+        if (themeObj && themeObj.colors) {
+          const cssVars = themeToCSSVars(themeObj.colors);
+          this.container.style.cssText += cssVars;
+        }
       }
       
       // Create wrapper for editor

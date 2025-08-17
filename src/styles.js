@@ -395,9 +395,6 @@ export function generateStyles(options = {}) {
       gap: 4px;
       padding: 8px;
       background: var(--toolbar-bg, var(--bg-primary, #f8f9fa));
-      border: 1px solid var(--toolbar-border, var(--border, #e0e0e0));
-      border-bottom: none;
-      border-radius: 8px 8px 0 0;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -460,8 +457,6 @@ export function generateStyles(options = {}) {
 
     /* Adjust wrapper when toolbar is present */
     .overtype-container .overtype-toolbar + .overtype-wrapper {
-      border-radius: 0 0 8px 8px;
-      border-top: none;
     }
 
     /* Mobile toolbar adjustments */

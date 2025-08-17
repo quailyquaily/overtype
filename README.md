@@ -16,7 +16,7 @@ A lightweight markdown editor library with perfect WYSIWYG alignment using an in
 
 ## How it works
 
-![OverType Architecture Diagram](diagram.png)
+![OverType Architecture Diagram](https://websharebox.s3.amazonaws.com/diagram.png)
 
 We overlap an invisible textarea on top of styled output, giving the illusion of editing styled text using a plain textarea.
 

@@ -1,5 +1,5 @@
 /**
- * OverType v1.0.0
+ * OverType v1.0.1
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -340,18 +340,18 @@ function insertText(textarea, { text, selectionStart, selectionEnd }) {
   }
   const originalValue = textarea.value;
   const hasSelection = originalSelectionStart !== originalSelectionEnd;
-  if (!hasSelection && (canInsertText === null || canInsertText === true)) {
+  if (canInsertText === null || canInsertText === true) {
     textarea.contentEditable = "true";
     try {
       canInsertText = document.execCommand("insertText", false, text);
+      if (debugMode2)
+        console.log("execCommand returned:", canInsertText, "for text with", text.split("\n").length, "lines");
     } catch (error) {
       canInsertText = false;
+      if (debugMode2)
+        console.log("execCommand threw error:", error);
     }
     textarea.contentEditable = "false";
-  } else if (hasSelection) {
-    if (debugMode2)
-      console.log("Has selection, skipping execCommand and using manual mode");
-    canInsertText = false;
   }
   if (debugMode2) {
     console.log("canInsertText before:", canInsertText);
@@ -1647,9 +1647,6 @@ function generateStyles(options = {}) {
       gap: 4px;
       padding: 8px;
       background: var(--toolbar-bg, var(--bg-primary, #f8f9fa));
-      border: 1px solid var(--toolbar-border, var(--border, #e0e0e0));
-      border-bottom: none;
-      border-radius: 8px 8px 0 0;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -1712,8 +1709,6 @@ function generateStyles(options = {}) {
 
     /* Adjust wrapper when toolbar is present */
     .overtype-container .overtype-toolbar + .overtype-wrapper {
-      border-radius: 0 0 8px 8px;
-      border-top: none;
     }
 
     /* Mobile toolbar adjustments */
@@ -2030,6 +2025,7 @@ var _OverType = class _OverType {
    */
   _init(element, options = {}) {
     this.element = element;
+    this.instanceTheme = options.theme || null;
     this.options = this._mergeOptions(options);
     this.instanceId = ++_OverType.instanceCount;
     this.initialized = false;
@@ -2107,10 +2103,17 @@ var _OverType = class _OverType {
       this.wrapper = wrapper;
       this.container = document.createElement("div");
       this.container.className = "overtype-container";
-      const currentTheme = _OverType.currentTheme || solar;
-      const themeName = typeof currentTheme === "string" ? currentTheme : currentTheme.name;
+      const themeToUse = this.instanceTheme || _OverType.currentTheme || solar;
+      const themeName = typeof themeToUse === "string" ? themeToUse : themeToUse.name;
       if (themeName) {
         this.container.setAttribute("data-theme", themeName);
+      }
+      if (this.instanceTheme) {
+        const themeObj = typeof this.instanceTheme === "string" ? getTheme(this.instanceTheme) : this.instanceTheme;
+        if (themeObj && themeObj.colors) {
+          const cssVars = themeToCSSVars(themeObj.colors);
+          this.container.style.cssText += cssVars;
+        }
       }
       wrapper.parentNode.insertBefore(this.container, wrapper);
       this.container.appendChild(wrapper);
@@ -2173,10 +2176,17 @@ var _OverType = class _OverType {
   _createDOM() {
     this.container = document.createElement("div");
     this.container.className = "overtype-container";
-    const currentTheme = _OverType.currentTheme || solar;
-    const themeName = typeof currentTheme === "string" ? currentTheme : currentTheme.name;
+    const themeToUse = this.instanceTheme || _OverType.currentTheme || solar;
+    const themeName = typeof themeToUse === "string" ? themeToUse : themeToUse.name;
     if (themeName) {
       this.container.setAttribute("data-theme", themeName);
+    }
+    if (this.instanceTheme) {
+      const themeObj = typeof this.instanceTheme === "string" ? getTheme(this.instanceTheme) : this.instanceTheme;
+      if (themeObj && themeObj.colors) {
+        const cssVars = themeToCSSVars(themeObj.colors);
+        this.container.style.cssText += cssVars;
+      }
     }
     this.wrapper = document.createElement("div");
     this.wrapper.className = "overtype-wrapper";

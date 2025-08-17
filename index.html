@@ -371,11 +371,11 @@
         <div class="demo-grid">
             <div class="demo-panel">
                 <div class="demo-header">MAIN EDITOR</div>
-                <div id="main-editor" class="editor-wrapper"></div>
+                <div class="editor-wrapper demo-editor"></div>
             </div>
             <div class="demo-panel">
                 <div class="demo-header">WITH TOOLBAR</div>
-                <div id="toolbar-editor" class="editor-wrapper"></div>
+                <div class="editor-wrapper demo-editor-toolbar"></div>
             </div>
         </div>
 
@@ -498,8 +498,8 @@ textarea.addEventListener('input', () => {
         <div class="cta">
             <h2>START BUILDING</h2>
             <div class="cta-buttons">
-                <a href="#demo" class="btn btn-primary" onclick="document.getElementById('main-editor').scrollIntoView({behavior: 'smooth'}); return false;">TRY IT NOW</a>
-                <a href="https://github.com/demo/overtype" class="btn">VIEW ON GITHUB</a>
+                <a href="#demo" class="btn btn-primary" onclick="document.querySelector('.demo-editor').scrollIntoView({behavior: 'smooth'}); return false;">TRY IT NOW</a>
+                <a href="https://github.com/panphora/overtype" class="btn">VIEW ON GITHUB</a>
             </div>
             <div style="margin-top: 40px; font-style: italic; opacity: 0.8;">
                 "Wonderfully boring."
@@ -510,9 +510,9 @@ textarea.addEventListener('input', () => {
     <!-- Footer -->
     <footer>
         <nav>
-            <a href="https://github.com/demo/overtype">GITHUB</a>
+            <a href="https://github.com/panphora/overtype">GITHUB</a>
             <a href="https://npmjs.com/package/overtype">NPM</a>
-            <a href="https://github.com/demo/overtype#readme">DOCUMENTATION</a>
+            <a href="https://github.com/panphora/overtype#readme">DOCUMENTATION</a>
         </nav>
         <p>Built with the radical idea that simple is better</p>
         <p style="opacity: 0.5;">MIT License</p>
@@ -572,14 +572,14 @@ The toolbar is optional and lightweight.`
         document.addEventListener('DOMContentLoaded', function() {
             const OT = window.OverType.default || window.OverType;
             
-            // Main editor
-            new OT('#main-editor', {
+            // Initialize all main editors
+            new OT('.demo-editor', {
                 value: samples.main,
                 theme: 'cave'
             });
             
-            // Toolbar editor
-            new OT('#toolbar-editor', {
+            // Initialize all toolbar editors
+            new OT('.demo-editor-toolbar', {
                 value: samples.toolbar,
                 toolbar: true,
                 theme: 'cave'
