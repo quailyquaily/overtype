@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OverType - The Markdown Editor That's Just a Textarea</title>
+    <title>OverType - The Markdown Editor That's a Textarea</title>
     <style>
         * {
             margin: 0;
@@ -306,9 +306,9 @@
     <!-- Hero Section -->
     <div class="hero">
         <div class="container">
-            <h1>THE MARKDOWN EDITOR THAT'S JUST A TEXTAREA</h1>
+            <h1>THE MARKDOWN EDITOR THAT'S A TEXTAREA</h1>
             <p class="subtitle">
-                OverType is just a transparent textarea over rendered markdown. 
+                OverType is a transparent textarea over rendered markdown.<br>
                 Plain text simplicity, WYSIWYG beauty, zero complexity.
             </p>
             <div class="value-props">
@@ -329,7 +329,7 @@
         
         <ul class="pain-points">
             <li>
-                <strong>A SINGLE LAYER OF ABSTRACTION</strong> - Just a textarea over a preview div
+                <strong>A SINGLE LAYER OF ABSTRACTION</strong> - A textarea over a preview div
             </li>
             <li>
                 <strong>A SINGLE DEPENDENCY</strong> - markdown-actions for toolbar functionality
@@ -343,7 +343,7 @@
         </ul>
 
         <div class="quote-box">
-            "Simple request: edit markdown. Complex reality: 50 dependencies."
+            "Simple request: Edit markdown. Reality: Install 50+ dependencies."
         </div>
 
         <!-- Solution Section -->
@@ -380,7 +380,7 @@
         </div>
 
         <p class="callout">
-            Notice how everything just works? Undo/redo, mobile keyboards, native selection - because it's just a textarea.
+            Everything just works: undo/redo, mobile keyboards, native selection - because it's really a textarea.
         </p>
 
         <!-- Benefits Section -->
@@ -442,22 +442,22 @@
         <h2>SO SIMPLE, WE CAN SHOW YOU EVERYTHING</h2>
         
         <div class="code-block">
-            <pre>// The entire trick:
-layerElements(textarea, preview)           // Position textarea over preview
-applyIdenticalSpacing(textarea, preview)   // Match fonts, padding, line-height exactly
+            <pre><span style="opacity: 0.5">// The entire trick:</span>
+layerElements(textarea, preview)           <span style="opacity: 0.5">// Position textarea over preview</span>
+applyIdenticalSpacing(textarea, preview)   <span style="opacity: 0.5">// Match fonts, padding, line-height exactly</span>
 
-// Make textarea invisible but keep the cursor
+<span style="opacity: 0.5">// Make textarea invisible but keep the cursor</span>
 textarea.style.background = 'transparent'
 textarea.style.color = 'transparent'
 textarea.style.caretColor = 'black'
 
-// Keep them in sync
+<span style="opacity: 0.5">// Keep them in sync</span>
 textarea.addEventListener('input', () => {
   preview.innerHTML = parseMarkdown(textarea.value)
   syncScroll(textarea, preview)
 })
 
-// That's it. Everything else is polish.</pre>
+<span style="opacity: 0.5">// That's it. Everything else is polish.</span></pre>
         </div>
         
         <p style="text-align: center; opacity: 0.7;">
@@ -489,7 +489,7 @@ textarea.addEventListener('input', () => {
                 </tr>
                 <tr>
                     <td>"Check our docs for the API"</td>
-                    <td>It's just a textarea</td>
+                    <td>It's a textarea</td>
                 </tr>
             </tbody>
         </table>
@@ -536,11 +536,11 @@ This is **markdown** with *real-time* preview.
 \`\`\`
 const editor = new OverType('#editor', {
   value: '# Hello World',
-  theme: 'solar'
+  theme: 'cave'
 });
 \`\`\`
 
-> Just a textarea doing what textareas do best.`,
+> A textarea doing what textareas do best.`,
 
             toolbar: `# Toolbar Features
 
