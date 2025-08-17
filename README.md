@@ -52,18 +52,18 @@ We overlap an invisible textarea on top of styled output, giving the illusion of
 ## Installation
 
 ### NPM
-```bash
+```
 npm install overtype
 ```
 
 ### CDN
-```html
+```
 <script src="https://unpkg.com/overtype/dist/overtype.min.js"></script>
 ```
 
 ## Quick Start
 
-```javascript
+```
 // Create a single editor
 const [editor] = new OverType('#editor', {
   value: '# Hello World',
@@ -82,7 +82,7 @@ editor.setTheme('cave');
 
 ### Basic Editor
 
-```html
+```
 <div id="editor" style="height: 400px;"></div>
 
 <script>
@@ -98,7 +98,7 @@ editor.setTheme('cave');
 
 ### Toolbar
 
-```javascript
+```
 // Enable the toolbar
 const [editor] = new OverType('#editor', {
   toolbar: true,  // Enables the toolbar
@@ -127,7 +127,7 @@ All shortcuts preserve text selection, allowing you to apply multiple formats qu
 
 ### Multiple Editors
 
-```javascript
+```
 // Initialize multiple editors at once
 const editors = OverType.init('.markdown-editor', {
   theme: 'cave',
@@ -142,7 +142,7 @@ editors.forEach((editor, index) => {
 
 ### Custom Theme
 
-```javascript
+```
 const [editor] = new OverType('#editor', {
   theme: {
     name: 'my-theme',
@@ -172,7 +172,7 @@ const [editor] = new OverType('#editor', {
 
 Enable a built-in stats bar that shows character, word, and line counts:
 
-```javascript
+```
 // Enable stats bar on initialization
 const [editor] = new OverType('#editor', {
   showStats: true
@@ -199,7 +199,7 @@ The stats bar automatically adapts to your theme colors using CSS variables.
 
 ### React Component
 
-```jsx
+```
 function MarkdownEditor({ value, onChange }) {
   const ref = useRef();
   const editorRef = useRef();
@@ -228,7 +228,7 @@ function MarkdownEditor({ value, onChange }) {
 
 ### Constructor
 
-```javascript
+```
 new OverType(target, options)
 ```
 
@@ -240,7 +240,7 @@ new OverType(target, options)
 
 ### Options
 
-```javascript
+```
 {
   // Typography
   fontSize: '14px',
@@ -284,7 +284,7 @@ new OverType(target, options)
 
 ### Instance Methods
 
-```javascript
+```
 // Get current markdown content
 editor.getValue()
 
@@ -315,7 +315,7 @@ editor.destroy()
 
 ### Static Methods
 
-```javascript
+```
 // Set global theme (affects all instances)
 OverType.setTheme('cave')  // Built-in theme
 OverType.setTheme(customTheme)  // Custom theme object
@@ -363,7 +363,7 @@ Note: Markdown syntax remains visible but styled (e.g., `**bold**` shows with st
 
 OverType is designed to work with platforms that persist DOM across page loads (like HyperClay):
 
-```javascript
+```
 // Safe to call multiple times - will recover existing editors
 OverType.init('.editor');
 
@@ -385,7 +385,7 @@ Check the `examples` folder for complete examples:
 
 ## Development
 
-```bash
+```
 # Install dependencies
 npm install
 
