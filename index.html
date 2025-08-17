@@ -231,8 +231,6 @@
             text-align: center;
             margin: 60px 0;
             padding: 40px 0;
-            border-top: 1px solid #333;
-            border-bottom: 1px solid #333;
         }
 
         .cta-buttons {
@@ -314,11 +312,9 @@
             <div class="value-props">
                 <span>45KB TOTAL</span>
                 <span>•</span>
-                <span>ONE DEPENDENCY</span>
-                <span>•</span>
                 <span>ONE SCRIPT TAG</span>
                 <span>•</span>
-                <span>UNDERSTAND IT IN MINUTES</span>
+                <span>UNDERSTAND YOUR EDITOR</span>
             </div>
         </div>
     </div>
@@ -332,13 +328,10 @@
                 <strong>A SINGLE LAYER OF ABSTRACTION</strong> - A textarea over a preview div
             </li>
             <li>
-                <strong>A SINGLE DEPENDENCY</strong> - markdown-actions for toolbar functionality
+                <strong>AN OPEN BOX</strong> - Read, understand, and modify the code
             </li>
             <li>
-                <strong>AN OPEN BOX</strong> - Read, understand, modify, and own it
-            </li>
-            <li>
-                <strong>WYSIWYG WITHOUT THE HAIR-PULLING</strong> - Everything just works because it's native
+                <strong>WYSIWYG WITHOUT THE HAIR-PULLING</strong> - Everything just works, it's native
             </li>
         </ul>
 
@@ -361,7 +354,7 @@
                 2. <strong>SEE RENDERED OUTPUT</strong> - Beautiful formatted text appears beneath
             </div>
             <div class="pillar">
-                3. <strong>THAT'S LITERALLY IT</strong> - No virtual DOM, no ContentEditable, no complexity
+                3. <strong>THAT'S IT</strong> - No virtual DOM, no ContentEditable
             </div>
         </div>
 
@@ -384,19 +377,19 @@
         </p>
 
         <!-- Benefits Section -->
-        <h2>HAVE YOUR CAKE AND EAT IT TOO</h2>
+        <h2>THE BEST OF BOTH WORLDS</h2>
         
         <div class="two-columns">
             <div class="column">
-                <h3>YOU GET:</h3>
+                <h3 style="margin-top: 0;">YOU GET:</h3>
                 <ul>
-                    <li><span class="check">✓</span> WYSIWYG beauty</li>
-                    <li><span class="check">✓</span> Native everything</li>
+                    <li><span class="check">✓</span> A beautiful WYSIWYG editor</li>
+                    <li><span class="check">✓</span> Native textarea interactions</li>
                     <li><span class="check">✓</span> Total control</li>
                 </ul>
             </div>
             <div class="column">
-                <h3>WITHOUT:</h3>
+                <h3 style="margin-top: 0;">WITHOUT:</h3>
                 <ul>
                     <li><span class="cross">✗</span> Build steps</li>
                     <li><span class="cross">✗</span> Framework requirements</li>
@@ -406,7 +399,7 @@
         </div>
 
         <!-- Implementation Section -->
-        <h2>GET UP AND RUNNING</h2>
+        <h2>SET UP</h2>
         
         <div class="steps">
             <div class="step">
@@ -427,9 +420,7 @@
             <div class="step">
                 <h3>3. INITIALIZE</h3>
                 <div class="code-block">
-                    <pre>document.querySelectorAll('.editor').forEach(el => {
-  new OverType(el)
-})</pre>
+                    <pre>new OverType(".editor");</pre>
                 </div>
             </div>
         </div>
@@ -439,7 +430,7 @@
         </p>
 
         <!-- Under the Hood Section -->
-        <h2>SO SIMPLE, WE CAN SHOW YOU EVERYTHING</h2>
+        <h2>A PEAK UNDER THE HOOD</h2>
         
         <div class="code-block">
             <pre><span style="opacity: 0.5">// The entire trick:</span>
@@ -470,26 +461,26 @@ textarea.addEventListener('input', () => {
         <table>
             <thead>
                 <tr>
-                    <th>OTHER EDITORS</th>
                     <th>OVERTYPE</th>
+                    <th>OTHER EDITORS</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>300-500KB + dependencies</td>
                     <td>45KB total</td>
+                    <td>300-500KB + dependencies</td>
                 </tr>
                 <tr>
-                    <td>Hours to understand</td>
                     <td>Minutes to understand</td>
+                    <td>Hours to understand</td>
                 </tr>
                 <tr>
-                    <td>Days to customize</td>
                     <td>Minutes to customize</td>
+                    <td>Days to customize</td>
                 </tr>
                 <tr>
-                    <td>"Check our docs for the API"</td>
                     <td>It's a textarea</td>
+                    <td>12 pages of docs</td>
                 </tr>
             </tbody>
         </table>
@@ -514,7 +505,7 @@ textarea.addEventListener('input', () => {
             <a href="https://npmjs.com/package/overtype">NPM</a>
             <a href="https://github.com/panphora/overtype#readme">DOCUMENTATION</a>
         </nav>
-        <p>Built with the radical idea that simple is better</p>
+        <p>Built with the radical idea that sometimes dumb ideas work</p>
         <p style="opacity: 0.5;">MIT License</p>
     </footer>
 
