@@ -21,7 +21,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -41,6 +41,7 @@
             border-bottom: 1px solid #333;
             padding-bottom: 10px;
             margin-top: 60px;
+            text-align: center;
         }
 
         p {
@@ -324,20 +325,20 @@
 
     <div class="container">
         <!-- Problem Section -->
-        <h2>MODERN MARKDOWN EDITORS ARE OVERENGINEERED</h2>
+        <h2>AN UNDER-ENGINEERED MARKDOWN EDITOR</h2>
         
         <ul class="pain-points">
             <li>
-                <strong>LAYERS OF ABSTRACTION</strong> - ContentEditable, AST parsers, virtual DOMs, schema definitions
+                <strong>A SINGLE LAYER OF ABSTRACTION</strong> - Just a textarea over a preview div
             </li>
             <li>
-                <strong>DEPENDENCY HELL</strong> - 50+ packages, build steps, webpack configs, framework lock-in
+                <strong>A SINGLE DEPENDENCY</strong> - markdown-actions for toolbar functionality
             </li>
             <li>
-                <strong>BLACK BOX SYNDROME</strong> - Can't understand it, can't modify it, can't debug it
+                <strong>AN OPEN BOX</strong> - Read, understand, modify, and own it
             </li>
             <li>
-                <strong>WYSIWYG NIGHTMARES</strong> - Cursor jumping, mobile issues, broken undo/redo
+                <strong>WYSIWYG WITHOUT THE HAIR-PULLING</strong> - Everything just works because it's native
             </li>
         </ul>
 
@@ -346,7 +347,7 @@
         </div>
 
         <!-- Solution Section -->
-        <h2>WHAT IF IT WAS JUST... A TEXTAREA?</h2>
+        <h2>JUST A TEXTAREA</h2>
         
         <div class="diagram">
             <img src="diagram.png" alt="OverType Architecture: Transparent textarea over rendered markdown">
@@ -365,7 +366,7 @@
         </div>
 
         <!-- Demo Section -->
-        <h2>SEE THE SIMPLICITY IN ACTION</h2>
+        <h2>SEE IT IN ACTION</h2>
         
         <div class="demo-grid">
             <div class="demo-panel">
@@ -389,10 +390,9 @@
             <div class="column">
                 <h3>YOU GET:</h3>
                 <ul>
-                    <li><span class="check">✓</span> Dual-pane clarity (see your markdown)</li>
-                    <li><span class="check">✓</span> WYSIWYG beauty (see it styled)</li>
-                    <li><span class="check">✓</span> Native everything (undo/redo, mobile, selection)</li>
-                    <li><span class="check">✓</span> Total control (it's just HTML/CSS/JS)</li>
+                    <li><span class="check">✓</span> WYSIWYG beauty</li>
+                    <li><span class="check">✓</span> Native everything</li>
+                    <li><span class="check">✓</span> Total control</li>
                 </ul>
             </div>
             <div class="column">
@@ -401,13 +401,12 @@
                     <li><span class="cross">✗</span> Build steps</li>
                     <li><span class="cross">✗</span> Framework requirements</li>
                     <li><span class="cross">✗</span> ContentEditable bugs</li>
-                    <li><span class="cross">✗</span> Learning new architectures</li>
                 </ul>
             </div>
         </div>
 
         <!-- Implementation Section -->
-        <h2>UP AND RUNNING IN 30 SECONDS</h2>
+        <h2>GET UP AND RUNNING</h2>
         
         <div class="steps">
             <div class="step">
@@ -418,16 +417,19 @@
             </div>
             
             <div class="step">
-                <h3>2. ADD A DIV</h3>
+                <h3>2. ADD YOUR EDITORS</h3>
                 <div class="code-block">
-                    <pre>&lt;div id="editor"&gt;&lt;/div&gt;</pre>
+                    <pre>&lt;div class="editor"&gt;&lt;/div&gt;
+&lt;div class="editor"&gt;&lt;/div&gt;</pre>
                 </div>
             </div>
             
             <div class="step">
                 <h3>3. INITIALIZE</h3>
                 <div class="code-block">
-                    <pre>new OverType('#editor')</pre>
+                    <pre>document.querySelectorAll('.editor').forEach(el => {
+  new OverType(el)
+})</pre>
                 </div>
             </div>
         </div>
@@ -463,7 +465,7 @@ textarea.addEventListener('input', () => {
         </p>
 
         <!-- Comparison Section -->
-        <h2>WHY FIGHT COMPLEXITY?</h2>
+        <h2>ANTI-COMPLEXITY</h2>
         
         <table>
             <thead>
@@ -499,7 +501,7 @@ textarea.addEventListener('input', () => {
                 <a href="#demo" class="btn btn-primary" onclick="document.getElementById('main-editor').scrollIntoView({behavior: 'smooth'}); return false;">TRY IT NOW</a>
                 <a href="https://github.com/demo/overtype" class="btn">VIEW ON GITHUB</a>
             </div>
-            <div class="quote-box" style="margin-top: 40px;">
+            <div style="margin-top: 40px; font-style: italic; opacity: 0.8;">
                 "Wonderfully boring."
             </div>
         </div>
@@ -573,14 +575,14 @@ The toolbar is optional and lightweight.`
             // Main editor
             new OT('#main-editor', {
                 value: samples.main,
-                theme: 'solar'
+                theme: 'cave'
             });
             
             // Toolbar editor
             new OT('#toolbar-editor', {
                 value: samples.toolbar,
                 toolbar: true,
-                theme: 'solar'
+                theme: 'cave'
             });
         });
     </script>
