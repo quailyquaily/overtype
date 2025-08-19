@@ -490,6 +490,11 @@ class OverType {
           // Apply class to divs between the fences
           if (currentDiv.tagName === 'DIV') {
             currentDiv.classList.add('code-block-line');
+            
+            // Strip all formatting by replacing with plain text
+            // This prevents markdown formatting inside code blocks
+            const plainText = currentDiv.textContent;
+            currentDiv.textContent = plainText;
           }
           
           // Move to next sibling

@@ -5,6 +5,24 @@ All notable changes to OverType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2025-01-19
+
+### Fixed
+- Code blocks no longer render markdown formatting - `__init__` displays correctly (#14)
+  - Post-processing strips all formatting from lines inside code blocks
+  - Preserves plain text display for asterisks, underscores, backticks, etc.
+
+## [1.1.3] - 2025-01-19
+
+### Fixed
+- Inline triple backticks no longer mistaken for code blocks (#15)
+  - Code fences now only recognized when alone on a line or followed by language identifier
+  - Prevents cascade failures where inline backticks break subsequent code blocks
+- Android cursor misalignment on bold text (#16)
+  - Updated font stack to avoid problematic `ui-monospace` on Android
+  - Added explicit Android fonts: Roboto Mono, Noto Sans Mono, Droid Sans Mono
+  - Added `font-synthesis: none` and `font-variant-ligatures: none` to prevent width drift
+
 ## [1.1.2] - 2025-01-19
 
 ### Added
@@ -81,6 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✨ Smart shortcuts with selection preservation
 - 🔧 Framework agnostic
 
+[1.1.4]: https://github.com/panphora/overtype/compare/v1.1.3...v1.1.4
+[1.1.3]: https://github.com/panphora/overtype/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/panphora/overtype/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/panphora/overtype/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/panphora/overtype/compare/v1.0.6...v1.1.0

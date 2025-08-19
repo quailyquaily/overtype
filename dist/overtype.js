@@ -1,5 +1,5 @@
 /**
- * OverType v1.1.3
+ * OverType v1.1.4
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -2506,6 +2506,8 @@ ${blockSuffix}` : suffix;
         while (currentDiv && currentDiv !== closeParent) {
           if (currentDiv.tagName === "DIV") {
             currentDiv.classList.add("code-block-line");
+            const plainText = currentDiv.textContent;
+            currentDiv.textContent = plainText;
           }
           currentDiv = currentDiv.nextElementSibling;
           if (!currentDiv)
