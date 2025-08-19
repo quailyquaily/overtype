@@ -14,7 +14,7 @@ export function generateStyles(options = {}) {
   const {
     fontSize = '14px',
     lineHeight = 1.6,
-    fontFamily = "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
+    fontFamily = '"SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Code", Consolas, "Roboto Mono", "Noto Sans Mono", "Droid Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace',
     padding = '20px',
     theme = null,
     mobile = {}
@@ -84,6 +84,8 @@ export function generateStyles(options = {}) {
       
       /* Font properties - any difference breaks alignment */
       font-family: ${fontFamily} !important;
+      font-synthesis: none !important; /* no faux bold/italic width drift */
+      font-variant-ligatures: none !important; /* keep metrics stable for code */
       font-size: var(--instance-font-size, ${fontSize}) !important;
       line-height: var(--instance-line-height, ${lineHeight}) !important;
       font-weight: normal !important;

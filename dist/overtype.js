@@ -1,5 +1,5 @@
 /**
- * OverType v1.1.1
+ * OverType v1.1.3
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -129,7 +129,7 @@ var OverType = (() => {
      * @returns {string|null} Parsed code fence or null
      */
     static parseCodeBlock(html) {
-      if (html.startsWith("```")) {
+      if (html.match(/^```(\s*|\w*)$/)) {
         return `<div><span class="code-fence">${html}</span></div>`;
       }
       return null;
@@ -1318,7 +1318,7 @@ ${blockSuffix}` : suffix;
     const {
       fontSize = "14px",
       lineHeight = 1.6,
-      fontFamily = "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
+      fontFamily = '"SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Code", Consolas, "Roboto Mono", "Noto Sans Mono", "Droid Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace',
       padding = "20px",
       theme = null,
       mobile = {}
@@ -1381,6 +1381,8 @@ ${blockSuffix}` : suffix;
       
       /* Font properties - any difference breaks alignment */
       font-family: ${fontFamily} !important;
+      font-synthesis: none !important; /* no faux bold/italic width drift */
+      font-variant-ligatures: none !important; /* keep metrics stable for code */
       font-size: var(--instance-font-size, ${fontSize}) !important;
       line-height: var(--instance-line-height, ${lineHeight}) !important;
       font-weight: normal !important;

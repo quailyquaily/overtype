@@ -109,7 +109,9 @@ export class MarkdownParser {
    * @returns {string|null} Parsed code fence or null
    */
   static parseCodeBlock(html) {
-    if (html.startsWith('```')) {
+    // Only treat as code block if ``` is alone or followed by a language identifier
+    // This prevents ```some code``` from being treated as a code fence
+    if (html.match(/^```(\s*|\w*)$/)) {
       return `<div><span class="code-fence">${html}</span></div>`;
     }
     return null;
