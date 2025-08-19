@@ -129,7 +129,8 @@ var OverType = (() => {
      * @returns {string|null} Parsed code fence or null
      */
     static parseCodeBlock(html) {
-      if (html.match(/^```(\s*|\w*)$/)) {
+      const codeFenceRegex = /^`{3}[^`]*$/;
+      if (codeFenceRegex.test(html)) {
         return `<div><span class="code-fence">${html}</span></div>`;
       }
       return null;
@@ -161,7 +162,7 @@ var OverType = (() => {
      * @returns {string} HTML with code styling
      */
     static parseInlineCode(html) {
-      return html.replace(/`(.+?)`/g, '<code><span class="syntax-marker">`</span>$1<span class="syntax-marker">`</span></code>');
+      return html.replace(new RegExp("(?<!`)(`+)(?!`)((?:(?!\\1).)+?)(\\1)(?!`)", "g"), '<code><span class="syntax-marker">$1</span>$2<span class="syntax-marker">$3</span></code>');
     }
     /**
      * Parse links
