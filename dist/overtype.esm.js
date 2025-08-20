@@ -1,5 +1,5 @@
 /**
- * OverType v1.1.4
+ * OverType v1.1.6
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -148,7 +148,7 @@ var MarkdownParser = class {
   static parseLinks(html) {
     return html.replace(/\[(.+?)\]\((.+?)\)/g, (match, text, url) => {
       const anchorName = `--link-${this.linkIndex++}`;
-      return `<a href="${url}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker">${url}</span><span class="syntax-marker">)</span></a>`;
+      return `<a href="${url}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
     });
   }
   /**
@@ -159,17 +159,22 @@ var MarkdownParser = class {
   static parseInlineElements(text) {
     let html = text;
     html = this.parseInlineCode(html);
-    const codeBlocks = /* @__PURE__ */ new Map();
+    const sanctuaries = /* @__PURE__ */ new Map();
     html = html.replace(/(<code>.*?<\/code>)/g, (match) => {
-      const placeholder = `\uE000${codeBlocks.size}\uE001`;
-      codeBlocks.set(placeholder, match);
+      const placeholder = `\uE000${sanctuaries.size}\uE001`;
+      sanctuaries.set(placeholder, match);
       return placeholder;
     });
     html = this.parseLinks(html);
+    html = html.replace(/(<a[^>]*>.*?<\/a>)/g, (match) => {
+      const placeholder = `\uE000${sanctuaries.size}\uE001`;
+      sanctuaries.set(placeholder, match);
+      return placeholder;
+    });
     html = this.parseBold(html);
     html = this.parseItalic(html);
-    codeBlocks.forEach((codeBlock, placeholder) => {
-      html = html.replace(placeholder, codeBlock);
+    sanctuaries.forEach((content, placeholder) => {
+      html = html.replace(placeholder, content);
     });
     return html;
   }

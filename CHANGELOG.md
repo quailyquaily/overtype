@@ -5,6 +5,15 @@ All notable changes to OverType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6] - 2025-01-20
+
+### Fixed
+- URLs with markdown characters (underscores, asterisks) no longer break HTML structure (#23)
+  - Implemented "URL Sanctuary" pattern to protect link URLs from markdown processing
+  - Links are now treated as protected zones where markdown syntax is literal text
+  - Fixes malformed HTML when URLs contain `_`, `__`, `*`, `**` characters
+  - Preserves proper href attributes and visual rendering
+
 ## [1.1.5] - 2025-01-20
 
 ### Added

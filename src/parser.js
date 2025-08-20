@@ -165,7 +165,8 @@ export class MarkdownParser {
   static parseLinks(html) {
     return html.replace(/\[(.+?)\]\((.+?)\)/g, (match, text, url) => {
       const anchorName = `--link-${this.linkIndex++}`;
-      return `<a href="${url}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker">${url}</span><span class="syntax-marker">)</span></a>`;
+      // Don't double-escape - url is already escaped from parseLine
+      return `<a href="${url}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
     });
   }
 
@@ -176,30 +177,44 @@ export class MarkdownParser {
    */
   static parseInlineElements(text) {
     let html = text;
-    // Order matters: parse code first to avoid conflicts
+    // Order matters: parse code first
     html = this.parseInlineCode(html);
+    
     // Use placeholders to protect inline code while preserving formatting spans
     // We use Unicode Private Use Area (U+E000-U+F8FF) as placeholders because:
     // 1. These characters are reserved for application-specific use
     // 2. They'll never appear in user text
     // 3. They maintain single-character width (important for alignment)
     // 4. They're invisible if accidentally rendered
-    // This allows formatting like *text `code` text* to span across code blocks
-    // while preventing formatting inside code like `__init__` from being bolded
-    const codeBlocks = new Map();
+    const sanctuaries = new Map();
+    
+    // Protect code blocks
     html = html.replace(/(<code>.*?<\/code>)/g, (match) => {
-      const placeholder = `\uE000${codeBlocks.size}\uE001`;
-      codeBlocks.set(placeholder, match);
+      const placeholder = `\uE000${sanctuaries.size}\uE001`;
+      sanctuaries.set(placeholder, match);
       return placeholder;
     });
-    // Process other inline elements on text with placeholders
+    
+    // Parse links AFTER protecting code but BEFORE bold/italic
+    // This ensures link URLs don't get processed as markdown
     html = this.parseLinks(html);
+    
+    // Protect entire link elements (not just the URL part)
+    html = html.replace(/(<a[^>]*>.*?<\/a>)/g, (match) => {
+      const placeholder = `\uE000${sanctuaries.size}\uE001`;
+      sanctuaries.set(placeholder, match);
+      return placeholder;
+    });
+    
+    // Process other inline elements on text with placeholders
     html = this.parseBold(html);
     html = this.parseItalic(html);
-    // Restore code blocks
-    codeBlocks.forEach((codeBlock, placeholder) => {
-      html = html.replace(placeholder, codeBlock);
+    
+    // Restore all sanctuaries
+    sanctuaries.forEach((content, placeholder) => {
+      html = html.replace(placeholder, content);
     });
+    
     return html;
   }
 
