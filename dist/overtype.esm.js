@@ -1,5 +1,5 @@
 /**
- * OverType v1.1.6
+ * OverType v1.1.7
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -141,6 +141,28 @@ var MarkdownParser = class {
     return html.replace(new RegExp("(?<!`)(`+)(?!`)((?:(?!\\1).)+?)(\\1)(?!`)", "g"), '<code><span class="syntax-marker">$1</span>$2<span class="syntax-marker">$3</span></code>');
   }
   /**
+   * Sanitize URL to prevent XSS attacks
+   * @param {string} url - URL to sanitize
+   * @returns {string} Safe URL or '#' if dangerous
+   */
+  static sanitizeUrl(url) {
+    const trimmed = url.trim();
+    const lower = trimmed.toLowerCase();
+    const safeProtocols = [
+      "http://",
+      "https://",
+      "mailto:",
+      "ftp://",
+      "ftps://"
+    ];
+    const hasSafeProtocol = safeProtocols.some((protocol) => lower.startsWith(protocol));
+    const isRelative = trimmed.startsWith("/") || trimmed.startsWith("#") || trimmed.startsWith("?") || trimmed.startsWith(".") || !trimmed.includes(":") && !trimmed.includes("//");
+    if (hasSafeProtocol || isRelative) {
+      return url;
+    }
+    return "#";
+  }
+  /**
    * Parse links
    * @param {string} html - HTML with potential link markdown
    * @returns {string} HTML with link styling
@@ -148,7 +170,8 @@ var MarkdownParser = class {
   static parseLinks(html) {
     return html.replace(/\[(.+?)\]\((.+?)\)/g, (match, text, url) => {
       const anchorName = `--link-${this.linkIndex++}`;
-      return `<a href="${url}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
+      const safeUrl = this.sanitizeUrl(url);
+      return `<a href="${safeUrl}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
     });
   }
   /**

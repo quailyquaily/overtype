@@ -158,6 +158,44 @@ export class MarkdownParser {
   }
 
   /**
+   * Sanitize URL to prevent XSS attacks
+   * @param {string} url - URL to sanitize
+   * @returns {string} Safe URL or '#' if dangerous
+   */
+  static sanitizeUrl(url) {
+    // Trim whitespace and convert to lowercase for protocol check
+    const trimmed = url.trim();
+    const lower = trimmed.toLowerCase();
+    
+    // Allow safe protocols
+    const safeProtocols = [
+      'http://',
+      'https://',
+      'mailto:',
+      'ftp://',
+      'ftps://'
+    ];
+    
+    // Check if URL starts with a safe protocol
+    const hasSafeProtocol = safeProtocols.some(protocol => lower.startsWith(protocol));
+    
+    // Allow relative URLs (starting with / or # or no protocol)
+    const isRelative = trimmed.startsWith('/') || 
+                      trimmed.startsWith('#') || 
+                      trimmed.startsWith('?') ||
+                      trimmed.startsWith('.') ||
+                      (!trimmed.includes(':') && !trimmed.includes('//'));
+    
+    // If safe protocol or relative URL, return as-is
+    if (hasSafeProtocol || isRelative) {
+      return url;
+    }
+    
+    // Block dangerous protocols (javascript:, data:, vbscript:, etc.)
+    return '#';
+  }
+
+  /**
    * Parse links
    * @param {string} html - HTML with potential link markdown
    * @returns {string} HTML with link styling
@@ -165,8 +203,10 @@ export class MarkdownParser {
   static parseLinks(html) {
     return html.replace(/\[(.+?)\]\((.+?)\)/g, (match, text, url) => {
       const anchorName = `--link-${this.linkIndex++}`;
+      // Sanitize URL to prevent XSS attacks
+      const safeUrl = this.sanitizeUrl(url);
       // Don't double-escape - url is already escaped from parseLine
-      return `<a href="${url}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
+      return `<a href="${safeUrl}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
     });
   }
 
