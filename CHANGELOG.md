@@ -5,6 +5,12 @@ All notable changes to OverType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- TypeScript definitions file (`src/overtype.d.ts`) with complete type definitions
+- TypeScript test file (`test-types.ts`) for type validation
+
 ## [1.1.4] - 2025-01-19
 
 ### Fixed
