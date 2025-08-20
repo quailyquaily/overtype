@@ -483,9 +483,10 @@ OverType uses a unique invisible textarea overlay approach:
 ## Contributors
 
 Special thanks to:
-- [Josh Doman](https://github.com/joshdoman) - Fixed inline code formatting preservation ([#6](https://github.com/panphora/overtype/pull/6))
+- [Josh Doman](https://github.com/joshdoman) - Fixed inline code formatting preservation ([#6](https://github.com/panphora/overtype/pull/6)), improved code fence detection ([#19](https://github.com/panphora/overtype/pull/19))
 - [kbhomes](https://github.com/kbhomes) - Fixed text selection desynchronization during overscroll ([#17](https://github.com/panphora/overtype/pull/17))
 - [merlinz01](https://github.com/merlinz01) - Initial TypeScript definitions implementation ([#20](https://github.com/panphora/overtype/pull/20))
+- [Max Bernstein](https://github.com/tekknolagi) - Fixed typo in website ([#11](https://github.com/panphora/overtype/pull/11))
 
 ## License
 
