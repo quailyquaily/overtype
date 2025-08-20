@@ -290,6 +290,11 @@ new OverType(target, options)
   placeholder: 'Start typing...',
   value: '',
   
+  // Auto-resize
+  autoResize: false,      // Auto-expand height with content
+  minHeight: '100px',     // Minimum height when autoResize is enabled
+  maxHeight: null,        // Maximum height (null = unlimited)
+  
   // Native textarea properties
   textareaProps: {
     required: true,
@@ -298,8 +303,11 @@ new OverType(target, options)
     // Any HTML textarea attribute
   },
   
+  // Toolbar
+  toolbar: false,         // Enable/disable toolbar with formatting buttons
+  
   // Stats bar
-  showStats: false,  // Enable/disable stats bar
+  showStats: false,       // Enable/disable stats bar
   statsFormatter: (stats) => {  // Custom stats format
     return `${stats.chars} chars | ${stats.words} words`;
   },
