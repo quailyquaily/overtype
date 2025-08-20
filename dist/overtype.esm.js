@@ -1,5 +1,5 @@
 /**
- * OverType v1.1.7
+ * OverType v1.1.8
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -1323,6 +1323,7 @@ function generateStyles(options = {}) {
   const {
     fontSize = "14px",
     lineHeight = 1.6,
+    /* System-first, guaranteed monospaced; avoids Android 'ui-monospace' pitfalls */
     fontFamily = '"SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Code", Consolas, "Roboto Mono", "Noto Sans Mono", "Droid Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace',
     padding = "20px",
     theme = null,
@@ -1386,7 +1387,6 @@ function generateStyles(options = {}) {
       
       /* Font properties - any difference breaks alignment */
       font-family: ${fontFamily} !important;
-      font-synthesis: none !important; /* no faux bold/italic width drift */
       font-variant-ligatures: none !important; /* keep metrics stable for code */
       font-size: var(--instance-font-size, ${fontSize}) !important;
       line-height: var(--instance-line-height, ${lineHeight}) !important;
@@ -1782,6 +1782,23 @@ function generateStyles(options = {}) {
         margin: 0 2px;
       }
     }
+    
+    /* Plain mode - hide preview and show textarea text */
+    .overtype-container.plain-mode .overtype-preview {
+      display: none !important;
+    }
+    
+    .overtype-container.plain-mode .overtype-input {
+      color: var(--text, #0d3b66) !important;
+      /* Use system font stack for better plain text readability */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                   "Helvetica Neue", Arial, sans-serif !important;
+    }
+    
+    /* Ensure textarea remains transparent in overlay mode */
+    .overtype-container:not(.plain-mode) .overtype-input {
+      color: transparent !important;
+    }
 
     ${mobileStyles}
   `;
@@ -1845,6 +1862,10 @@ var taskListIcon = `<svg viewBox="0 0 18 18">
   <rect stroke="currentColor" fill="none" stroke-width="1.5" x="2" y="13" width="3" height="3" rx="0.5"></rect>
   <polyline stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" points="2.65 9.5 3.5 10.5 5 8.5"></polyline>
 </svg>`;
+var eyeIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="none"></path>
+  <circle cx="12" cy="12" r="3" fill="none"></circle>
+</svg>`;
 
 // src/toolbar.js
 var Toolbar = class {
@@ -1876,7 +1897,9 @@ var Toolbar = class {
       { separator: true },
       { name: "bulletList", icon: bulletListIcon, title: "Bullet List", action: "toggleBulletList" },
       { name: "orderedList", icon: orderedListIcon, title: "Numbered List", action: "toggleNumberedList" },
-      { name: "taskList", icon: taskListIcon, title: "Task List", action: "toggleTaskList" }
+      { name: "taskList", icon: taskListIcon, title: "Task List", action: "toggleTaskList" },
+      { separator: true },
+      { name: "togglePlain", icon: eyeIcon, title: "Show plain textarea", action: "toggle-plain" }
     ];
     buttonConfig.forEach((config) => {
       if (config.separator) {
@@ -1957,6 +1980,10 @@ var Toolbar = class {
         case "toggleTaskList":
           toggleTaskList(textarea);
           break;
+        case "toggle-plain":
+          const isPlain = this.editor.container.classList.contains("plain-mode");
+          this.editor.showPlainTextarea(!isPlain);
+          break;
       }
       textarea.dispatchEvent(new Event("input", { bubbles: true }));
     } catch (error) {
@@ -2004,6 +2031,9 @@ var Toolbar = class {
             break;
           case "h3":
             isActive = activeFormats.includes("header-3");
+            break;
+          case "togglePlain":
+            isActive = !this.editor.container.classList.contains("plain-mode");
             break;
         }
         button.classList.toggle("active", isActive);
@@ -2253,7 +2283,8 @@ var _OverType = class _OverType {
       // Typography
       fontSize: "14px",
       lineHeight: 1.6,
-      fontFamily: "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
+      /* System-first, guaranteed monospaced; avoids Android 'ui-monospace' pitfalls */
+      fontFamily: '"SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Code", Consolas, "Roboto Mono", "Noto Sans Mono", "Droid Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace',
       padding: "16px",
       // Mobile styles
       mobile: {
@@ -2730,6 +2761,26 @@ var _OverType = class _OverType {
       this.statsBar.remove();
       this.statsBar = null;
     }
+  }
+  /**
+   * Show or hide the plain textarea (toggle overlay visibility)
+   * @param {boolean} show - true to show plain textarea (hide overlay), false to show overlay
+   * @returns {boolean} Current plain textarea state
+   */
+  showPlainTextarea(show) {
+    if (show) {
+      this.container.classList.add("plain-mode");
+    } else {
+      this.container.classList.remove("plain-mode");
+    }
+    if (this.toolbar) {
+      const toggleBtn = this.container.querySelector('[data-action="toggle-plain"]');
+      if (toggleBtn) {
+        toggleBtn.classList.toggle("active", !show);
+        toggleBtn.title = show ? "Show markdown preview" : "Show plain textarea";
+      }
+    }
+    return show;
   }
   /**
    * Destroy the editor instance

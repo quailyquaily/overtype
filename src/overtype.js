@@ -134,7 +134,8 @@ class OverType {
         // Typography
         fontSize: '14px',
         lineHeight: 1.6,
-        fontFamily: "ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace",
+        /* System-first, guaranteed monospaced; avoids Android 'ui-monospace' pitfalls */
+        fontFamily: '"SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Code", Consolas, "Roboto Mono", "Noto Sans Mono", "Droid Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace',
         padding: '16px',
         
         // Mobile styles
@@ -788,6 +789,33 @@ class OverType {
         this.statsBar.remove();
         this.statsBar = null;
       }
+    }
+    
+    /**
+     * Show or hide the plain textarea (toggle overlay visibility)
+     * @param {boolean} show - true to show plain textarea (hide overlay), false to show overlay
+     * @returns {boolean} Current plain textarea state
+     */
+    showPlainTextarea(show) {
+      if (show) {
+        // Show plain textarea mode (hide overlay)
+        this.container.classList.add('plain-mode');
+      } else {
+        // Show overlay mode (hide plain textarea text)
+        this.container.classList.remove('plain-mode');
+      }
+      
+      // Update toolbar button if exists
+      if (this.toolbar) {
+        const toggleBtn = this.container.querySelector('[data-action="toggle-plain"]');
+        if (toggleBtn) {
+          // Button is active when showing overlay (not plain mode)
+          toggleBtn.classList.toggle('active', !show);
+          toggleBtn.title = show ? 'Show markdown preview' : 'Show plain textarea';
+        }
+      }
+      
+      return show;
     }
 
     /**

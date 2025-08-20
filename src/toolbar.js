@@ -39,7 +39,9 @@ export class Toolbar {
       { separator: true },
       { name: 'bulletList', icon: icons.bulletListIcon, title: 'Bullet List', action: 'toggleBulletList' },
       { name: 'orderedList', icon: icons.orderedListIcon, title: 'Numbered List', action: 'toggleNumberedList' },
-      { name: 'taskList', icon: icons.taskListIcon, title: 'Task List', action: 'toggleTaskList' }
+      { name: 'taskList', icon: icons.taskListIcon, title: 'Task List', action: 'toggleTaskList' },
+      { separator: true },
+      { name: 'togglePlain', icon: icons.eyeIcon, title: 'Show plain textarea', action: 'toggle-plain' }
     ];
 
     // Create buttons
@@ -133,6 +135,11 @@ export class Toolbar {
         case 'toggleTaskList':
           markdownActions.toggleTaskList(textarea);
           break;
+        case 'toggle-plain':
+          // Toggle between plain textarea and overlay mode
+          const isPlain = this.editor.container.classList.contains('plain-mode');
+          this.editor.showPlainTextarea(!isPlain);
+          break;
       }
 
       // Trigger input event to update preview
@@ -188,6 +195,10 @@ export class Toolbar {
             break;
           case 'h3':
             isActive = activeFormats.includes('header-3');
+            break;
+          case 'togglePlain':
+            // Button is active when in overlay mode (not plain mode)
+            isActive = !this.editor.container.classList.contains('plain-mode');
             break;
         }
 

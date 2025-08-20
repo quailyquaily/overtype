@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Bold/Italic Fix Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-info {
+            background: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .test-case {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .editor-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ccc;
+        }
+        .user-agent {
+            font-family: monospace;
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Testing Android Bold/Italic Fix</h1>
+    
+    <div class="test-info">
+        <h3>What was fixed:</h3>
+        <ul>
+            <li>Removed <code>font-synthesis: none</code> to allow synthetic bold/italic on Android</li>
+            <li>Updated font stack to prioritize system fonts, avoiding 'ui-monospace' issues</li>
+            <li>Font stack now includes Android-specific fonts: Roboto Mono, Noto Sans Mono, Droid Sans Mono</li>
+        </ul>
+    </div>
+
+    <div class="test-case">
+        <div class="test-title">Test: Bold and Italic Formatting</div>
+        <div class="editor-container editor" data-content="# Testing Bold and Italic on Android
+
+This text should show **bold formatting** correctly.
+
+This text should show *italic formatting* correctly.
+
+This text should show ***bold and italic*** together.
+
+## Code with Underscores
+The `__init__` method should display correctly.
+Variable names like `test_variable` should work.
+
+## Mixed Formatting
+- **Bold item** in a list
+- *Italic item* in a list
+- Normal item with `inline code`
+- Link with underscores: [test_file.py](test_file.py)"></div>
+    </div>
+
+    <div class="user-agent">
+        <strong>Your User Agent:</strong><br>
+        <span id="ua"></span>
+    </div>
+
+    <script src="dist/overtype.js"></script>
+    <script>
+        // Display user agent
+        document.getElementById('ua').textContent = navigator.userAgent;
+        
+        // Initialize OverType
+        document.addEventListener('DOMContentLoaded', function() {
+            const OT = window.OverType.default || window.OverType;
+            
+            document.querySelectorAll('.editor').forEach((editor) => {
+                const content = editor.getAttribute('data-content');
+                const instance = new OT(editor, {
+                    value: content
+                });
+                
+                // Log computed styles for debugging
+                setTimeout(() => {
+                    const textarea = editor.querySelector('.overtype-input');
+                    const preview = editor.querySelector('.overtype-preview');
+                    if (textarea && preview) {
+                        const textareaStyles = window.getComputedStyle(textarea);
+                        const previewStyles = window.getComputedStyle(preview);
+                        
+                        console.log('Font Stack Applied:');
+                        console.log('Textarea:', textareaStyles.fontFamily);
+                        console.log('Preview:', previewStyles.fontFamily);
+                        console.log('Font Synthesis:', textareaStyles.fontSynthesis);
+                        
+                        // Check if bold/italic elements are rendering correctly
+                        const boldElements = preview.querySelectorAll('strong');
+                        const italicElements = preview.querySelectorAll('em');
+                        
+                        if (boldElements.length > 0) {
+                            const boldStyle = window.getComputedStyle(boldElements[0]);
+                            console.log('Bold element font-weight:', boldStyle.fontWeight);
+                        }
+                        
+                        if (italicElements.length > 0) {
+                            const italicStyle = window.getComputedStyle(italicElements[0]);
+                            console.log('Italic element font-style:', italicStyle.fontStyle);
+                        }
+                    }
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

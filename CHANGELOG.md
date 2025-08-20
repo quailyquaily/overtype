@@ -5,6 +5,15 @@ All notable changes to OverType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.8] - 2025-01-20
+
+### Fixed
+- Android bold/italic rendering regression from v1.1.3
+  - Removed `font-synthesis: none` to restore synthetic bold/italic on Android devices
+  - Updated font stack to avoid 'ui-monospace' pitfalls while maintaining Android support
+  - Font stack now properly includes: SF Mono, Roboto Mono, Noto Sans Mono, Droid Sans Mono
+  - Fixes issue where Android users could not see bold or italic text formatting
+
 ## [1.1.7] - 2025-01-20
 
 ### Security

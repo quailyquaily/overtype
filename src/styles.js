@@ -14,6 +14,7 @@ export function generateStyles(options = {}) {
   const {
     fontSize = '14px',
     lineHeight = 1.6,
+    /* System-first, guaranteed monospaced; avoids Android 'ui-monospace' pitfalls */
     fontFamily = '"SF Mono", SFMono-Regular, Menlo, Monaco, "Cascadia Code", Consolas, "Roboto Mono", "Noto Sans Mono", "Droid Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", "Liberation Mono", "Courier New", Courier, monospace',
     padding = '20px',
     theme = null,
@@ -84,7 +85,6 @@ export function generateStyles(options = {}) {
       
       /* Font properties - any difference breaks alignment */
       font-family: ${fontFamily} !important;
-      font-synthesis: none !important; /* no faux bold/italic width drift */
       font-variant-ligatures: none !important; /* keep metrics stable for code */
       font-size: var(--instance-font-size, ${fontSize}) !important;
       line-height: var(--instance-line-height, ${lineHeight}) !important;
@@ -479,6 +479,23 @@ export function generateStyles(options = {}) {
       .overtype-toolbar-separator {
         margin: 0 2px;
       }
+    }
+    
+    /* Plain mode - hide preview and show textarea text */
+    .overtype-container.plain-mode .overtype-preview {
+      display: none !important;
+    }
+    
+    .overtype-container.plain-mode .overtype-input {
+      color: var(--text, #0d3b66) !important;
+      /* Use system font stack for better plain text readability */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 
+                   "Helvetica Neue", Arial, sans-serif !important;
+    }
+    
+    /* Ensure textarea remains transparent in overlay mode */
+    .overtype-container:not(.plain-mode) .overtype-input {
+      color: transparent !important;
     }
 
     ${mobileStyles}
