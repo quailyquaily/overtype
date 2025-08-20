@@ -1418,6 +1418,7 @@ function generateStyles(options = {}) {
       /* Overflow */
       overflow-y: auto !important;
       overflow-x: auto !important;
+      overscroll-behavior: none !important;
       scrollbar-width: auto !important;
       scrollbar-gutter: auto !important;
       
