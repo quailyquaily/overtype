@@ -41,11 +41,44 @@ export function generateStyles(options = {}) {
 
   return `
     /* OverType Editor Styles */
+    
+    /* Middle-ground CSS Reset - Prevent parent styles from leaking in */
+    .overtype-container * {
+      /* Box model - these commonly leak */
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      
+      /* Layout - these can break our layout */
+      /* Don't reset position - it breaks dropdowns */
+      float: none !important;
+      clear: none !important;
+      
+      /* Typography - only reset decorative aspects */
+      text-decoration: none !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      
+      /* Visual effects that can interfere */
+      box-shadow: none !important;
+      text-shadow: none !important;
+      
+      /* Ensure box-sizing is consistent */
+      box-sizing: border-box !important;
+      
+      /* Keep inheritance for these */
+      /* font-family, color, line-height, font-size - inherit */
+    }
+    
+    /* Container base styles after reset */
     .overtype-container {
       display: grid !important;
       grid-template-rows: auto 1fr auto !important;
       width: 100% !important;
       height: 100% !important;
+      position: relative !important; /* Override reset - needed for absolute children */
+      overflow: visible !important; /* Allow dropdown to overflow container */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       ${themeVars ? `
       /* Theme Variables */
       ${themeVars}` : ''}
@@ -64,20 +97,21 @@ export function generateStyles(options = {}) {
     }
     
     .overtype-wrapper {
-      position: relative !important;
+      position: relative !important; /* Override reset - needed for absolute children */
       width: 100% !important;
       height: 100% !important; /* Take full height of grid cell */
       min-height: 60px !important; /* Minimum usable height */
       overflow: hidden !important;
       background: var(--bg-secondary, #ffffff) !important;
       grid-row: 2 !important; /* Always second row in grid */
+      z-index: 1; /* Below toolbar and dropdown */
     }
 
     /* Critical alignment styles - must be identical for both layers */
     .overtype-wrapper .overtype-input,
     .overtype-wrapper .overtype-preview {
       /* Positioning - must be identical */
-      position: absolute !important;
+      position: absolute !important; /* Override reset - required for overlay */
       top: 0 !important;
       left: 0 !important;
       width: 100% !important;
@@ -144,7 +178,7 @@ export function generateStyles(options = {}) {
       /* Overflow */
       overflow-y: auto !important;
       overflow-x: auto !important;
-      overscroll-behavior: none !important;
+      /* overscroll-behavior removed to allow scroll-through to parent */
       scrollbar-width: auto !important;
       scrollbar-gutter: auto !important;
       
@@ -232,6 +266,45 @@ export function generateStyles(options = {}) {
       color: var(--h3, #3d8a51) !important; 
     }
 
+    /* Semantic headers - flatten in edit mode */
+    .overtype-wrapper .overtype-preview h1,
+    .overtype-wrapper .overtype-preview h2,
+    .overtype-wrapper .overtype-preview h3 {
+      font-size: inherit !important;
+      font-weight: bold !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline !important;
+      line-height: inherit !important;
+    }
+
+    /* Header colors for semantic headers */
+    .overtype-wrapper .overtype-preview h1 { 
+      color: var(--h1, #f95738) !important; 
+    }
+    .overtype-wrapper .overtype-preview h2 { 
+      color: var(--h2, #ee964b) !important; 
+    }
+    .overtype-wrapper .overtype-preview h3 { 
+      color: var(--h3, #3d8a51) !important; 
+    }
+
+    /* Lists - remove styling in edit mode */
+    .overtype-wrapper .overtype-preview ul,
+    .overtype-wrapper .overtype-preview ol {
+      list-style: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important; /* Lists need to be block for line breaks */
+    }
+
+    .overtype-wrapper .overtype-preview li {
+      display: block !important; /* Each item on its own line */
+      margin: 0 !important;
+      padding: 0 !important;
+      /* Don't set list-style here - let ul/ol control it */
+    }
+
     /* Bold text */
     .overtype-wrapper .overtype-preview strong {
       color: var(--strong, #ee964b) !important;
@@ -258,17 +331,23 @@ export function generateStyles(options = {}) {
       font-weight: normal !important;
     }
 
-    /* Code blocks */
+    /* Code blocks - consolidated pre blocks */
     .overtype-wrapper .overtype-preview pre {
-      background: #1e1e1e !important;
       padding: 0 !important;
       margin: 0 !important;
       border-radius: 4px !important;
       overflow-x: auto !important;
     }
+    
+    /* Code block styling in normal mode - yellow background */
+    .overtype-wrapper .overtype-preview pre.code-block {
+      background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
+    }
 
+    /* Code inside pre blocks - remove background */
     .overtype-wrapper .overtype-preview pre code {
-      background: none !important;
+      background: transparent !important;
+      color: var(--code, #0d3b66) !important;
     }
 
     /* Blockquotes */
@@ -299,11 +378,6 @@ export function generateStyles(options = {}) {
       padding: 0 !important;
     }
 
-    .overtype-wrapper .overtype-preview li {
-      margin: 0 !important;
-      padding: 0 !important;
-      list-style: none !important;
-    }
 
     /* Horizontal rules */
     .overtype-wrapper .overtype-preview hr {
@@ -402,13 +476,31 @@ export function generateStyles(options = {}) {
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 8px;
-      background: var(--toolbar-bg, var(--bg-primary, #f8f9fa));
-      overflow-x: auto;
+      padding: 8px !important; /* Override reset */
+      background: var(--toolbar-bg, var(--bg-primary, #f8f9fa)) !important; /* Override reset */
+      overflow-x: auto !important; /* Allow horizontal scrolling */
+      overflow-y: hidden !important; /* Hide vertical overflow */
       -webkit-overflow-scrolling: touch;
       flex-shrink: 0;
       height: auto !important;
       grid-row: 1 !important; /* Always first row in grid */
+      position: relative !important; /* Override reset */
+      z-index: 100; /* Ensure toolbar is above wrapper */
+      scrollbar-width: thin; /* Thin scrollbar on Firefox */
+    }
+    
+    /* Thin scrollbar styling */
+    .overtype-toolbar::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .overtype-toolbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .overtype-toolbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
     }
 
     .overtype-toolbar-button {
@@ -496,6 +588,214 @@ export function generateStyles(options = {}) {
     /* Ensure textarea remains transparent in overlay mode */
     .overtype-container:not(.plain-mode) .overtype-input {
       color: transparent !important;
+    }
+
+    /* Dropdown menu styles */
+    .overtype-toolbar-button {
+      position: relative !important; /* Override reset - needed for dropdown */
+    }
+
+    .overtype-toolbar-button.dropdown-active {
+      background: var(--toolbar-active, var(--hover-bg, #f0f0f0));
+    }
+
+    .overtype-dropdown-menu {
+      position: fixed !important; /* Fixed positioning relative to viewport */
+      background: var(--bg-secondary, white) !important; /* Override reset */
+      border: 1px solid var(--border, #e0e0e0) !important; /* Override reset */
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; /* Override reset */
+      z-index: 10000; /* Very high z-index to ensure visibility */
+      min-width: 150px;
+      padding: 4px 0 !important; /* Override reset */
+      /* Position will be set via JavaScript based on button position */
+    }
+
+    .overtype-dropdown-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text, #333);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .overtype-dropdown-item:hover {
+      background: var(--hover-bg, #f0f0f0);
+    }
+
+    .overtype-dropdown-item.active {
+      font-weight: 600;
+    }
+
+    .overtype-dropdown-check {
+      width: 16px;
+      margin-right: 8px;
+      color: var(--h1, #007bff);
+    }
+
+    /* Preview mode styles */
+    .overtype-container.preview-mode .overtype-input {
+      display: none !important;
+    }
+
+    .overtype-container.preview-mode .overtype-preview {
+      pointer-events: auto !important;
+      user-select: text !important;
+      cursor: text !important;
+    }
+
+    /* Hide syntax markers in preview mode */
+    .overtype-container.preview-mode .syntax-marker {
+      display: none !important;
+    }
+    
+    /* Hide URL part of links in preview mode - extra specificity */
+    .overtype-container.preview-mode .syntax-marker.url-part,
+    .overtype-container.preview-mode .url-part {
+      display: none !important;
+    }
+    
+    /* Hide all syntax markers inside links too */
+    .overtype-container.preview-mode a .syntax-marker {
+      display: none !important;
+    }
+
+    /* Headers - restore proper sizing in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h1, 
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h2, 
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h3 {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+      display: block !important;
+      color: inherit !important; /* Use parent text color */
+      line-height: 1 !important; /* Tight line height for headings */
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h1 { 
+      font-size: 2em !important; 
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h2 { 
+      font-size: 1.5em !important; 
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h3 { 
+      font-size: 1.17em !important; 
+    }
+
+    /* Lists - restore list styling in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview ul {
+      display: block !important;
+      list-style: disc !important;
+      padding-left: 2em !important;
+      margin: 1em 0 !important;
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview ol {
+      display: block !important;
+      list-style: decimal !important;
+      padding-left: 2em !important;
+      margin: 1em 0 !important;
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview li {
+      display: list-item !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Links - make clickable in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview a {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      color: var(--link, #0066cc) !important;
+      text-decoration: underline !important;
+    }
+
+    /* Code blocks - proper pre/code styling in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview pre.code-block {
+      background: #2d2d2d !important;
+      color: #f8f8f2 !important;
+      padding: 1.2em !important;
+      border-radius: 3px !important;
+      overflow-x: auto !important;
+      margin: 0 !important;
+      display: block !important;
+    }
+    
+    /* Cave theme code block background in preview mode */
+    .overtype-container[data-theme="cave"].preview-mode .overtype-wrapper .overtype-preview pre.code-block {
+      background: #11171F !important;
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview pre.code-block code {
+      background: transparent !important;
+      color: inherit !important;
+      padding: 0 !important;
+      font-family: ${fontFamily} !important;
+      font-size: 0.9em !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Hide old code block lines and fences in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .code-block-line {
+      display: none !important;
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .code-fence {
+      display: none !important;
+    }
+
+    /* Blockquotes - enhanced styling in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .blockquote {
+      display: block !important;
+      border-left: 4px solid var(--blockquote, #ddd) !important;
+      padding-left: 1em !important;
+      margin: 1em 0 !important;
+      font-style: italic !important;
+    }
+
+    /* Typography improvements in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview {
+      font-family: Georgia, 'Times New Roman', serif !important;
+      font-size: 16px !important;
+      line-height: 1.8 !important;
+      color: var(--text, #333) !important; /* Consistent text color */
+    }
+
+    /* Inline code in preview mode - keep monospace */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview code {
+      font-family: ${fontFamily} !important;
+      font-size: 0.9em !important;
+      background: rgba(135, 131, 120, 0.15) !important;
+      padding: 0.2em 0.4em !important;
+      border-radius: 3px !important;
+    }
+
+    /* Strong and em elements in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview strong {
+      font-weight: 700 !important;
+      color: inherit !important; /* Use parent text color */
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview em {
+      font-style: italic !important;
+      color: inherit !important; /* Use parent text color */
+    }
+
+    /* HR in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .hr-marker {
+      display: block !important;
+      border-top: 2px solid var(--hr, #ddd) !important;
+      text-indent: -9999px !important;
+      height: 2px !important;
     }
 
     ${mobileStyles}

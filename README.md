@@ -1,6 +1,6 @@
 # OverType
 
-A lightweight markdown editor library with perfect WYSIWYG alignment using an invisible textarea overlay technique. Includes optional toolbar. ~45KB minified with all features.
+A lightweight markdown editor library with perfect WYSIWYG alignment using an invisible textarea overlay technique. Includes optional toolbar. ~78KB minified with all features.
 
 ## Features
 
@@ -9,7 +9,7 @@ A lightweight markdown editor library with perfect WYSIWYG alignment using an in
 - ⌨️ **Keyboard shortcuts** - Common markdown shortcuts (Cmd/Ctrl+B for bold, etc.)
 - 📱 **Mobile optimized** - Responsive design with mobile-specific styles
 - 🔄 **DOM persistence aware** - Recovers from existing DOM (perfect for HyperClay and similar platforms)
-- 🚀 **Lightweight** - ~45KB minified
+- 🚀 **Lightweight** - ~78KB minified
 - 🎯 **Optional toolbar** - Clean, minimal toolbar with all essential formatting
 - ✨ **Smart shortcuts** - Keyboard shortcuts with selection preservation
 - 🔧 **Framework agnostic** - Works with React, Vue, vanilla JS, and more
@@ -24,7 +24,7 @@ We overlap an invisible textarea on top of styled output, giving the illusion of
 
 | Feature | OverType | HyperMD | Milkdown | TUI Editor | EasyMDE |
 |---------|----------|---------|----------|------------|---------|
-| **Size** | ~45KB | 364.02 KB | 344.51 KB | 560.99 KB | 323.69 KB |
+| **Size** | ~78KB | 364.02 KB | 344.51 KB | 560.99 KB | 323.69 KB |
 | **Dependencies** | Bundled | CodeMirror | ProseMirror + plugins | Multiple libs | CodeMirror |
 | **Setup** | Single file | Complex config | Build step required | Complex config | Moderate |
 | **Approach** | Invisible textarea | ContentEditable | ContentEditable | ContentEditable | CodeMirror |
@@ -96,10 +96,10 @@ editor.setTheme('cave');
 </script>
 ```
 
-### Toolbar
+### Toolbar & View Modes
 
 ```javascript
-// Enable the toolbar
+// Enable the toolbar with view mode switcher
 const [editor] = new OverType('#editor', {
   toolbar: true,  // Enables the toolbar
   value: '# Document\n\nSelect text and use the toolbar buttons!'
@@ -110,7 +110,17 @@ const [editor] = new OverType('#editor', {
 // - Heading levels (H1, H2, H3)
 // - Links, inline code, code blocks
 // - Bullet and numbered lists
+// - View mode switcher (eye icon dropdown)
 // - All with keyboard shortcuts!
+
+// Three view modes available via toolbar dropdown:
+// 1. Normal Edit - Default WYSIWYG markdown editing
+// 2. Plain Textarea - Shows raw markdown without preview overlay
+// 3. Preview Mode - Read-only rendered preview with clickable links
+
+// Programmatically switch modes:
+editor.showPlainTextarea(true);   // Switch to plain textarea mode
+editor.showPreviewMode(true);     // Switch to preview mode
 ```
 
 ### Keyboard Shortcuts
@@ -186,6 +196,35 @@ const [editor] = new OverType('#editor', {
     }
   }
 });
+```
+
+### Preview & HTML Export
+
+Generate HTML previews or export the rendered content:
+
+```javascript
+const [editor] = new OverType('#editor', {
+  value: '# Title\n\n**Bold** text with [links](https://example.com)'
+});
+
+// Get the raw markdown
+const markdown = editor.getValue();
+// Returns: "# Title\n\n**Bold** text with [links](https://example.com)"
+
+// Get rendered HTML for display
+const html = editor.getRenderedHTML();
+// Returns basic HTML with markdown elements
+
+// Get HTML with post-processing (consolidated lists/code blocks)
+const processedHTML = editor.getRenderedHTML(true);
+// Returns HTML optimized for preview mode
+
+// Get the current preview element's HTML
+const previewHTML = editor.getPreviewHTML();
+// Returns exactly what's shown in the editor's preview layer
+
+// Example: Create external preview
+document.getElementById('external-preview').innerHTML = editor.getRenderedHTML(true);
 ```
 
 ### Stats Bar
@@ -327,9 +366,22 @@ editor.getValue()
 // Set markdown content
 editor.setValue(markdown)
 
+// Get rendered HTML of the current content
+editor.getRenderedHTML()           // Basic HTML rendering
+editor.getRenderedHTML(true)       // With post-processing (consolidated lists/code blocks)
+
+// Get the current preview element's HTML
+editor.getPreviewHTML()            // Returns exactly what's displayed in the preview
+
 // Change theme
 editor.setTheme('cave')  // Built-in theme name
 editor.setTheme(customThemeObject)  // Custom theme
+
+// View modes
+editor.showPlainTextarea(true)    // Switch to plain textarea mode
+editor.showPlainTextarea(false)   // Switch back to normal mode
+editor.showPreviewMode(true)      // Switch to preview mode
+editor.showPreviewMode(false)     // Switch back to normal mode
 
 // Focus/blur
 editor.focus()

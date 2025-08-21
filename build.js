@@ -43,32 +43,29 @@ async function build() {
       // Development build with watch mode
       const ctx = await esbuild.context({
         ...baseConfig,
+        entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.js',
         format: 'iife',
         globalName: 'OverType',
-        footer: {
-          js: 'if(typeof module!=="undefined")module.exports=OverType;'
-        },
+        platform: 'browser',
         logLevel: 'info'
       });
 
       await ctx.watch();
       console.log('✅ Watching for changes...');
     } else {
-      // UMD Development Build
+      // Browser IIFE Build (Development)
       await esbuild.build({
         ...baseConfig,
         entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.js',
         format: 'iife',
         globalName: 'OverType',
-        footer: {
-          js: 'window.OverType = OverType.OverType || OverType.default || OverType;'
-        }
+        platform: 'browser'
       });
       console.log('✅ Built dist/overtype.js');
 
-      // UMD Production Build (minified)
+      // Browser IIFE Build (Minified)
       await esbuild.build({
         ...baseConfig,
         entryPoints: ['src/overtype.js'],
@@ -77,36 +74,102 @@ async function build() {
         globalName: 'OverType',
         minify: true,
         sourcemap: false,
-        footer: {
-          js: 'window.OverType = OverType.OverType || OverType.default || OverType;'
-        }
+        platform: 'browser'
       });
       console.log('✅ Built dist/overtype.min.js');
 
-      // ESM Build
+      // CommonJS Build (for Node.js)
+      await esbuild.build({
+        ...baseConfig,
+        entryPoints: ['src/overtype.js'],
+        outfile: 'dist/overtype.cjs',
+        format: 'cjs',
+        platform: 'node'
+      });
+      console.log('✅ Built dist/overtype.cjs');
+
+      // ESM Build (for modern bundlers)
       await esbuild.build({
         ...baseConfig,
         entryPoints: ['src/overtype.js'],
         outfile: 'dist/overtype.esm.js',
-        format: 'esm'
+        format: 'esm',
+        platform: 'browser'
       });
       console.log('✅ Built dist/overtype.esm.js');
 
       // Report sizes
-      const devSize = fs.statSync('dist/overtype.js').size;
+      const iifeSize = fs.statSync('dist/overtype.js').size;
       const minSize = fs.statSync('dist/overtype.min.js').size;
+      const cjsSize = fs.statSync('dist/overtype.cjs').size;
       const esmSize = fs.statSync('dist/overtype.esm.js').size;
 
       console.log('\n📊 Build sizes:');
-      console.log(`   Development: ${(devSize / 1024).toFixed(2)} KB`);
-      console.log(`   Minified:    ${(minSize / 1024).toFixed(2)} KB`);
-      console.log(`   ESM:         ${(esmSize / 1024).toFixed(2)} KB`);
+      console.log(`   IIFE (Browser): ${(iifeSize / 1024).toFixed(2)} KB`);
+      console.log(`   IIFE Minified:  ${(minSize / 1024).toFixed(2)} KB`);
+      console.log(`   CommonJS:       ${(cjsSize / 1024).toFixed(2)} KB`);
+      console.log(`   ESM:            ${(esmSize / 1024).toFixed(2)} KB`);
+      
+      // Update HTML files with actual minified size
+      updateFileSizes(minSize);
+      
       console.log('\n✨ Build complete!');
     }
   } catch (error) {
     console.error('❌ Build failed:', error);
     process.exit(1);
   }
+}
+
+// Function to update file sizes in HTML files
+function updateFileSizes(minifiedSize) {
+  const sizeInKB = Math.round(minifiedSize / 1024);
+  const sizeText = `${sizeInKB}KB`;
+  
+  // List of files to update
+  const htmlFiles = ['index.html']; // Removed demo.html since it contains textarea content
+  const markdownFiles = ['README.md'];
+  
+  // Update HTML files with span tags
+  htmlFiles.forEach(file => {
+    const filePath = path.join(process.cwd(), file);
+    if (fs.existsSync(filePath)) {
+      let content = fs.readFileSync(filePath, 'utf8');
+      
+      // Replace all instances of file size within the special class
+      // Pattern matches spans with class="overtype-size" and updates their content
+      content = content.replace(
+        /<span class="overtype-size">[\d~]+KB<\/span>/g,
+        `<span class="overtype-size">${sizeText}</span>`
+      );
+      
+      fs.writeFileSync(filePath, content, 'utf8');
+      console.log(`   Updated ${file} with size: ${sizeText}`);
+    }
+  });
+  
+  // Update markdown files (README.md) - replace ~XXkB patterns
+  markdownFiles.forEach(file => {
+    const filePath = path.join(process.cwd(), file);
+    if (fs.existsSync(filePath)) {
+      let content = fs.readFileSync(filePath, 'utf8');
+      
+      // Replace size mentions in README - match patterns like ~45KB or 45KB
+      content = content.replace(
+        /~?\d+KB minified/g,
+        `~${sizeText} minified`
+      );
+      
+      // Also update the comparison table
+      content = content.replace(
+        /\| \*\*Size\*\* \| ~?\d+KB \|/g,
+        `| **Size** | ~${sizeText} |`
+      );
+      
+      fs.writeFileSync(filePath, content, 'utf8');
+      console.log(`   Updated ${file} with size: ~${sizeText}`);
+    }
+  });
 }
 
 // Run build

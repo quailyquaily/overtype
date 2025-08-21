@@ -5,6 +5,57 @@ All notable changes to OverType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **View Modes** - Three distinct editing/viewing modes accessible via toolbar dropdown
+  - Normal Edit Mode: Default WYSIWYG markdown editing with syntax highlighting
+  - Plain Textarea Mode: Shows raw markdown without preview overlay  
+  - Preview Mode: Read-only rendered preview with proper typography and clickable links
+- **API Methods for HTML Export**
+  - `getRenderedHTML(processForPreview)`: Get rendered HTML of current content
+  - `getPreviewHTML()`: Get the exact HTML displayed in preview layer
+  - Enables external preview generation and HTML export functionality
+- **View Mode API Methods**
+  - `showPlainTextarea(boolean)`: Programmatically switch to/from plain textarea mode
+  - `showPreviewMode(boolean)`: Programmatically switch to/from preview mode
+- **Enhanced Link Handling**
+  - Links now always have real hrefs (pointer-events controls clickability)
+  - Links properly hidden in preview mode (no more visible `](url)` syntax)
+  - Simplified implementation without dynamic href updates
+- **CSS Isolation Improvements**
+  - Middle-ground CSS reset prevents parent styles from leaking into editor
+  - Protects against inherited margins, padding, borders, and decorative styles
+  - Maintains proper inheritance for fonts and colors
+- **Dropdown Menu System**
+  - Fixed positioning dropdown menus that work with scrollable toolbar
+  - Dropdown appends to document.body to avoid overflow clipping
+  - Proper z-index management for reliable visibility
+- **Comprehensive Test Suite**
+  - Added tests for preview mode functionality
+  - Added tests for link parsing and XSS prevention
+  - Added tests for new API methods (getValue, getRenderedHTML, getPreviewHTML)
+  - Test coverage includes view mode switching, HTML rendering, and post-processing
+
+### Fixed
+- **Preview Mode Link Rendering** - URL syntax parts now properly hidden in preview mode
+- **Code Block Backgrounds** - Restored pale yellow background in normal mode
+- **Dropdown Menu Positioning** - Fixed dropdown being cut off by toolbar overflow
+- **Cave Theme Styling**
+  - Eye icon button now has proper contrast when active (dropdown-active state)
+  - Code blocks in preview mode use appropriate dark background (#11171F)
+- **Toolbar Scrolling** - Toolbar now scrolls horizontally on all screen sizes as intended
+- **CSS Conflicts** - Parent page styles no longer interfere with editor styling
+
+### Changed
+- Link implementation simplified - always uses real hrefs with CSS controlling interaction
+- Post-processing for lists and code blocks now works in both browser and Node.js environments
+- Toolbar overflow changed from hidden to auto for horizontal scrolling
+- Dropdown menus use fixed positioning instead of absolute
+- **Removed `overscroll-behavior: none`** to restore scroll-through behavior
+  - Users can now continue scrolling the parent page when reaching editor boundaries
+  - Trade-off: Minor visual desync during Safari elastic bounce vs trapped scrolling
+
 ## [1.1.8] - 2025-01-20
 
 ### Fixed

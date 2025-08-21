@@ -356,6 +356,8 @@ class OverType {
       this.wrapper.appendChild(this.textarea);
       this.wrapper.appendChild(this.preview);
       
+      // No need to prevent link clicks - pointer-events handles this
+      
       // Add wrapper to container first
       this.container.appendChild(this.wrapper);
       
@@ -446,6 +448,8 @@ class OverType {
       
       // Apply code block backgrounds
       this._applyCodeBlockBackgrounds();
+      
+      // Links always have real hrefs now - no need to update them
       
       // Update stats if enabled
       if (this.options.showStats && this.statsBar) {
@@ -615,6 +619,31 @@ class OverType {
       }
     }
 
+
+    /**
+     * Get the rendered HTML of the current content
+     * @param {boolean} processForPreview - If true, post-processes HTML for preview mode (consolidates lists/code blocks)
+     * @returns {string} Rendered HTML
+     */
+    getRenderedHTML(processForPreview = false) {
+      const markdown = this.getValue();
+      let html = MarkdownParser.parse(markdown);
+      
+      if (processForPreview) {
+        // Post-process HTML for preview mode
+        html = MarkdownParser.postProcessHTML(html);
+      }
+      
+      return html;
+    }
+
+    /**
+     * Get the current preview element's HTML
+     * @returns {string} Current preview HTML (as displayed)
+     */
+    getPreviewHTML() {
+      return this.preview.innerHTML;
+    }
 
     /**
      * Focus the editor
@@ -819,6 +848,23 @@ class OverType {
     }
 
     /**
+     * Show/hide preview mode
+     * @param {boolean} show - Show preview mode if true, edit mode if false
+     * @returns {boolean} Current preview mode state
+     */
+    showPreviewMode(show) {
+      if (show) {
+        // Show preview mode (hide textarea, make preview interactive)
+        this.container.classList.add('preview-mode');
+      } else {
+        // Show edit mode
+        this.container.classList.remove('preview-mode');
+      }
+      
+      return show;
+    }
+
+    /**
      * Destroy the editor instance
      */
     destroy() {
@@ -1014,7 +1060,12 @@ OverType.getTheme = getTheme;
 // Set default theme
 OverType.currentTheme = solar;
 
-// For IIFE builds, esbuild needs the class as the default export
+// Only attach to global in browser environments (not Node.js)
+if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
+  // Browser environment - attach to window
+  window.OverType = OverType;
+}
+
+// Export for module systems
 export default OverType;
-// Also export as named for ESM compatibility
 export { OverType };

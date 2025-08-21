@@ -78,8 +78,7 @@ var OverType = (() => {
     static parseHeader(html) {
       return html.replace(/^(#{1,3})\s(.+)$/, (match, hashes, content) => {
         const level = hashes.length;
-        const levelClasses = ["h1", "h2", "h3"];
-        return `<span class="header ${levelClasses[level - 1]}"><span class="syntax-marker">${hashes}</span> ${content}</span>`;
+        return `<h${level}><span class="syntax-marker">${hashes} </span>${content}</h${level}>`;
       });
     }
     /**
@@ -110,7 +109,7 @@ var OverType = (() => {
      */
     static parseBulletList(html) {
       return html.replace(/^((?:&nbsp;)*)([-*])\s(.+)$/, (match, indent, marker, content) => {
-        return `${indent}<span class="syntax-marker">${marker}</span> ${content}`;
+        return `${indent}<li class="bullet-list"><span class="syntax-marker">${marker} </span>${content}</li>`;
       });
     }
     /**
@@ -120,7 +119,7 @@ var OverType = (() => {
      */
     static parseNumberedList(html) {
       return html.replace(/^((?:&nbsp;)*)(\d+\.)\s(.+)$/, (match, indent, marker, content) => {
-        return `${indent}<span class="syntax-marker">${marker}</span> ${content}`;
+        return `${indent}<li class="ordered-list"><span class="syntax-marker">${marker} </span>${content}</li>`;
       });
     }
     /**
@@ -195,7 +194,7 @@ var OverType = (() => {
       return html.replace(/\[(.+?)\]\((.+?)\)/g, (match, text, url) => {
         const anchorName = `--link-${this.linkIndex++}`;
         const safeUrl = this.sanitizeUrl(url);
-        return `<a href="${safeUrl}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
+        return `<a href="${safeUrl}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker url-part">](${url})</span></a>`;
       });
     }
     /**
@@ -266,7 +265,123 @@ var OverType = (() => {
         }
         return this.parseLine(line);
       });
-      return parsedLines.join("");
+      const html = parsedLines.join("");
+      return this.postProcessHTML(html);
+    }
+    /**
+     * Post-process HTML to consolidate lists and code blocks
+     * @param {string} html - HTML to post-process
+     * @returns {string} Post-processed HTML with consolidated lists and code blocks
+     */
+    static postProcessHTML(html) {
+      if (typeof document === "undefined" || !document) {
+        return this.postProcessHTMLManual(html);
+      }
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      let currentList = null;
+      let listType = null;
+      let currentCodeBlock = null;
+      let inCodeBlock = false;
+      const children = Array.from(container.children);
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (!child.parentNode)
+          continue;
+        const codeFence = child.querySelector(".code-fence");
+        if (codeFence) {
+          const fenceText = codeFence.textContent;
+          if (fenceText.startsWith("```")) {
+            if (!inCodeBlock) {
+              inCodeBlock = true;
+              currentCodeBlock = document.createElement("pre");
+              const codeElement = document.createElement("code");
+              currentCodeBlock.appendChild(codeElement);
+              currentCodeBlock.className = "code-block";
+              const lang = fenceText.slice(3).trim();
+              if (lang) {
+                codeElement.className = `language-${lang}`;
+              }
+              container.insertBefore(currentCodeBlock, child);
+              child.remove();
+              continue;
+            } else {
+              inCodeBlock = false;
+              currentCodeBlock = null;
+              child.remove();
+              continue;
+            }
+          }
+        }
+        if (inCodeBlock && currentCodeBlock && child.tagName === "DIV" && !child.querySelector(".code-fence")) {
+          const codeElement = currentCodeBlock.querySelector("code");
+          if (codeElement.textContent.length > 0) {
+            codeElement.textContent += "\n";
+          }
+          const lineText = child.innerHTML.replace(/&nbsp;/g, " ").replace(/<[^>]*>/g, "");
+          codeElement.textContent += lineText;
+          child.remove();
+          continue;
+        }
+        let listItem = null;
+        if (child.tagName === "DIV") {
+          listItem = child.querySelector("li");
+        }
+        if (listItem) {
+          const isBullet = listItem.classList.contains("bullet-list");
+          const isOrdered = listItem.classList.contains("ordered-list");
+          if (!isBullet && !isOrdered) {
+            currentList = null;
+            listType = null;
+            continue;
+          }
+          const newType = isBullet ? "ul" : "ol";
+          if (!currentList || listType !== newType) {
+            currentList = document.createElement(newType);
+            container.insertBefore(currentList, child);
+            listType = newType;
+          }
+          currentList.appendChild(listItem);
+          child.remove();
+        } else {
+          currentList = null;
+          listType = null;
+        }
+      }
+      return container.innerHTML;
+    }
+    /**
+     * Manual post-processing for Node.js environments (without DOM)
+     * @param {string} html - HTML to post-process
+     * @returns {string} Post-processed HTML
+     */
+    static postProcessHTMLManual(html) {
+      let processed = html;
+      processed = processed.replace(/((?:<div>(?:&nbsp;)*<li class="bullet-list">.*?<\/li><\/div>\s*)+)/gs, (match) => {
+        const items = match.match(/<li class="bullet-list">.*?<\/li>/gs) || [];
+        if (items.length > 0) {
+          return "<ul>" + items.join("") + "</ul>";
+        }
+        return match;
+      });
+      processed = processed.replace(/((?:<div>(?:&nbsp;)*<li class="ordered-list">.*?<\/li><\/div>\s*)+)/gs, (match) => {
+        const items = match.match(/<li class="ordered-list">.*?<\/li>/gs) || [];
+        if (items.length > 0) {
+          return "<ol>" + items.join("") + "</ol>";
+        }
+        return match;
+      });
+      const codeBlockRegex = /<div><span class="code-fence">```([^<]*)<\/span><\/div>(.*?)<div><span class="code-fence">```<\/span><\/div>/gs;
+      processed = processed.replace(codeBlockRegex, (match, lang, content) => {
+        const lines = content.match(/<div>(.*?)<\/div>/gs) || [];
+        const codeContent = lines.map((line) => {
+          const text = line.replace(/<div>(.*?)<\/div>/s, "$1").replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+          return text;
+        }).join("\n");
+        const langClass = lang ? ` class="language-${lang.trim()}"` : "";
+        return `<pre class="code-block"><code${langClass}>${this.escapeHtml(codeContent)}</code></pre>`;
+      });
+      return processed;
     }
   };
   // Track link index for anchor naming
@@ -1367,11 +1482,44 @@ ${blockSuffix}` : suffix;
     const themeVars = theme && theme.colors ? themeToCSSVars(theme.colors) : "";
     return `
     /* OverType Editor Styles */
+    
+    /* Middle-ground CSS Reset - Prevent parent styles from leaking in */
+    .overtype-container * {
+      /* Box model - these commonly leak */
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      
+      /* Layout - these can break our layout */
+      /* Don't reset position - it breaks dropdowns */
+      float: none !important;
+      clear: none !important;
+      
+      /* Typography - only reset decorative aspects */
+      text-decoration: none !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      
+      /* Visual effects that can interfere */
+      box-shadow: none !important;
+      text-shadow: none !important;
+      
+      /* Ensure box-sizing is consistent */
+      box-sizing: border-box !important;
+      
+      /* Keep inheritance for these */
+      /* font-family, color, line-height, font-size - inherit */
+    }
+    
+    /* Container base styles after reset */
     .overtype-container {
       display: grid !important;
       grid-template-rows: auto 1fr auto !important;
       width: 100% !important;
       height: 100% !important;
+      position: relative !important; /* Override reset - needed for absolute children */
+      overflow: visible !important; /* Allow dropdown to overflow container */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       ${themeVars ? `
       /* Theme Variables */
       ${themeVars}` : ""}
@@ -1390,20 +1538,21 @@ ${blockSuffix}` : suffix;
     }
     
     .overtype-wrapper {
-      position: relative !important;
+      position: relative !important; /* Override reset - needed for absolute children */
       width: 100% !important;
       height: 100% !important; /* Take full height of grid cell */
       min-height: 60px !important; /* Minimum usable height */
       overflow: hidden !important;
       background: var(--bg-secondary, #ffffff) !important;
       grid-row: 2 !important; /* Always second row in grid */
+      z-index: 1; /* Below toolbar and dropdown */
     }
 
     /* Critical alignment styles - must be identical for both layers */
     .overtype-wrapper .overtype-input,
     .overtype-wrapper .overtype-preview {
       /* Positioning - must be identical */
-      position: absolute !important;
+      position: absolute !important; /* Override reset - required for overlay */
       top: 0 !important;
       left: 0 !important;
       width: 100% !important;
@@ -1470,7 +1619,7 @@ ${blockSuffix}` : suffix;
       /* Overflow */
       overflow-y: auto !important;
       overflow-x: auto !important;
-      overscroll-behavior: none !important;
+      /* overscroll-behavior removed to allow scroll-through to parent */
       scrollbar-width: auto !important;
       scrollbar-gutter: auto !important;
       
@@ -1558,6 +1707,45 @@ ${blockSuffix}` : suffix;
       color: var(--h3, #3d8a51) !important; 
     }
 
+    /* Semantic headers - flatten in edit mode */
+    .overtype-wrapper .overtype-preview h1,
+    .overtype-wrapper .overtype-preview h2,
+    .overtype-wrapper .overtype-preview h3 {
+      font-size: inherit !important;
+      font-weight: bold !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline !important;
+      line-height: inherit !important;
+    }
+
+    /* Header colors for semantic headers */
+    .overtype-wrapper .overtype-preview h1 { 
+      color: var(--h1, #f95738) !important; 
+    }
+    .overtype-wrapper .overtype-preview h2 { 
+      color: var(--h2, #ee964b) !important; 
+    }
+    .overtype-wrapper .overtype-preview h3 { 
+      color: var(--h3, #3d8a51) !important; 
+    }
+
+    /* Lists - remove styling in edit mode */
+    .overtype-wrapper .overtype-preview ul,
+    .overtype-wrapper .overtype-preview ol {
+      list-style: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: block !important; /* Lists need to be block for line breaks */
+    }
+
+    .overtype-wrapper .overtype-preview li {
+      display: block !important; /* Each item on its own line */
+      margin: 0 !important;
+      padding: 0 !important;
+      /* Don't set list-style here - let ul/ol control it */
+    }
+
     /* Bold text */
     .overtype-wrapper .overtype-preview strong {
       color: var(--strong, #ee964b) !important;
@@ -1584,17 +1772,23 @@ ${blockSuffix}` : suffix;
       font-weight: normal !important;
     }
 
-    /* Code blocks */
+    /* Code blocks - consolidated pre blocks */
     .overtype-wrapper .overtype-preview pre {
-      background: #1e1e1e !important;
       padding: 0 !important;
       margin: 0 !important;
       border-radius: 4px !important;
       overflow-x: auto !important;
     }
+    
+    /* Code block styling in normal mode - yellow background */
+    .overtype-wrapper .overtype-preview pre.code-block {
+      background: var(--code-bg, rgba(244, 211, 94, 0.4)) !important;
+    }
 
+    /* Code inside pre blocks - remove background */
     .overtype-wrapper .overtype-preview pre code {
-      background: none !important;
+      background: transparent !important;
+      color: var(--code, #0d3b66) !important;
     }
 
     /* Blockquotes */
@@ -1625,11 +1819,6 @@ ${blockSuffix}` : suffix;
       padding: 0 !important;
     }
 
-    .overtype-wrapper .overtype-preview li {
-      margin: 0 !important;
-      padding: 0 !important;
-      list-style: none !important;
-    }
 
     /* Horizontal rules */
     .overtype-wrapper .overtype-preview hr {
@@ -1728,13 +1917,31 @@ ${blockSuffix}` : suffix;
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 8px;
-      background: var(--toolbar-bg, var(--bg-primary, #f8f9fa));
-      overflow-x: auto;
+      padding: 8px !important; /* Override reset */
+      background: var(--toolbar-bg, var(--bg-primary, #f8f9fa)) !important; /* Override reset */
+      overflow-x: auto !important; /* Allow horizontal scrolling */
+      overflow-y: hidden !important; /* Hide vertical overflow */
       -webkit-overflow-scrolling: touch;
       flex-shrink: 0;
       height: auto !important;
       grid-row: 1 !important; /* Always first row in grid */
+      position: relative !important; /* Override reset */
+      z-index: 100; /* Ensure toolbar is above wrapper */
+      scrollbar-width: thin; /* Thin scrollbar on Firefox */
+    }
+    
+    /* Thin scrollbar styling */
+    .overtype-toolbar::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .overtype-toolbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .overtype-toolbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
     }
 
     .overtype-toolbar-button {
@@ -1822,6 +2029,214 @@ ${blockSuffix}` : suffix;
     /* Ensure textarea remains transparent in overlay mode */
     .overtype-container:not(.plain-mode) .overtype-input {
       color: transparent !important;
+    }
+
+    /* Dropdown menu styles */
+    .overtype-toolbar-button {
+      position: relative !important; /* Override reset - needed for dropdown */
+    }
+
+    .overtype-toolbar-button.dropdown-active {
+      background: var(--toolbar-active, var(--hover-bg, #f0f0f0));
+    }
+
+    .overtype-dropdown-menu {
+      position: fixed !important; /* Fixed positioning relative to viewport */
+      background: var(--bg-secondary, white) !important; /* Override reset */
+      border: 1px solid var(--border, #e0e0e0) !important; /* Override reset */
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; /* Override reset */
+      z-index: 10000; /* Very high z-index to ensure visibility */
+      min-width: 150px;
+      padding: 4px 0 !important; /* Override reset */
+      /* Position will be set via JavaScript based on button position */
+    }
+
+    .overtype-dropdown-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text, #333);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .overtype-dropdown-item:hover {
+      background: var(--hover-bg, #f0f0f0);
+    }
+
+    .overtype-dropdown-item.active {
+      font-weight: 600;
+    }
+
+    .overtype-dropdown-check {
+      width: 16px;
+      margin-right: 8px;
+      color: var(--h1, #007bff);
+    }
+
+    /* Preview mode styles */
+    .overtype-container.preview-mode .overtype-input {
+      display: none !important;
+    }
+
+    .overtype-container.preview-mode .overtype-preview {
+      pointer-events: auto !important;
+      user-select: text !important;
+      cursor: text !important;
+    }
+
+    /* Hide syntax markers in preview mode */
+    .overtype-container.preview-mode .syntax-marker {
+      display: none !important;
+    }
+    
+    /* Hide URL part of links in preview mode - extra specificity */
+    .overtype-container.preview-mode .syntax-marker.url-part,
+    .overtype-container.preview-mode .url-part {
+      display: none !important;
+    }
+    
+    /* Hide all syntax markers inside links too */
+    .overtype-container.preview-mode a .syntax-marker {
+      display: none !important;
+    }
+
+    /* Headers - restore proper sizing in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h1, 
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h2, 
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h3 {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      font-weight: 600 !important;
+      margin: 0 !important;
+      display: block !important;
+      color: inherit !important; /* Use parent text color */
+      line-height: 1 !important; /* Tight line height for headings */
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h1 { 
+      font-size: 2em !important; 
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h2 { 
+      font-size: 1.5em !important; 
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview h3 { 
+      font-size: 1.17em !important; 
+    }
+
+    /* Lists - restore list styling in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview ul {
+      display: block !important;
+      list-style: disc !important;
+      padding-left: 2em !important;
+      margin: 1em 0 !important;
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview ol {
+      display: block !important;
+      list-style: decimal !important;
+      padding-left: 2em !important;
+      margin: 1em 0 !important;
+    }
+    
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview li {
+      display: list-item !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Links - make clickable in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview a {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      color: var(--link, #0066cc) !important;
+      text-decoration: underline !important;
+    }
+
+    /* Code blocks - proper pre/code styling in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview pre.code-block {
+      background: #2d2d2d !important;
+      color: #f8f8f2 !important;
+      padding: 1.2em !important;
+      border-radius: 3px !important;
+      overflow-x: auto !important;
+      margin: 0 !important;
+      display: block !important;
+    }
+    
+    /* Cave theme code block background in preview mode */
+    .overtype-container[data-theme="cave"].preview-mode .overtype-wrapper .overtype-preview pre.code-block {
+      background: #11171F !important;
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview pre.code-block code {
+      background: transparent !important;
+      color: inherit !important;
+      padding: 0 !important;
+      font-family: ${fontFamily} !important;
+      font-size: 0.9em !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Hide old code block lines and fences in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .code-block-line {
+      display: none !important;
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .code-fence {
+      display: none !important;
+    }
+
+    /* Blockquotes - enhanced styling in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .blockquote {
+      display: block !important;
+      border-left: 4px solid var(--blockquote, #ddd) !important;
+      padding-left: 1em !important;
+      margin: 1em 0 !important;
+      font-style: italic !important;
+    }
+
+    /* Typography improvements in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview {
+      font-family: Georgia, 'Times New Roman', serif !important;
+      font-size: 16px !important;
+      line-height: 1.8 !important;
+      color: var(--text, #333) !important; /* Consistent text color */
+    }
+
+    /* Inline code in preview mode - keep monospace */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview code {
+      font-family: ${fontFamily} !important;
+      font-size: 0.9em !important;
+      background: rgba(135, 131, 120, 0.15) !important;
+      padding: 0.2em 0.4em !important;
+      border-radius: 3px !important;
+    }
+
+    /* Strong and em elements in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview strong {
+      font-weight: 700 !important;
+      color: inherit !important; /* Use parent text color */
+    }
+
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview em {
+      font-style: italic !important;
+      color: inherit !important; /* Use parent text color */
+    }
+
+    /* HR in preview mode */
+    .overtype-container.preview-mode .overtype-wrapper .overtype-preview .hr-marker {
+      display: block !important;
+      border-top: 2px solid var(--hr, #ddd) !important;
+      text-indent: -9999px !important;
+      height: 2px !important;
     }
 
     ${mobileStyles}
@@ -1923,7 +2338,7 @@ ${blockSuffix}` : suffix;
         { name: "orderedList", icon: orderedListIcon, title: "Numbered List", action: "toggleNumberedList" },
         { name: "taskList", icon: taskListIcon, title: "Task List", action: "toggleTaskList" },
         { separator: true },
-        { name: "togglePlain", icon: eyeIcon, title: "Show plain textarea", action: "toggle-plain" }
+        { name: "viewMode", icon: eyeIcon, title: "View mode", action: "toggle-view-menu", hasDropdown: true }
       ];
       buttonConfig.forEach((config) => {
         if (config.separator) {
@@ -1955,19 +2370,29 @@ ${blockSuffix}` : suffix;
       button.setAttribute("aria-label", config.title);
       button.setAttribute("data-action", config.action);
       button.innerHTML = config.icon;
+      if (config.hasDropdown) {
+        button.classList.add("has-dropdown");
+        if (config.name === "viewMode") {
+          this.viewModeButton = button;
+        }
+      }
       button.addEventListener("click", (e) => {
         e.preventDefault();
-        this.handleAction(config.action);
+        this.handleAction(config.action, button);
       });
       return button;
     }
     /**
      * Handle toolbar button actions
      */
-    async handleAction(action) {
+    async handleAction(action, button) {
       const textarea = this.editor.textarea;
       if (!textarea)
         return;
+      if (action === "toggle-view-menu") {
+        this.toggleViewDropdown(button);
+        return;
+      }
       textarea.focus();
       try {
         switch (action) {
@@ -2067,10 +2492,101 @@ ${blockSuffix}` : suffix;
       }
     }
     /**
+     * Toggle view mode dropdown menu
+     */
+    toggleViewDropdown(button) {
+      const existingDropdown = document.querySelector(".overtype-dropdown-menu");
+      if (existingDropdown) {
+        existingDropdown.remove();
+        button.classList.remove("dropdown-active");
+        document.removeEventListener("click", this.handleDocumentClick);
+        return;
+      }
+      const dropdown = this.createViewDropdown();
+      const rect = button.getBoundingClientRect();
+      dropdown.style.top = `${rect.bottom + 4}px`;
+      dropdown.style.left = `${rect.left}px`;
+      document.body.appendChild(dropdown);
+      button.classList.add("dropdown-active");
+      this.handleDocumentClick = (e) => {
+        if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.remove();
+          button.classList.remove("dropdown-active");
+          document.removeEventListener("click", this.handleDocumentClick);
+        }
+      };
+      setTimeout(() => {
+        document.addEventListener("click", this.handleDocumentClick);
+      }, 0);
+    }
+    /**
+     * Create view mode dropdown menu
+     */
+    createViewDropdown() {
+      const dropdown = document.createElement("div");
+      dropdown.className = "overtype-dropdown-menu";
+      const isPlain = this.editor.container.classList.contains("plain-mode");
+      const isPreview = this.editor.container.classList.contains("preview-mode");
+      const currentMode = isPreview ? "preview" : isPlain ? "plain" : "normal";
+      const modes = [
+        { id: "normal", label: "Normal Edit", icon: "\u2713" },
+        { id: "plain", label: "Plain Textarea", icon: "\u2713" },
+        { id: "preview", label: "Preview Mode", icon: "\u2713" }
+      ];
+      modes.forEach((mode) => {
+        const item = document.createElement("button");
+        item.className = "overtype-dropdown-item";
+        item.type = "button";
+        const check = document.createElement("span");
+        check.className = "overtype-dropdown-check";
+        check.textContent = currentMode === mode.id ? mode.icon : "";
+        const label = document.createElement("span");
+        label.textContent = mode.label;
+        item.appendChild(check);
+        item.appendChild(label);
+        if (currentMode === mode.id) {
+          item.classList.add("active");
+        }
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.setViewMode(mode.id);
+          dropdown.remove();
+          this.viewModeButton.classList.remove("dropdown-active");
+          document.removeEventListener("click", this.handleDocumentClick);
+        });
+        dropdown.appendChild(item);
+      });
+      return dropdown;
+    }
+    /**
+     * Set view mode
+     */
+    setViewMode(mode) {
+      this.editor.container.classList.remove("plain-mode", "preview-mode");
+      switch (mode) {
+        case "plain":
+          this.editor.showPlainTextarea(true);
+          break;
+        case "preview":
+          this.editor.showPreviewMode(true);
+          break;
+        case "normal":
+        default:
+          this.editor.showPlainTextarea(false);
+          if (typeof this.editor.showPreviewMode === "function") {
+            this.editor.showPreviewMode(false);
+          }
+          break;
+      }
+    }
+    /**
      * Destroy toolbar
      */
     destroy() {
       if (this.container) {
+        if (this.handleDocumentClick) {
+          document.removeEventListener("click", this.handleDocumentClick);
+        }
         this.container.remove();
         this.container = null;
         this.buttons = {};
@@ -2658,6 +3174,26 @@ ${blockSuffix}` : suffix;
       }
     }
     /**
+     * Get the rendered HTML of the current content
+     * @param {boolean} processForPreview - If true, post-processes HTML for preview mode (consolidates lists/code blocks)
+     * @returns {string} Rendered HTML
+     */
+    getRenderedHTML(processForPreview = false) {
+      const markdown = this.getValue();
+      let html = MarkdownParser.parse(markdown);
+      if (processForPreview) {
+        html = MarkdownParser.postProcessHTML(html);
+      }
+      return html;
+    }
+    /**
+     * Get the current preview element's HTML
+     * @returns {string} Current preview HTML (as displayed)
+     */
+    getPreviewHTML() {
+      return this.preview.innerHTML;
+    }
+    /**
      * Focus the editor
      */
     focus() {
@@ -2803,6 +3339,19 @@ ${blockSuffix}` : suffix;
           toggleBtn.classList.toggle("active", !show);
           toggleBtn.title = show ? "Show markdown preview" : "Show plain textarea";
         }
+      }
+      return show;
+    }
+    /**
+     * Show/hide preview mode
+     * @param {boolean} show - Show preview mode if true, edit mode if false
+     * @returns {boolean} Current preview mode state
+     */
+    showPreviewMode(show) {
+      if (show) {
+        this.container.classList.add("preview-mode");
+      } else {
+        this.container.classList.remove("preview-mode");
       }
       return show;
     }
@@ -2962,6 +3511,9 @@ ${blockSuffix}` : suffix;
   OverType.themes = { solar, cave: getTheme("cave") };
   OverType.getTheme = getTheme;
   OverType.currentTheme = solar;
+  if (typeof window !== "undefined" && typeof window.document !== "undefined") {
+    window.OverType = OverType;
+  }
   var overtype_default = OverType;
   return __toCommonJS(overtype_exports);
 })();
@@ -2970,5 +3522,4 @@ ${blockSuffix}` : suffix;
  * @version 1.0.0
  * @license MIT
  */
-window.OverType = OverType.OverType || OverType.default || OverType;
 //# sourceMappingURL=overtype.js.map

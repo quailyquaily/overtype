@@ -41,7 +41,7 @@ export class Toolbar {
       { name: 'orderedList', icon: icons.orderedListIcon, title: 'Numbered List', action: 'toggleNumberedList' },
       { name: 'taskList', icon: icons.taskListIcon, title: 'Task List', action: 'toggleTaskList' },
       { separator: true },
-      { name: 'togglePlain', icon: icons.eyeIcon, title: 'Show plain textarea', action: 'toggle-plain' }
+      { name: 'viewMode', icon: icons.eyeIcon, title: 'View mode', action: 'toggle-view-menu', hasDropdown: true }
     ];
 
     // Create buttons
@@ -80,10 +80,19 @@ export class Toolbar {
     button.setAttribute('data-action', config.action);
     button.innerHTML = config.icon;
 
+    // Add dropdown if needed
+    if (config.hasDropdown) {
+      button.classList.add('has-dropdown');
+      // Store reference for dropdown
+      if (config.name === 'viewMode') {
+        this.viewModeButton = button;
+      }
+    }
+
     // Add click handler
     button.addEventListener('click', (e) => {
       e.preventDefault();
-      this.handleAction(config.action);
+      this.handleAction(config.action, button);
     });
 
     return button;
@@ -92,11 +101,17 @@ export class Toolbar {
   /**
    * Handle toolbar button actions
    */
-  async handleAction(action) {
+  async handleAction(action, button) {
     const textarea = this.editor.textarea;
     if (!textarea) return;
 
-    // Focus textarea
+    // Handle dropdown toggle
+    if (action === 'toggle-view-menu') {
+      this.toggleViewDropdown(button);
+      return;
+    }
+
+    // Focus textarea for other actions
     textarea.focus();
 
     try {
@@ -211,10 +226,131 @@ export class Toolbar {
   }
 
   /**
+   * Toggle view mode dropdown menu
+   */
+  toggleViewDropdown(button) {
+    // Close any existing dropdown
+    const existingDropdown = document.querySelector('.overtype-dropdown-menu');
+    if (existingDropdown) {
+      existingDropdown.remove();
+      button.classList.remove('dropdown-active');
+      document.removeEventListener('click', this.handleDocumentClick);
+      return;
+    }
+
+    // Create dropdown menu
+    const dropdown = this.createViewDropdown();
+    
+    // Position dropdown relative to button
+    const rect = button.getBoundingClientRect();
+    dropdown.style.top = `${rect.bottom + 4}px`;
+    dropdown.style.left = `${rect.left}px`;
+    
+    // Append to body instead of button
+    document.body.appendChild(dropdown);
+    button.classList.add('dropdown-active');
+    
+    // Store reference for document click handler
+    this.handleDocumentClick = (e) => {
+      if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.remove();
+        button.classList.remove('dropdown-active');
+        document.removeEventListener('click', this.handleDocumentClick);
+      }
+    };
+    
+    // Close on click outside
+    setTimeout(() => {
+      document.addEventListener('click', this.handleDocumentClick);
+    }, 0);
+  }
+
+  /**
+   * Create view mode dropdown menu
+   */
+  createViewDropdown() {
+    const dropdown = document.createElement('div');
+    dropdown.className = 'overtype-dropdown-menu';
+    
+    // Determine current mode
+    const isPlain = this.editor.container.classList.contains('plain-mode');
+    const isPreview = this.editor.container.classList.contains('preview-mode');
+    const currentMode = isPreview ? 'preview' : (isPlain ? 'plain' : 'normal');
+    
+    // Create menu items
+    const modes = [
+      { id: 'normal', label: 'Normal Edit', icon: '✓' },
+      { id: 'plain', label: 'Plain Textarea', icon: '✓' },
+      { id: 'preview', label: 'Preview Mode', icon: '✓' }
+    ];
+    
+    modes.forEach(mode => {
+      const item = document.createElement('button');
+      item.className = 'overtype-dropdown-item';
+      item.type = 'button';
+      
+      const check = document.createElement('span');
+      check.className = 'overtype-dropdown-check';
+      check.textContent = currentMode === mode.id ? mode.icon : '';
+      
+      const label = document.createElement('span');
+      label.textContent = mode.label;
+      
+      item.appendChild(check);
+      item.appendChild(label);
+      
+      if (currentMode === mode.id) {
+        item.classList.add('active');
+      }
+      
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.setViewMode(mode.id);
+        dropdown.remove();
+        this.viewModeButton.classList.remove('dropdown-active');
+        document.removeEventListener('click', this.handleDocumentClick);
+      });
+      
+      dropdown.appendChild(item);
+    });
+    
+    return dropdown;
+  }
+
+  /**
+   * Set view mode
+   */
+  setViewMode(mode) {
+    // Clear all mode classes
+    this.editor.container.classList.remove('plain-mode', 'preview-mode');
+    
+    switch(mode) {
+      case 'plain':
+        this.editor.showPlainTextarea(true);
+        break;
+      case 'preview':
+        this.editor.showPreviewMode(true);
+        break;
+      case 'normal':
+      default:
+        // Normal edit mode
+        this.editor.showPlainTextarea(false);
+        if (typeof this.editor.showPreviewMode === 'function') {
+          this.editor.showPreviewMode(false);
+        }
+        break;
+    }
+  }
+
+  /**
    * Destroy toolbar
    */
   destroy() {
     if (this.container) {
+      // Clean up event listeners
+      if (this.handleDocumentClick) {
+        document.removeEventListener('click', this.handleDocumentClick);
+      }
       this.container.remove();
       this.container = null;
       this.buttons = {};

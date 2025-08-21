@@ -53,8 +53,7 @@ export class MarkdownParser {
   static parseHeader(html) {
     return html.replace(/^(#{1,3})\s(.+)$/, (match, hashes, content) => {
       const level = hashes.length;
-      const levelClasses = ['h1', 'h2', 'h3'];
-      return `<span class="header ${levelClasses[level-1]}"><span class="syntax-marker">${hashes}</span> ${content}</span>`;
+      return `<h${level}><span class="syntax-marker">${hashes} </span>${content}</h${level}>`;
     });
   }
 
@@ -88,7 +87,7 @@ export class MarkdownParser {
    */
   static parseBulletList(html) {
     return html.replace(/^((?:&nbsp;)*)([-*])\s(.+)$/, (match, indent, marker, content) => {
-      return `${indent}<span class="syntax-marker">${marker}</span> ${content}`;
+      return `${indent}<li class="bullet-list"><span class="syntax-marker">${marker} </span>${content}</li>`;
     });
   }
 
@@ -99,7 +98,7 @@ export class MarkdownParser {
    */
   static parseNumberedList(html) {
     return html.replace(/^((?:&nbsp;)*)(\d+\.)\s(.+)$/, (match, indent, marker, content) => {
-      return `${indent}<span class="syntax-marker">${marker}</span> ${content}`;
+      return `${indent}<li class="ordered-list"><span class="syntax-marker">${marker} </span>${content}</li>`;
     });
   }
 
@@ -205,8 +204,8 @@ export class MarkdownParser {
       const anchorName = `--link-${this.linkIndex++}`;
       // Sanitize URL to prevent XSS attacks
       const safeUrl = this.sanitizeUrl(url);
-      // Don't double-escape - url is already escaped from parseLine
-      return `<a href="${safeUrl}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker">](</span><span class="syntax-marker link-url">${url}</span><span class="syntax-marker">)</span></a>`;
+      // Use real href - pointer-events handles click prevention in normal mode
+      return `<a href="${safeUrl}" style="anchor-name: ${anchorName}"><span class="syntax-marker">[</span>${text}<span class="syntax-marker url-part">](${url})</span></a>`;
     });
   }
 
@@ -317,6 +316,176 @@ export class MarkdownParser {
     });
     
     // Join without newlines to prevent extra spacing
-    return parsedLines.join('');
+    const html = parsedLines.join('');
+    
+    // Apply post-processing for list consolidation
+    return this.postProcessHTML(html);
+  }
+
+  /**
+   * Post-process HTML to consolidate lists and code blocks
+   * @param {string} html - HTML to post-process
+   * @returns {string} Post-processed HTML with consolidated lists and code blocks
+   */
+  static postProcessHTML(html) {
+    // Check if we're in a browser environment
+    if (typeof document === 'undefined' || !document) {
+      // In Node.js environment - do manual post-processing
+      return this.postProcessHTMLManual(html);
+    }
+    
+    // Parse HTML string into DOM
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    
+    let currentList = null;
+    let listType = null;
+    let currentCodeBlock = null;
+    let inCodeBlock = false;
+    
+    // Process all direct children - need to be careful with live NodeList
+    const children = Array.from(container.children);
+    
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      
+      // Skip if child was already processed/removed
+      if (!child.parentNode) continue;
+      
+      // Check for code fence start/end
+      const codeFence = child.querySelector('.code-fence');
+      if (codeFence) {
+        const fenceText = codeFence.textContent;
+        if (fenceText.startsWith('```')) {
+          if (!inCodeBlock) {
+            // Start of code block
+            inCodeBlock = true;
+            currentCodeBlock = document.createElement('pre');
+            const codeElement = document.createElement('code');
+            currentCodeBlock.appendChild(codeElement);
+            currentCodeBlock.className = 'code-block';
+            
+            // Extract language if present
+            const lang = fenceText.slice(3).trim();
+            if (lang) {
+              codeElement.className = `language-${lang}`;
+            }
+            
+            container.insertBefore(currentCodeBlock, child);
+            child.remove();
+            continue;
+          } else {
+            // End of code block
+            inCodeBlock = false;
+            currentCodeBlock = null;
+            child.remove();
+            continue;
+          }
+        }
+      }
+      
+      // Check if we're in a code block - any div that's not a code fence
+      if (inCodeBlock && currentCodeBlock && child.tagName === 'DIV' && !child.querySelector('.code-fence')) {
+        const codeElement = currentCodeBlock.querySelector('code');
+        // Add the line content to the code block
+        if (codeElement.textContent.length > 0) {
+          codeElement.textContent += '\n';
+        }
+        // Get the actual text content, preserving spaces
+        const lineText = child.innerHTML.replace(/&nbsp;/g, ' ').replace(/<[^>]*>/g, '');
+        codeElement.textContent += lineText;
+        child.remove();
+        continue;
+      }
+      
+      // Check if this div contains a list item
+      let listItem = null;
+      if (child.tagName === 'DIV') {
+        // Look for li inside the div
+        listItem = child.querySelector('li');
+      }
+      
+      if (listItem) {
+        const isBullet = listItem.classList.contains('bullet-list');
+        const isOrdered = listItem.classList.contains('ordered-list');
+        
+        if (!isBullet && !isOrdered) {
+          currentList = null;
+          listType = null;
+          continue;
+        }
+        
+        const newType = isBullet ? 'ul' : 'ol';
+        
+        // Start new list or continue current
+        if (!currentList || listType !== newType) {
+          currentList = document.createElement(newType);
+          container.insertBefore(currentList, child);
+          listType = newType;
+        }
+        
+        // Move the list item to the current list
+        currentList.appendChild(listItem);
+        
+        // Remove the now-empty div wrapper
+        child.remove();
+      } else {
+        // Non-list element ends current list
+        currentList = null;
+        listType = null;
+      }
+    }
+    
+    return container.innerHTML;
+  }
+
+  /**
+   * Manual post-processing for Node.js environments (without DOM)
+   * @param {string} html - HTML to post-process
+   * @returns {string} Post-processed HTML
+   */
+  static postProcessHTMLManual(html) {
+    let processed = html;
+    
+    // Process unordered lists
+    processed = processed.replace(/((?:<div>(?:&nbsp;)*<li class="bullet-list">.*?<\/li><\/div>\s*)+)/gs, (match) => {
+      const items = match.match(/<li class="bullet-list">.*?<\/li>/gs) || [];
+      if (items.length > 0) {
+        return '<ul>' + items.join('') + '</ul>';
+      }
+      return match;
+    });
+    
+    // Process ordered lists
+    processed = processed.replace(/((?:<div>(?:&nbsp;)*<li class="ordered-list">.*?<\/li><\/div>\s*)+)/gs, (match) => {
+      const items = match.match(/<li class="ordered-list">.*?<\/li>/gs) || [];
+      if (items.length > 0) {
+        return '<ol>' + items.join('') + '</ol>';
+      }
+      return match;
+    });
+    
+    // Process code blocks
+    const codeBlockRegex = /<div><span class="code-fence">```([^<]*)<\/span><\/div>(.*?)<div><span class="code-fence">```<\/span><\/div>/gs;
+    processed = processed.replace(codeBlockRegex, (match, lang, content) => {
+      // Extract the content between fences
+      const lines = content.match(/<div>(.*?)<\/div>/gs) || [];
+      const codeContent = lines.map(line => {
+        // Extract text from each div
+        const text = line.replace(/<div>(.*?)<\/div>/s, '$1')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&amp;/g, '&');
+        return text;
+      }).join('\n');
+      
+      const langClass = lang ? ` class="language-${lang.trim()}"` : '';
+      return `<pre class="code-block"><code${langClass}>${this.escapeHtml(codeContent)}</code></pre>`;
+    });
+    
+    return processed;
   }
 }
