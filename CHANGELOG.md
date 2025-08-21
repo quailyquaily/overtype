@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-08-21
+
 ### Added
 - **View Modes** - Three distinct editing/viewing modes accessible via toolbar dropdown
   - Normal Edit Mode: Default WYSIWYG markdown editing with syntax highlighting
