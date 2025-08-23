@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2025-08-23
+
+### Fixed
+- Tab indentation can now be properly undone with Ctrl/Cmd+Z
+  - Previously, tabbing operations were not tracked in the undo history
+  - Users can now undo/redo tab insertions and multi-line indentations
+
 ## [1.2.0] - 2025-08-21
 
 ### Added

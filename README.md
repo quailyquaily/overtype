@@ -552,6 +552,26 @@ Special thanks to:
 
 MIT
 
+## Related Projects
+
+### Synesthesia
+
+[Synesthesia](https://github.com/panphora/synesthesia) is a lightweight syntax highlighting editor library that extracted and refined the core textarea overlay technique from OverType. While OverType is focused on markdown editing with toolbar features, Synesthesia provides a more generalized code editing solution with:
+
+- **Pluggable parser system** - Support for any programming language or syntax
+- **Parser registry** - Automatic language detection by file extension or MIME type  
+- **Cleaner separation** - Extracted the overlay technique without markdown-specific features
+- **Smaller footprint** - ~22KB minified (vs OverType's ~78KB)
+
+Key components extracted from OverType to Synesthesia:
+- The transparent textarea overlay technique for perfect WYSIWYG alignment
+- Theme system with CSS variable support
+- DOM persistence and recovery mechanisms  
+- Auto-resize functionality
+- Event delegation for efficient multi-instance support
+
+If you need a markdown editor with toolbar and formatting features, use OverType. If you need a lightweight code editor with custom syntax highlighting, check out Synesthesia.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
