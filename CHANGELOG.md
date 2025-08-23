@@ -5,7 +5,7 @@ All notable changes to OverType will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.2] - 2025-08-23
+## [1.2.3] - 2025-08-23
 
 ### Added
 - **Smart List Continuation** (Issue #26) - GitHub-style automatic list continuation
@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports bullet lists (`-`, `*`, `+`), numbered lists, and checkboxes
   - Numbered lists automatically renumber when items are added or removed
   - Enabled by default with `smartLists: true` option
+
+## [1.2.2] - 2025-08-23
 
 ### Fixed
 - **Issue #32: Alignment problems with tables and code blocks**
