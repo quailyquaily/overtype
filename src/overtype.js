@@ -537,7 +537,6 @@ class OverType {
       if (event.key === 'Tab') {
         event.preventDefault();
         
-        // Insert 2 spaces at cursor position
         const start = this.textarea.selectionStart;
         const end = this.textarea.selectionEnd;
         const value = this.textarea.value;
@@ -552,9 +551,17 @@ class OverType {
           const lines = selection.split('\n');
           const outdented = lines.map(line => line.replace(/^  /, '')).join('\n');
           
-          this.textarea.value = before + outdented + after;
-          this.textarea.selectionStart = start;
-          this.textarea.selectionEnd = start + outdented.length;
+          // Try to use execCommand first to preserve undo history
+          if (document.execCommand) {
+            // Select the text that needs to be replaced
+            this.textarea.setSelectionRange(start, end);
+            document.execCommand('insertText', false, outdented);
+          } else {
+            // Fallback to direct manipulation
+            this.textarea.value = before + outdented + after;
+            this.textarea.selectionStart = start;
+            this.textarea.selectionEnd = start + outdented.length;
+          }
         } else if (start !== end) {
           // Indent: add 2 spaces to start of each selected line
           const before = value.substring(0, start);
@@ -564,13 +571,27 @@ class OverType {
           const lines = selection.split('\n');
           const indented = lines.map(line => '  ' + line).join('\n');
           
-          this.textarea.value = before + indented + after;
-          this.textarea.selectionStart = start;
-          this.textarea.selectionEnd = start + indented.length;
+          // Try to use execCommand first to preserve undo history
+          if (document.execCommand) {
+            // Select the text that needs to be replaced
+            this.textarea.setSelectionRange(start, end);
+            document.execCommand('insertText', false, indented);
+          } else {
+            // Fallback to direct manipulation
+            this.textarea.value = before + indented + after;
+            this.textarea.selectionStart = start;
+            this.textarea.selectionEnd = start + indented.length;
+          }
         } else {
           // No selection: just insert 2 spaces
-          this.textarea.value = value.substring(0, start) + '  ' + value.substring(end);
-          this.textarea.selectionStart = this.textarea.selectionEnd = start + 2;
+          // Use execCommand to preserve undo history
+          if (document.execCommand) {
+            document.execCommand('insertText', false, '  ');
+          } else {
+            // Fallback to direct manipulation
+            this.textarea.value = value.substring(0, start) + '  ' + value.substring(end);
+            this.textarea.selectionStart = this.textarea.selectionEnd = start + 2;
+          }
         }
         
         // Trigger input event to update preview

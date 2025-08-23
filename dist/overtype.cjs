@@ -387,997 +387,848 @@ var MarkdownParser = class {
 // Track link index for anchor naming
 __publicField(MarkdownParser, "linkIndex", 0);
 
-// node_modules/markdown-actions/dist/markdown-actions.js
-var markdownActions = (() => {
-  var __defProp2 = Object.defineProperty;
-  var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
-  var __getOwnPropNames2 = Object.getOwnPropertyNames;
-  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-  var __hasOwnProp2 = Object.prototype.hasOwnProperty;
-  var __propIsEnum = Object.prototype.propertyIsEnumerable;
-  var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __spreadValues = (a, b) => {
-    for (var prop in b || (b = {}))
-      if (__hasOwnProp2.call(b, prop))
+// node_modules/markdown-actions/dist/markdown-actions.esm.js
+var __defProp2 = Object.defineProperty;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp2.call(b, prop))
+      __defNormalProp2(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
         __defNormalProp2(a, prop, b[prop]);
-    if (__getOwnPropSymbols)
-      for (var prop of __getOwnPropSymbols(b)) {
-        if (__propIsEnum.call(b, prop))
-          __defNormalProp2(a, prop, b[prop]);
-      }
-    return a;
+    }
+  return a;
+};
+var FORMATS = {
+  bold: {
+    prefix: "**",
+    suffix: "**",
+    trimFirst: true
+  },
+  italic: {
+    prefix: "_",
+    suffix: "_",
+    trimFirst: true
+  },
+  code: {
+    prefix: "`",
+    suffix: "`",
+    blockPrefix: "```",
+    blockSuffix: "```"
+  },
+  link: {
+    prefix: "[",
+    suffix: "](url)",
+    replaceNext: "url",
+    scanFor: "https?://"
+  },
+  bulletList: {
+    prefix: "- ",
+    multiline: true,
+    unorderedList: true
+  },
+  numberedList: {
+    prefix: "1. ",
+    multiline: true,
+    orderedList: true
+  },
+  quote: {
+    prefix: "> ",
+    multiline: true,
+    surroundWithNewlines: true
+  },
+  taskList: {
+    prefix: "- [ ] ",
+    multiline: true,
+    surroundWithNewlines: true
+  },
+  header1: { prefix: "# " },
+  header2: { prefix: "## " },
+  header3: { prefix: "### " },
+  header4: { prefix: "#### " },
+  header5: { prefix: "##### " },
+  header6: { prefix: "###### " }
+};
+function getDefaultStyle() {
+  return {
+    prefix: "",
+    suffix: "",
+    blockPrefix: "",
+    blockSuffix: "",
+    multiline: false,
+    replaceNext: "",
+    prefixSpace: false,
+    scanFor: "",
+    surroundWithNewlines: false,
+    orderedList: false,
+    unorderedList: false,
+    trimFirst: false
   };
-  var __export2 = (target, all) => {
-    for (var name in all)
-      __defProp2(target, name, { get: all[name], enumerable: true });
-  };
-  var __copyProps2 = (to, from, except, desc) => {
-    if (from && typeof from === "object" || typeof from === "function") {
-      for (let key of __getOwnPropNames2(from))
-        if (!__hasOwnProp2.call(to, key) && key !== except)
-          __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc2(from, key)) || desc.enumerable });
-    }
-    return to;
-  };
-  var __toCommonJS2 = (mod) => __copyProps2(__defProp2({}, "__esModule", { value: true }), mod);
-  var src_exports = {};
-  __export2(src_exports, {
-    applyCustomFormat: () => applyCustomFormat,
-    default: () => src_default,
-    expandSelection: () => expandSelection2,
-    getActiveFormats: () => getActiveFormats22,
-    getDebugMode: () => getDebugMode,
-    hasFormat: () => hasFormat2,
-    insertHeader: () => insertHeader,
-    insertLink: () => insertLink3,
-    preserveSelection: () => preserveSelection,
-    setDebugMode: () => setDebugMode,
-    setUndoMethod: () => setUndoMethod,
-    toggleBold: () => toggleBold3,
-    toggleBulletList: () => toggleBulletList3,
-    toggleCode: () => toggleCode2,
-    toggleH1: () => toggleH12,
-    toggleH2: () => toggleH22,
-    toggleH3: () => toggleH32,
-    toggleItalic: () => toggleItalic3,
-    toggleNumberedList: () => toggleNumberedList3,
-    toggleQuote: () => toggleQuote2,
-    toggleTaskList: () => toggleTaskList2
-  });
-  var FORMATS = {
-    bold: {
-      prefix: "**",
-      suffix: "**",
-      trimFirst: true
-    },
-    italic: {
-      prefix: "_",
-      suffix: "_",
-      trimFirst: true
-    },
-    code: {
-      prefix: "`",
-      suffix: "`",
-      blockPrefix: "```",
-      blockSuffix: "```"
-    },
-    link: {
-      prefix: "[",
-      suffix: "](url)",
-      replaceNext: "url",
-      scanFor: "https?://"
-    },
-    bulletList: {
-      prefix: "- ",
-      multiline: true,
-      unorderedList: true
-    },
-    numberedList: {
-      prefix: "1. ",
-      multiline: true,
-      orderedList: true
-    },
-    quote: {
-      prefix: "> ",
-      multiline: true,
-      surroundWithNewlines: true
-    },
-    taskList: {
-      prefix: "- [ ] ",
-      multiline: true,
-      surroundWithNewlines: true
-    },
-    header1: { prefix: "# " },
-    header2: { prefix: "## " },
-    header3: { prefix: "### " },
-    header4: { prefix: "#### " },
-    header5: { prefix: "##### " },
-    header6: { prefix: "###### " }
-  };
-  function getDefaultStyle() {
-    return {
-      prefix: "",
-      suffix: "",
-      blockPrefix: "",
-      blockSuffix: "",
-      multiline: false,
-      replaceNext: "",
-      prefixSpace: false,
-      scanFor: "",
-      surroundWithNewlines: false,
-      orderedList: false,
-      unorderedList: false,
-      trimFirst: false
-    };
+}
+function mergeWithDefaults(format) {
+  return __spreadValues(__spreadValues({}, getDefaultStyle()), format);
+}
+var debugMode = false;
+function getDebugMode() {
+  return debugMode;
+}
+function debugLog(funcName, message, data) {
+  if (!debugMode)
+    return;
+  console.group(`\u{1F50D} ${funcName}`);
+  console.log(message);
+  if (data) {
+    console.log("Data:", data);
   }
-  function mergeWithDefaults(format) {
-    return __spreadValues(__spreadValues({}, getDefaultStyle()), format);
+  console.groupEnd();
+}
+function debugSelection(textarea, label) {
+  if (!debugMode)
+    return;
+  const selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  console.group(`\u{1F4CD} Selection: ${label}`);
+  console.log("Position:", `${textarea.selectionStart}-${textarea.selectionEnd}`);
+  console.log("Selected text:", JSON.stringify(selected));
+  console.log("Length:", selected.length);
+  const before = textarea.value.slice(Math.max(0, textarea.selectionStart - 10), textarea.selectionStart);
+  const after = textarea.value.slice(textarea.selectionEnd, Math.min(textarea.value.length, textarea.selectionEnd + 10));
+  console.log("Context:", JSON.stringify(before) + "[SELECTION]" + JSON.stringify(after));
+  console.groupEnd();
+}
+function debugResult(result) {
+  if (!debugMode)
+    return;
+  console.group("\u{1F4DD} Result");
+  console.log("Text to insert:", JSON.stringify(result.text));
+  console.log("New selection:", `${result.selectionStart}-${result.selectionEnd}`);
+  console.groupEnd();
+}
+var canInsertText = null;
+function insertText(textarea, { text, selectionStart, selectionEnd }) {
+  const debugMode2 = getDebugMode();
+  if (debugMode2) {
+    console.group("\u{1F527} insertText");
+    console.log("Current selection:", `${textarea.selectionStart}-${textarea.selectionEnd}`);
+    console.log("Text to insert:", JSON.stringify(text));
+    console.log("New selection to set:", selectionStart, "-", selectionEnd);
   }
-  var debugMode = false;
-  function setDebugMode(enabled) {
-    debugMode = enabled;
+  textarea.focus();
+  const originalSelectionStart = textarea.selectionStart;
+  const originalSelectionEnd = textarea.selectionEnd;
+  const before = textarea.value.slice(0, originalSelectionStart);
+  const after = textarea.value.slice(originalSelectionEnd);
+  if (debugMode2) {
+    console.log("Before text (last 20):", JSON.stringify(before.slice(-20)));
+    console.log("After text (first 20):", JSON.stringify(after.slice(0, 20)));
+    console.log("Selected text being replaced:", JSON.stringify(textarea.value.slice(originalSelectionStart, originalSelectionEnd)));
   }
-  function getDebugMode() {
-    return debugMode;
-  }
-  function debugLog(funcName, message, data) {
-    if (!debugMode)
-      return;
-    console.group(`\u{1F50D} ${funcName}`);
-    console.log(message);
-    if (data) {
-      console.log("Data:", data);
-    }
-    console.groupEnd();
-  }
-  function debugSelection(textarea, label) {
-    if (!debugMode)
-      return;
-    const selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    console.group(`\u{1F4CD} Selection: ${label}`);
-    console.log("Position:", `${textarea.selectionStart}-${textarea.selectionEnd}`);
-    console.log("Selected text:", JSON.stringify(selected));
-    console.log("Length:", selected.length);
-    const before = textarea.value.slice(Math.max(0, textarea.selectionStart - 10), textarea.selectionStart);
-    const after = textarea.value.slice(textarea.selectionEnd, Math.min(textarea.value.length, textarea.selectionEnd + 10));
-    console.log("Context:", JSON.stringify(before) + "[SELECTION]" + JSON.stringify(after));
-    console.groupEnd();
-  }
-  function debugResult(result) {
-    if (!debugMode)
-      return;
-    console.group("\u{1F4DD} Result");
-    console.log("Text to insert:", JSON.stringify(result.text));
-    console.log("New selection:", `${result.selectionStart}-${result.selectionEnd}`);
-    console.groupEnd();
-  }
-  var canInsertText = null;
-  function insertText(textarea, { text, selectionStart, selectionEnd }) {
-    const debugMode2 = getDebugMode();
-    if (debugMode2) {
-      console.group("\u{1F527} insertText");
-      console.log("Current selection:", `${textarea.selectionStart}-${textarea.selectionEnd}`);
-      console.log("Text to insert:", JSON.stringify(text));
-      console.log("New selection to set:", selectionStart, "-", selectionEnd);
-    }
-    textarea.focus();
-    const originalSelectionStart = textarea.selectionStart;
-    const originalSelectionEnd = textarea.selectionEnd;
-    const before = textarea.value.slice(0, originalSelectionStart);
-    const after = textarea.value.slice(originalSelectionEnd);
-    if (debugMode2) {
-      console.log("Before text (last 20):", JSON.stringify(before.slice(-20)));
-      console.log("After text (first 20):", JSON.stringify(after.slice(0, 20)));
-      console.log("Selected text being replaced:", JSON.stringify(textarea.value.slice(originalSelectionStart, originalSelectionEnd)));
-    }
-    const originalValue = textarea.value;
-    const hasSelection = originalSelectionStart !== originalSelectionEnd;
-    if (canInsertText === null || canInsertText === true) {
-      textarea.contentEditable = "true";
-      try {
-        canInsertText = document.execCommand("insertText", false, text);
-        if (debugMode2)
-          console.log("execCommand returned:", canInsertText, "for text with", text.split("\n").length, "lines");
-      } catch (error) {
-        canInsertText = false;
-        if (debugMode2)
-          console.log("execCommand threw error:", error);
-      }
-      textarea.contentEditable = "false";
-    }
-    if (debugMode2) {
-      console.log("canInsertText before:", canInsertText);
-      console.log("execCommand result:", canInsertText);
-    }
-    if (canInsertText) {
-      const expectedValue = before + text + after;
-      const actualValue = textarea.value;
-      if (debugMode2) {
-        console.log("Expected length:", expectedValue.length);
-        console.log("Actual length:", actualValue.length);
-      }
-      if (actualValue !== expectedValue) {
-        if (debugMode2) {
-          console.log("execCommand changed the value but not as expected");
-          console.log("Expected:", JSON.stringify(expectedValue.slice(0, 100)));
-          console.log("Actual:", JSON.stringify(actualValue.slice(0, 100)));
-        }
-      }
-    }
-    if (!canInsertText) {
+  const originalValue = textarea.value;
+  const hasSelection = originalSelectionStart !== originalSelectionEnd;
+  if (canInsertText === null || canInsertText === true) {
+    textarea.contentEditable = "true";
+    try {
+      canInsertText = document.execCommand("insertText", false, text);
       if (debugMode2)
-        console.log("Using manual insertion");
-      if (textarea.value === originalValue) {
-        if (debugMode2)
-          console.log("Value unchanged, doing manual replacement");
-        try {
-          document.execCommand("ms-beginUndoUnit");
-        } catch (e) {
-        }
-        textarea.value = before + text + after;
-        try {
-          document.execCommand("ms-endUndoUnit");
-        } catch (e) {
-        }
-        textarea.dispatchEvent(new CustomEvent("input", { bubbles: true, cancelable: true }));
-      } else {
-        if (debugMode2)
-          console.log("Value was changed by execCommand, skipping manual insertion");
-      }
+        console.log("execCommand returned:", canInsertText, "for text with", text.split("\n").length, "lines");
+    } catch (error) {
+      canInsertText = false;
+      if (debugMode2)
+        console.log("execCommand threw error:", error);
     }
-    if (debugMode2)
-      console.log("Setting selection range:", selectionStart, selectionEnd);
-    if (selectionStart != null && selectionEnd != null) {
-      textarea.setSelectionRange(selectionStart, selectionEnd);
-    } else {
-      textarea.setSelectionRange(originalSelectionStart, textarea.selectionEnd);
-    }
+    textarea.contentEditable = "false";
+  }
+  if (debugMode2) {
+    console.log("canInsertText before:", canInsertText);
+    console.log("execCommand result:", canInsertText);
+  }
+  if (canInsertText) {
+    const expectedValue = before + text + after;
+    const actualValue = textarea.value;
     if (debugMode2) {
-      console.log("Final value length:", textarea.value.length);
-      console.groupEnd();
+      console.log("Expected length:", expectedValue.length);
+      console.log("Actual length:", actualValue.length);
     }
-  }
-  function setUndoMethod(method) {
-    switch (method) {
-      case "native":
-        canInsertText = true;
-        break;
-      case "manual":
-        canInsertText = false;
-        break;
-      case "auto":
-        canInsertText = null;
-        break;
-    }
-  }
-  function isMultipleLines(string) {
-    return string.trim().split("\n").length > 1;
-  }
-  function wordSelectionStart(text, i) {
-    let index = i;
-    while (text[index] && text[index - 1] != null && !text[index - 1].match(/\s/)) {
-      index--;
-    }
-    return index;
-  }
-  function wordSelectionEnd(text, i, multiline) {
-    let index = i;
-    const breakpoint = multiline ? /\n/ : /\s/;
-    while (text[index] && !text[index].match(breakpoint)) {
-      index++;
-    }
-    return index;
-  }
-  function expandSelectionToLine(textarea) {
-    const lines = textarea.value.split("\n");
-    let counter = 0;
-    for (let index = 0; index < lines.length; index++) {
-      const lineLength = lines[index].length + 1;
-      if (textarea.selectionStart >= counter && textarea.selectionStart < counter + lineLength) {
-        textarea.selectionStart = counter;
+    if (actualValue !== expectedValue) {
+      if (debugMode2) {
+        console.log("execCommand changed the value but not as expected");
+        console.log("Expected:", JSON.stringify(expectedValue.slice(0, 100)));
+        console.log("Actual:", JSON.stringify(actualValue.slice(0, 100)));
       }
-      if (textarea.selectionEnd >= counter && textarea.selectionEnd < counter + lineLength) {
-        if (index === lines.length - 1) {
-          textarea.selectionEnd = Math.min(counter + lines[index].length, textarea.value.length);
-        } else {
-          textarea.selectionEnd = counter + lineLength - 1;
-        }
-      }
-      counter += lineLength;
     }
   }
-  function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false) {
-    if (textarea.selectionStart === textarea.selectionEnd) {
-      textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
-      textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+  if (!canInsertText) {
+    if (debugMode2)
+      console.log("Using manual insertion");
+    if (textarea.value === originalValue) {
+      if (debugMode2)
+        console.log("Value unchanged, doing manual replacement");
+      try {
+        document.execCommand("ms-beginUndoUnit");
+      } catch (e) {
+      }
+      textarea.value = before + text + after;
+      try {
+        document.execCommand("ms-endUndoUnit");
+      } catch (e) {
+      }
+      textarea.dispatchEvent(new CustomEvent("input", { bubbles: true, cancelable: true }));
     } else {
-      const expandedSelectionStart = textarea.selectionStart - prefixToUse.length;
-      const expandedSelectionEnd = textarea.selectionEnd + suffixToUse.length;
-      const beginsWithPrefix = textarea.value.slice(expandedSelectionStart, textarea.selectionStart) === prefixToUse;
-      const endsWithSuffix = textarea.value.slice(textarea.selectionEnd, expandedSelectionEnd) === suffixToUse;
-      if (beginsWithPrefix && endsWithSuffix) {
-        textarea.selectionStart = expandedSelectionStart;
-        textarea.selectionEnd = expandedSelectionEnd;
-      }
+      if (debugMode2)
+        console.log("Value was changed by execCommand, skipping manual insertion");
     }
-    return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
   }
-  function newlinesToSurroundSelectedText(textarea) {
-    const beforeSelection = textarea.value.slice(0, textarea.selectionStart);
-    const afterSelection = textarea.value.slice(textarea.selectionEnd);
-    const breaksBefore = beforeSelection.match(/\n*$/);
-    const breaksAfter = afterSelection.match(/^\n*/);
-    const newlinesBeforeSelection = breaksBefore ? breaksBefore[0].length : 0;
-    const newlinesAfterSelection = breaksAfter ? breaksAfter[0].length : 0;
-    let newlinesToAppend = "";
-    let newlinesToPrepend = "";
-    if (beforeSelection.match(/\S/) && newlinesBeforeSelection < 2) {
-      newlinesToAppend = "\n".repeat(2 - newlinesBeforeSelection);
-    }
-    if (afterSelection.match(/\S/) && newlinesAfterSelection < 2) {
-      newlinesToPrepend = "\n".repeat(2 - newlinesAfterSelection);
-    }
-    return { newlinesToAppend, newlinesToPrepend };
+  if (debugMode2)
+    console.log("Setting selection range:", selectionStart, selectionEnd);
+  if (selectionStart != null && selectionEnd != null) {
+    textarea.setSelectionRange(selectionStart, selectionEnd);
+  } else {
+    textarea.setSelectionRange(originalSelectionStart, textarea.selectionEnd);
   }
-  function preserveSelection(textarea, callback) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const scrollTop = textarea.scrollTop;
-    callback();
-    textarea.selectionStart = start;
-    textarea.selectionEnd = end;
-    textarea.scrollTop = scrollTop;
+  if (debugMode2) {
+    console.log("Final value length:", textarea.value.length);
+    console.groupEnd();
   }
-  function applyLineOperation(textarea, operation, options = {}) {
-    const originalStart = textarea.selectionStart;
-    const originalEnd = textarea.selectionEnd;
-    const noInitialSelection = originalStart === originalEnd;
-    const value = textarea.value;
-    let lineStart = originalStart;
-    while (lineStart > 0 && value[lineStart - 1] !== "\n") {
-      lineStart--;
+}
+function isMultipleLines(string) {
+  return string.trim().split("\n").length > 1;
+}
+function wordSelectionStart(text, i) {
+  let index = i;
+  while (text[index] && text[index - 1] != null && !text[index - 1].match(/\s/)) {
+    index--;
+  }
+  return index;
+}
+function wordSelectionEnd(text, i, multiline) {
+  let index = i;
+  const breakpoint = multiline ? /\n/ : /\s/;
+  while (text[index] && !text[index].match(breakpoint)) {
+    index++;
+  }
+  return index;
+}
+function expandSelectionToLine(textarea) {
+  const lines = textarea.value.split("\n");
+  let counter = 0;
+  for (let index = 0; index < lines.length; index++) {
+    const lineLength = lines[index].length + 1;
+    if (textarea.selectionStart >= counter && textarea.selectionStart < counter + lineLength) {
+      textarea.selectionStart = counter;
     }
-    if (noInitialSelection) {
-      let lineEnd = originalStart;
-      while (lineEnd < value.length && value[lineEnd] !== "\n") {
-        lineEnd++;
-      }
-      textarea.selectionStart = lineStart;
-      textarea.selectionEnd = lineEnd;
-    } else {
-      expandSelectionToLine(textarea);
-    }
-    const result = operation(textarea);
-    if (options.adjustSelection) {
-      const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-      const isRemoving = selectedText.startsWith(options.prefix);
-      const adjusted = options.adjustSelection(isRemoving, originalStart, originalEnd, lineStart);
-      result.selectionStart = adjusted.start;
-      result.selectionEnd = adjusted.end;
-    } else if (options.prefix) {
-      const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-      const isRemoving = selectedText.startsWith(options.prefix);
-      if (noInitialSelection) {
-        if (isRemoving) {
-          result.selectionStart = Math.max(originalStart - options.prefix.length, lineStart);
-          result.selectionEnd = result.selectionStart;
-        } else {
-          result.selectionStart = originalStart + options.prefix.length;
-          result.selectionEnd = result.selectionStart;
-        }
+    if (textarea.selectionEnd >= counter && textarea.selectionEnd < counter + lineLength) {
+      if (index === lines.length - 1) {
+        textarea.selectionEnd = Math.min(counter + lines[index].length, textarea.value.length);
       } else {
-        if (isRemoving) {
-          result.selectionStart = Math.max(originalStart - options.prefix.length, lineStart);
-          result.selectionEnd = Math.max(originalEnd - options.prefix.length, lineStart);
-        } else {
-          result.selectionStart = originalStart + options.prefix.length;
-          result.selectionEnd = originalEnd + options.prefix.length;
-        }
+        textarea.selectionEnd = counter + lineLength - 1;
       }
     }
-    return result;
+    counter += lineLength;
   }
-  function blockStyle(textarea, style) {
-    let newlinesToAppend;
-    let newlinesToPrepend;
-    const { prefix, suffix, blockPrefix, blockSuffix, replaceNext, prefixSpace, scanFor, surroundWithNewlines, trimFirst } = style;
-    const originalSelectionStart = textarea.selectionStart;
-    const originalSelectionEnd = textarea.selectionEnd;
-    let selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    let prefixToUse = isMultipleLines(selectedText) && blockPrefix && blockPrefix.length > 0 ? `${blockPrefix}
-` : prefix;
-    let suffixToUse = isMultipleLines(selectedText) && blockSuffix && blockSuffix.length > 0 ? `
-${blockSuffix}` : suffix;
-    if (prefixSpace) {
-      const beforeSelection = textarea.value[textarea.selectionStart - 1];
-      if (textarea.selectionStart !== 0 && beforeSelection != null && !beforeSelection.match(/\s/)) {
-        prefixToUse = ` ${prefixToUse}`;
-      }
-    }
-    selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, style.multiline);
-    let selectionStart = textarea.selectionStart;
-    let selectionEnd = textarea.selectionEnd;
-    const hasReplaceNext = replaceNext && replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
-    if (surroundWithNewlines) {
-      const ref = newlinesToSurroundSelectedText(textarea);
-      newlinesToAppend = ref.newlinesToAppend;
-      newlinesToPrepend = ref.newlinesToPrepend;
-      prefixToUse = newlinesToAppend + prefix;
-      suffixToUse += newlinesToPrepend;
-    }
-    if (selectedText.startsWith(prefixToUse) && selectedText.endsWith(suffixToUse)) {
-      const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length);
-      if (originalSelectionStart === originalSelectionEnd) {
-        let position = originalSelectionStart - prefixToUse.length;
-        position = Math.max(position, selectionStart);
-        position = Math.min(position, selectionStart + replacementText.length);
-        selectionStart = selectionEnd = position;
-      } else {
-        selectionEnd = selectionStart + replacementText.length;
-      }
-      return { text: replacementText, selectionStart, selectionEnd };
-    } else if (!hasReplaceNext) {
-      let replacementText = prefixToUse + selectedText + suffixToUse;
-      selectionStart = originalSelectionStart + prefixToUse.length;
-      selectionEnd = originalSelectionEnd + prefixToUse.length;
-      const whitespaceEdges = selectedText.match(/^\s*|\s*$/g);
-      if (trimFirst && whitespaceEdges) {
-        const leadingWhitespace = whitespaceEdges[0] || "";
-        const trailingWhitespace = whitespaceEdges[1] || "";
-        replacementText = leadingWhitespace + prefixToUse + selectedText.trim() + suffixToUse + trailingWhitespace;
-        selectionStart += leadingWhitespace.length;
-        selectionEnd -= trailingWhitespace.length;
-      }
-      return { text: replacementText, selectionStart, selectionEnd };
-    } else if (scanFor && scanFor.length > 0 && selectedText.match(scanFor)) {
-      suffixToUse = suffixToUse.replace(replaceNext, selectedText);
-      const replacementText = prefixToUse + suffixToUse;
-      selectionStart = selectionEnd = selectionStart + prefixToUse.length;
-      return { text: replacementText, selectionStart, selectionEnd };
-    } else {
-      const replacementText = prefixToUse + selectedText + suffixToUse;
-      selectionStart = selectionStart + prefixToUse.length + selectedText.length + suffixToUse.indexOf(replaceNext);
-      selectionEnd = selectionStart + replaceNext.length;
-      return { text: replacementText, selectionStart, selectionEnd };
+}
+function expandSelectedText(textarea, prefixToUse, suffixToUse, multiline = false) {
+  if (textarea.selectionStart === textarea.selectionEnd) {
+    textarea.selectionStart = wordSelectionStart(textarea.value, textarea.selectionStart);
+    textarea.selectionEnd = wordSelectionEnd(textarea.value, textarea.selectionEnd, multiline);
+  } else {
+    const expandedSelectionStart = textarea.selectionStart - prefixToUse.length;
+    const expandedSelectionEnd = textarea.selectionEnd + suffixToUse.length;
+    const beginsWithPrefix = textarea.value.slice(expandedSelectionStart, textarea.selectionStart) === prefixToUse;
+    const endsWithSuffix = textarea.value.slice(textarea.selectionEnd, expandedSelectionEnd) === suffixToUse;
+    if (beginsWithPrefix && endsWithSuffix) {
+      textarea.selectionStart = expandedSelectionStart;
+      textarea.selectionEnd = expandedSelectionEnd;
     }
   }
-  function multilineStyle(textarea, style) {
-    const { prefix, suffix, surroundWithNewlines } = style;
-    let text = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    let selectionStart = textarea.selectionStart;
-    let selectionEnd = textarea.selectionEnd;
-    const lines = text.split("\n");
-    const undoStyle = lines.every((line) => line.startsWith(prefix) && (!suffix || line.endsWith(suffix)));
-    if (undoStyle) {
-      text = lines.map((line) => {
-        let result = line.slice(prefix.length);
-        if (suffix) {
-          result = result.slice(0, result.length - suffix.length);
-        }
-        return result;
-      }).join("\n");
-      selectionEnd = selectionStart + text.length;
-    } else {
-      text = lines.map((line) => prefix + line + (suffix || "")).join("\n");
-      if (surroundWithNewlines) {
-        const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
-        selectionStart += newlinesToAppend.length;
-        selectionEnd = selectionStart + text.length;
-        text = newlinesToAppend + text + newlinesToPrepend;
-      }
-    }
-    return { text, selectionStart, selectionEnd };
+  return textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+}
+function newlinesToSurroundSelectedText(textarea) {
+  const beforeSelection = textarea.value.slice(0, textarea.selectionStart);
+  const afterSelection = textarea.value.slice(textarea.selectionEnd);
+  const breaksBefore = beforeSelection.match(/\n*$/);
+  const breaksAfter = afterSelection.match(/^\n*/);
+  const newlinesBeforeSelection = breaksBefore ? breaksBefore[0].length : 0;
+  const newlinesAfterSelection = breaksAfter ? breaksAfter[0].length : 0;
+  let newlinesToAppend = "";
+  let newlinesToPrepend = "";
+  if (beforeSelection.match(/\S/) && newlinesBeforeSelection < 2) {
+    newlinesToAppend = "\n".repeat(2 - newlinesBeforeSelection);
   }
-  function undoOrderedListStyle(text) {
-    const lines = text.split("\n");
-    const orderedListRegex = /^\d+\.\s+/;
-    const shouldUndoOrderedList = lines.every((line) => orderedListRegex.test(line));
-    let result = lines;
-    if (shouldUndoOrderedList) {
-      result = lines.map((line) => line.replace(orderedListRegex, ""));
-    }
-    return {
-      text: result.join("\n"),
-      processed: shouldUndoOrderedList
-    };
+  if (afterSelection.match(/\S/) && newlinesAfterSelection < 2) {
+    newlinesToPrepend = "\n".repeat(2 - newlinesAfterSelection);
   }
-  function undoUnorderedListStyle(text) {
-    const lines = text.split("\n");
-    const unorderedListPrefix = "- ";
-    const shouldUndoUnorderedList = lines.every((line) => line.startsWith(unorderedListPrefix));
-    let result = lines;
-    if (shouldUndoUnorderedList) {
-      result = lines.map((line) => line.slice(unorderedListPrefix.length));
-    }
-    return {
-      text: result.join("\n"),
-      processed: shouldUndoUnorderedList
-    };
+  return { newlinesToAppend, newlinesToPrepend };
+}
+function applyLineOperation(textarea, operation, options = {}) {
+  const originalStart = textarea.selectionStart;
+  const originalEnd = textarea.selectionEnd;
+  const noInitialSelection = originalStart === originalEnd;
+  const value = textarea.value;
+  let lineStart = originalStart;
+  while (lineStart > 0 && value[lineStart - 1] !== "\n") {
+    lineStart--;
   }
-  function makePrefix(index, unorderedList) {
-    if (unorderedList) {
-      return "- ";
-    } else {
-      return `${index + 1}. `;
-    }
-  }
-  function clearExistingListStyle(style, selectedText) {
-    let undoResult;
-    let undoResultOppositeList;
-    let pristineText;
-    if (style.orderedList) {
-      undoResult = undoOrderedListStyle(selectedText);
-      undoResultOppositeList = undoUnorderedListStyle(undoResult.text);
-      pristineText = undoResultOppositeList.text;
-    } else {
-      undoResult = undoUnorderedListStyle(selectedText);
-      undoResultOppositeList = undoOrderedListStyle(undoResult.text);
-      pristineText = undoResultOppositeList.text;
-    }
-    return [undoResult, undoResultOppositeList, pristineText];
-  }
-  function listStyle(textarea, style) {
-    const noInitialSelection = textarea.selectionStart === textarea.selectionEnd;
-    let selectionStart = textarea.selectionStart;
-    let selectionEnd = textarea.selectionEnd;
-    expandSelectionToLine(textarea);
-    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    const [undoResult, undoResultOppositeList, pristineText] = clearExistingListStyle(style, selectedText);
-    const prefixedLines = pristineText.split("\n").map((value, index) => {
-      return `${makePrefix(index, style.unorderedList)}${value}`;
-    });
-    const totalPrefixLength = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
-      return previousValue + makePrefix(currentIndex, style.unorderedList).length;
-    }, 0);
-    const totalPrefixLengthOppositeList = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
-      return previousValue + makePrefix(currentIndex, !style.unorderedList).length;
-    }, 0);
-    if (undoResult.processed) {
-      if (noInitialSelection) {
-        selectionStart = Math.max(selectionStart - makePrefix(0, style.unorderedList).length, 0);
-        selectionEnd = selectionStart;
-      } else {
-        selectionStart = textarea.selectionStart;
-        selectionEnd = textarea.selectionEnd - totalPrefixLength;
-      }
-      return { text: pristineText, selectionStart, selectionEnd };
-    }
-    const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
-    const text = newlinesToAppend + prefixedLines.join("\n") + newlinesToPrepend;
-    if (noInitialSelection) {
-      selectionStart = Math.max(selectionStart + makePrefix(0, style.unorderedList).length + newlinesToAppend.length, 0);
-      selectionEnd = selectionStart;
-    } else {
-      if (undoResultOppositeList.processed) {
-        selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
-        selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength - totalPrefixLengthOppositeList;
-      } else {
-        selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
-        selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength;
-      }
-    }
-    return { text, selectionStart, selectionEnd };
-  }
-  function applyListStyle(textarea, style) {
-    const result = applyLineOperation(
-      textarea,
-      (ta) => listStyle(ta, style),
-      {
-        // Custom selection adjustment for lists
-        adjustSelection: (isRemoving, selStart, selEnd, lineStart) => {
-          const currentLine = textarea.value.slice(lineStart, textarea.selectionEnd);
-          const orderedListRegex = /^\d+\.\s+/;
-          const unorderedListRegex = /^- /;
-          const hasOrderedList = orderedListRegex.test(currentLine);
-          const hasUnorderedList = unorderedListRegex.test(currentLine);
-          const isRemovingCurrent = style.orderedList && hasOrderedList || style.unorderedList && hasUnorderedList;
-          if (selStart === selEnd) {
-            if (isRemovingCurrent) {
-              const prefixMatch = currentLine.match(style.orderedList ? orderedListRegex : unorderedListRegex);
-              const prefixLength = prefixMatch ? prefixMatch[0].length : 0;
-              return {
-                start: Math.max(selStart - prefixLength, lineStart),
-                end: Math.max(selStart - prefixLength, lineStart)
-              };
-            } else if (hasOrderedList || hasUnorderedList) {
-              const oldPrefixMatch = currentLine.match(hasOrderedList ? orderedListRegex : unorderedListRegex);
-              const oldPrefixLength = oldPrefixMatch ? oldPrefixMatch[0].length : 0;
-              const newPrefixLength = style.unorderedList ? 2 : 3;
-              const adjustment = newPrefixLength - oldPrefixLength;
-              return {
-                start: selStart + adjustment,
-                end: selStart + adjustment
-              };
-            } else {
-              const prefixLength = style.unorderedList ? 2 : 3;
-              return {
-                start: selStart + prefixLength,
-                end: selStart + prefixLength
-              };
-            }
-          } else {
-            if (isRemovingCurrent) {
-              const prefixMatch = currentLine.match(style.orderedList ? orderedListRegex : unorderedListRegex);
-              const prefixLength = prefixMatch ? prefixMatch[0].length : 0;
-              return {
-                start: Math.max(selStart - prefixLength, lineStart),
-                end: Math.max(selEnd - prefixLength, lineStart)
-              };
-            } else if (hasOrderedList || hasUnorderedList) {
-              const oldPrefixMatch = currentLine.match(hasOrderedList ? orderedListRegex : unorderedListRegex);
-              const oldPrefixLength = oldPrefixMatch ? oldPrefixMatch[0].length : 0;
-              const newPrefixLength = style.unorderedList ? 2 : 3;
-              const adjustment = newPrefixLength - oldPrefixLength;
-              return {
-                start: selStart + adjustment,
-                end: selEnd + adjustment
-              };
-            } else {
-              const prefixLength = style.unorderedList ? 2 : 3;
-              return {
-                start: selStart + prefixLength,
-                end: selEnd + prefixLength
-              };
-            }
-          }
-        }
-      }
-    );
-    insertText(textarea, result);
-  }
-  function getActiveFormats2(textarea) {
-    if (!textarea)
-      return [];
-    const formats = [];
-    const { selectionStart, selectionEnd, value } = textarea;
-    const lines = value.split("\n");
-    let lineStart = 0;
-    let currentLine = "";
-    for (const line of lines) {
-      if (selectionStart >= lineStart && selectionStart <= lineStart + line.length) {
-        currentLine = line;
-        break;
-      }
-      lineStart += line.length + 1;
-    }
-    if (currentLine.startsWith("- ")) {
-      if (currentLine.startsWith("- [ ] ") || currentLine.startsWith("- [x] ")) {
-        formats.push("task-list");
-      } else {
-        formats.push("bullet-list");
-      }
-    }
-    if (/^\d+\.\s/.test(currentLine)) {
-      formats.push("numbered-list");
-    }
-    if (currentLine.startsWith("> ")) {
-      formats.push("quote");
-    }
-    if (currentLine.startsWith("# "))
-      formats.push("header");
-    if (currentLine.startsWith("## "))
-      formats.push("header-2");
-    if (currentLine.startsWith("### "))
-      formats.push("header-3");
-    const lookBehind = Math.max(0, selectionStart - 10);
-    const lookAhead = Math.min(value.length, selectionEnd + 10);
-    const surrounding = value.slice(lookBehind, lookAhead);
-    if (surrounding.includes("**")) {
-      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
-      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
-      const lastOpenBold = beforeCursor.lastIndexOf("**");
-      const nextCloseBold = afterCursor.indexOf("**");
-      if (lastOpenBold !== -1 && nextCloseBold !== -1) {
-        formats.push("bold");
-      }
-    }
-    if (surrounding.includes("_")) {
-      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
-      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
-      const lastOpenItalic = beforeCursor.lastIndexOf("_");
-      const nextCloseItalic = afterCursor.indexOf("_");
-      if (lastOpenItalic !== -1 && nextCloseItalic !== -1) {
-        formats.push("italic");
-      }
-    }
-    if (surrounding.includes("`")) {
-      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
-      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
-      if (beforeCursor.includes("`") && afterCursor.includes("`")) {
-        formats.push("code");
-      }
-    }
-    if (surrounding.includes("[") && surrounding.includes("]")) {
-      const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
-      const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
-      const lastOpenBracket = beforeCursor.lastIndexOf("[");
-      const nextCloseBracket = afterCursor.indexOf("]");
-      if (lastOpenBracket !== -1 && nextCloseBracket !== -1) {
-        const afterBracket = value.slice(selectionEnd + nextCloseBracket + 1, selectionEnd + nextCloseBracket + 10);
-        if (afterBracket.startsWith("(")) {
-          formats.push("link");
-        }
-      }
-    }
-    return formats;
-  }
-  function hasFormat(textarea, format) {
-    const activeFormats = getActiveFormats2(textarea);
-    return activeFormats.includes(format);
-  }
-  function expandSelection(textarea, options = {}) {
-    if (!textarea)
-      return;
-    const { toWord, toLine, toFormat } = options;
-    const { selectionStart, selectionEnd, value } = textarea;
-    if (toLine) {
-      const lines = value.split("\n");
-      let lineStart = 0;
-      let lineEnd = 0;
-      let currentPos = 0;
-      for (const line of lines) {
-        if (selectionStart >= currentPos && selectionStart <= currentPos + line.length) {
-          lineStart = currentPos;
-          lineEnd = currentPos + line.length;
-          break;
-        }
-        currentPos += line.length + 1;
-      }
-      textarea.selectionStart = lineStart;
-      textarea.selectionEnd = lineEnd;
-    } else if (toWord && selectionStart === selectionEnd) {
-      let start = selectionStart;
-      let end = selectionEnd;
-      while (start > 0 && !/\s/.test(value[start - 1])) {
-        start--;
-      }
-      while (end < value.length && !/\s/.test(value[end])) {
-        end++;
-      }
-      textarea.selectionStart = start;
-      textarea.selectionEnd = end;
-    }
-  }
-  function toggleBold3(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    debugLog("toggleBold", "Starting");
-    debugSelection(textarea, "Before");
-    const style = mergeWithDefaults(FORMATS.bold);
-    const result = blockStyle(textarea, style);
-    debugResult(result);
-    insertText(textarea, result);
-    debugSelection(textarea, "After");
-  }
-  function toggleItalic3(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const style = mergeWithDefaults(FORMATS.italic);
-    const result = blockStyle(textarea, style);
-    insertText(textarea, result);
-  }
-  function toggleCode2(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const style = mergeWithDefaults(FORMATS.code);
-    const result = blockStyle(textarea, style);
-    insertText(textarea, result);
-  }
-  function insertLink3(textarea, options = {}) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-    let style = mergeWithDefaults(FORMATS.link);
-    const isURL = selectedText && selectedText.match(/^https?:\/\//);
-    if (isURL && !options.url) {
-      style.suffix = `](${selectedText})`;
-      style.replaceNext = "";
-    } else if (options.url) {
-      style.suffix = `](${options.url})`;
-      style.replaceNext = "";
-    }
-    if (options.text && !selectedText) {
-      const pos = textarea.selectionStart;
-      textarea.value = textarea.value.slice(0, pos) + options.text + textarea.value.slice(pos);
-      textarea.selectionStart = pos;
-      textarea.selectionEnd = pos + options.text.length;
-    }
-    const result = blockStyle(textarea, style);
-    insertText(textarea, result);
-  }
-  function toggleBulletList3(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const style = mergeWithDefaults(FORMATS.bulletList);
-    applyListStyle(textarea, style);
-  }
-  function toggleNumberedList3(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const style = mergeWithDefaults(FORMATS.numberedList);
-    applyListStyle(textarea, style);
-  }
-  function toggleQuote2(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    debugLog("toggleQuote", "Starting");
-    debugSelection(textarea, "Initial");
-    const style = mergeWithDefaults(FORMATS.quote);
-    const result = applyLineOperation(
-      textarea,
-      (ta) => multilineStyle(ta, style),
-      { prefix: style.prefix }
-    );
-    debugResult(result);
-    insertText(textarea, result);
-    debugSelection(textarea, "Final");
-  }
-  function toggleTaskList2(textarea) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const style = mergeWithDefaults(FORMATS.taskList);
-    const result = applyLineOperation(
-      textarea,
-      (ta) => multilineStyle(ta, style),
-      { prefix: style.prefix }
-    );
-    insertText(textarea, result);
-  }
-  function insertHeader(textarea, level = 1, toggle = false) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    if (level < 1 || level > 6)
-      level = 1;
-    debugLog("insertHeader", `============ START ============`);
-    debugLog("insertHeader", `Level: ${level}, Toggle: ${toggle}`);
-    debugLog("insertHeader", `Initial cursor: ${textarea.selectionStart}-${textarea.selectionEnd}`);
-    const headerKey = `header${level === 1 ? "1" : level}`;
-    const style = mergeWithDefaults(FORMATS[headerKey] || FORMATS.header1);
-    debugLog("insertHeader", `Style prefix: "${style.prefix}"`);
-    const value = textarea.value;
-    const originalStart = textarea.selectionStart;
-    const originalEnd = textarea.selectionEnd;
-    let lineStart = originalStart;
-    while (lineStart > 0 && value[lineStart - 1] !== "\n") {
-      lineStart--;
-    }
-    let lineEnd = originalEnd;
+  if (noInitialSelection) {
+    let lineEnd = originalStart;
     while (lineEnd < value.length && value[lineEnd] !== "\n") {
       lineEnd++;
     }
-    const currentLineContent = value.slice(lineStart, lineEnd);
-    debugLog("insertHeader", `Current line (before): "${currentLineContent}"`);
-    const existingHeaderMatch = currentLineContent.match(/^(#{1,6})\s*/);
-    const existingLevel = existingHeaderMatch ? existingHeaderMatch[1].length : 0;
-    const existingPrefixLength = existingHeaderMatch ? existingHeaderMatch[0].length : 0;
-    debugLog("insertHeader", `Existing header check:`);
-    debugLog("insertHeader", `  - Match: ${existingHeaderMatch ? `"${existingHeaderMatch[0]}"` : "none"}`);
-    debugLog("insertHeader", `  - Existing level: ${existingLevel}`);
-    debugLog("insertHeader", `  - Existing prefix length: ${existingPrefixLength}`);
-    debugLog("insertHeader", `  - Target level: ${level}`);
-    const shouldToggleOff = toggle && existingLevel === level;
-    debugLog("insertHeader", `Should toggle OFF: ${shouldToggleOff} (toggle=${toggle}, existingLevel=${existingLevel}, level=${level})`);
-    const result = applyLineOperation(
-      textarea,
-      (ta) => {
-        const currentLine = ta.value.slice(ta.selectionStart, ta.selectionEnd);
-        debugLog("insertHeader", `Line in operation: "${currentLine}"`);
-        const cleanedLine = currentLine.replace(/^#{1,6}\s*/, "");
-        debugLog("insertHeader", `Cleaned line: "${cleanedLine}"`);
-        let newLine;
-        if (shouldToggleOff) {
-          debugLog("insertHeader", "ACTION: Toggling OFF - removing header");
-          newLine = cleanedLine;
-        } else if (existingLevel > 0) {
-          debugLog("insertHeader", `ACTION: Replacing H${existingLevel} with H${level}`);
-          newLine = style.prefix + cleanedLine;
-        } else {
-          debugLog("insertHeader", "ACTION: Adding new header");
-          newLine = style.prefix + cleanedLine;
-        }
-        debugLog("insertHeader", `New line: "${newLine}"`);
-        return {
-          text: newLine,
-          selectionStart: ta.selectionStart,
-          selectionEnd: ta.selectionEnd
-        };
-      },
-      {
-        prefix: style.prefix,
-        // Custom selection adjustment for headers
-        adjustSelection: (isRemoving, selStart, selEnd, lineStartPos) => {
-          debugLog("insertHeader", `Adjusting selection:`);
-          debugLog("insertHeader", `  - isRemoving param: ${isRemoving}`);
-          debugLog("insertHeader", `  - shouldToggleOff: ${shouldToggleOff}`);
-          debugLog("insertHeader", `  - selStart: ${selStart}, selEnd: ${selEnd}`);
-          debugLog("insertHeader", `  - lineStartPos: ${lineStartPos}`);
-          if (shouldToggleOff) {
-            const adjustment = Math.max(selStart - existingPrefixLength, lineStartPos);
-            debugLog("insertHeader", `  - Removing header, adjusting by -${existingPrefixLength}`);
+    textarea.selectionStart = lineStart;
+    textarea.selectionEnd = lineEnd;
+  } else {
+    expandSelectionToLine(textarea);
+  }
+  const result = operation(textarea);
+  if (options.adjustSelection) {
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    const isRemoving = selectedText.startsWith(options.prefix);
+    const adjusted = options.adjustSelection(isRemoving, originalStart, originalEnd, lineStart);
+    result.selectionStart = adjusted.start;
+    result.selectionEnd = adjusted.end;
+  } else if (options.prefix) {
+    const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    const isRemoving = selectedText.startsWith(options.prefix);
+    if (noInitialSelection) {
+      if (isRemoving) {
+        result.selectionStart = Math.max(originalStart - options.prefix.length, lineStart);
+        result.selectionEnd = result.selectionStart;
+      } else {
+        result.selectionStart = originalStart + options.prefix.length;
+        result.selectionEnd = result.selectionStart;
+      }
+    } else {
+      if (isRemoving) {
+        result.selectionStart = Math.max(originalStart - options.prefix.length, lineStart);
+        result.selectionEnd = Math.max(originalEnd - options.prefix.length, lineStart);
+      } else {
+        result.selectionStart = originalStart + options.prefix.length;
+        result.selectionEnd = originalEnd + options.prefix.length;
+      }
+    }
+  }
+  return result;
+}
+function blockStyle(textarea, style) {
+  let newlinesToAppend;
+  let newlinesToPrepend;
+  const { prefix, suffix, blockPrefix, blockSuffix, replaceNext, prefixSpace, scanFor, surroundWithNewlines, trimFirst } = style;
+  const originalSelectionStart = textarea.selectionStart;
+  const originalSelectionEnd = textarea.selectionEnd;
+  let selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  let prefixToUse = isMultipleLines(selectedText) && blockPrefix && blockPrefix.length > 0 ? `${blockPrefix}
+` : prefix;
+  let suffixToUse = isMultipleLines(selectedText) && blockSuffix && blockSuffix.length > 0 ? `
+${blockSuffix}` : suffix;
+  if (prefixSpace) {
+    const beforeSelection = textarea.value[textarea.selectionStart - 1];
+    if (textarea.selectionStart !== 0 && beforeSelection != null && !beforeSelection.match(/\s/)) {
+      prefixToUse = ` ${prefixToUse}`;
+    }
+  }
+  selectedText = expandSelectedText(textarea, prefixToUse, suffixToUse, style.multiline);
+  let selectionStart = textarea.selectionStart;
+  let selectionEnd = textarea.selectionEnd;
+  const hasReplaceNext = replaceNext && replaceNext.length > 0 && suffixToUse.indexOf(replaceNext) > -1 && selectedText.length > 0;
+  if (surroundWithNewlines) {
+    const ref = newlinesToSurroundSelectedText(textarea);
+    newlinesToAppend = ref.newlinesToAppend;
+    newlinesToPrepend = ref.newlinesToPrepend;
+    prefixToUse = newlinesToAppend + prefix;
+    suffixToUse += newlinesToPrepend;
+  }
+  if (selectedText.startsWith(prefixToUse) && selectedText.endsWith(suffixToUse)) {
+    const replacementText = selectedText.slice(prefixToUse.length, selectedText.length - suffixToUse.length);
+    if (originalSelectionStart === originalSelectionEnd) {
+      let position = originalSelectionStart - prefixToUse.length;
+      position = Math.max(position, selectionStart);
+      position = Math.min(position, selectionStart + replacementText.length);
+      selectionStart = selectionEnd = position;
+    } else {
+      selectionEnd = selectionStart + replacementText.length;
+    }
+    return { text: replacementText, selectionStart, selectionEnd };
+  } else if (!hasReplaceNext) {
+    let replacementText = prefixToUse + selectedText + suffixToUse;
+    selectionStart = originalSelectionStart + prefixToUse.length;
+    selectionEnd = originalSelectionEnd + prefixToUse.length;
+    const whitespaceEdges = selectedText.match(/^\s*|\s*$/g);
+    if (trimFirst && whitespaceEdges) {
+      const leadingWhitespace = whitespaceEdges[0] || "";
+      const trailingWhitespace = whitespaceEdges[1] || "";
+      replacementText = leadingWhitespace + prefixToUse + selectedText.trim() + suffixToUse + trailingWhitespace;
+      selectionStart += leadingWhitespace.length;
+      selectionEnd -= trailingWhitespace.length;
+    }
+    return { text: replacementText, selectionStart, selectionEnd };
+  } else if (scanFor && scanFor.length > 0 && selectedText.match(scanFor)) {
+    suffixToUse = suffixToUse.replace(replaceNext, selectedText);
+    const replacementText = prefixToUse + suffixToUse;
+    selectionStart = selectionEnd = selectionStart + prefixToUse.length;
+    return { text: replacementText, selectionStart, selectionEnd };
+  } else {
+    const replacementText = prefixToUse + selectedText + suffixToUse;
+    selectionStart = selectionStart + prefixToUse.length + selectedText.length + suffixToUse.indexOf(replaceNext);
+    selectionEnd = selectionStart + replaceNext.length;
+    return { text: replacementText, selectionStart, selectionEnd };
+  }
+}
+function multilineStyle(textarea, style) {
+  const { prefix, suffix, surroundWithNewlines } = style;
+  let text = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  let selectionStart = textarea.selectionStart;
+  let selectionEnd = textarea.selectionEnd;
+  const lines = text.split("\n");
+  const undoStyle = lines.every((line) => line.startsWith(prefix) && (!suffix || line.endsWith(suffix)));
+  if (undoStyle) {
+    text = lines.map((line) => {
+      let result = line.slice(prefix.length);
+      if (suffix) {
+        result = result.slice(0, result.length - suffix.length);
+      }
+      return result;
+    }).join("\n");
+    selectionEnd = selectionStart + text.length;
+  } else {
+    text = lines.map((line) => prefix + line + (suffix || "")).join("\n");
+    if (surroundWithNewlines) {
+      const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
+      selectionStart += newlinesToAppend.length;
+      selectionEnd = selectionStart + text.length;
+      text = newlinesToAppend + text + newlinesToPrepend;
+    }
+  }
+  return { text, selectionStart, selectionEnd };
+}
+function undoOrderedListStyle(text) {
+  const lines = text.split("\n");
+  const orderedListRegex = /^\d+\.\s+/;
+  const shouldUndoOrderedList = lines.every((line) => orderedListRegex.test(line));
+  let result = lines;
+  if (shouldUndoOrderedList) {
+    result = lines.map((line) => line.replace(orderedListRegex, ""));
+  }
+  return {
+    text: result.join("\n"),
+    processed: shouldUndoOrderedList
+  };
+}
+function undoUnorderedListStyle(text) {
+  const lines = text.split("\n");
+  const unorderedListPrefix = "- ";
+  const shouldUndoUnorderedList = lines.every((line) => line.startsWith(unorderedListPrefix));
+  let result = lines;
+  if (shouldUndoUnorderedList) {
+    result = lines.map((line) => line.slice(unorderedListPrefix.length));
+  }
+  return {
+    text: result.join("\n"),
+    processed: shouldUndoUnorderedList
+  };
+}
+function makePrefix(index, unorderedList) {
+  if (unorderedList) {
+    return "- ";
+  } else {
+    return `${index + 1}. `;
+  }
+}
+function clearExistingListStyle(style, selectedText) {
+  let undoResult;
+  let undoResultOppositeList;
+  let pristineText;
+  if (style.orderedList) {
+    undoResult = undoOrderedListStyle(selectedText);
+    undoResultOppositeList = undoUnorderedListStyle(undoResult.text);
+    pristineText = undoResultOppositeList.text;
+  } else {
+    undoResult = undoUnorderedListStyle(selectedText);
+    undoResultOppositeList = undoOrderedListStyle(undoResult.text);
+    pristineText = undoResultOppositeList.text;
+  }
+  return [undoResult, undoResultOppositeList, pristineText];
+}
+function listStyle(textarea, style) {
+  const noInitialSelection = textarea.selectionStart === textarea.selectionEnd;
+  let selectionStart = textarea.selectionStart;
+  let selectionEnd = textarea.selectionEnd;
+  expandSelectionToLine(textarea);
+  const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  const [undoResult, undoResultOppositeList, pristineText] = clearExistingListStyle(style, selectedText);
+  const prefixedLines = pristineText.split("\n").map((value, index) => {
+    return `${makePrefix(index, style.unorderedList)}${value}`;
+  });
+  const totalPrefixLength = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
+    return previousValue + makePrefix(currentIndex, style.unorderedList).length;
+  }, 0);
+  const totalPrefixLengthOppositeList = prefixedLines.reduce((previousValue, _currentValue, currentIndex) => {
+    return previousValue + makePrefix(currentIndex, !style.unorderedList).length;
+  }, 0);
+  if (undoResult.processed) {
+    if (noInitialSelection) {
+      selectionStart = Math.max(selectionStart - makePrefix(0, style.unorderedList).length, 0);
+      selectionEnd = selectionStart;
+    } else {
+      selectionStart = textarea.selectionStart;
+      selectionEnd = textarea.selectionEnd - totalPrefixLength;
+    }
+    return { text: pristineText, selectionStart, selectionEnd };
+  }
+  const { newlinesToAppend, newlinesToPrepend } = newlinesToSurroundSelectedText(textarea);
+  const text = newlinesToAppend + prefixedLines.join("\n") + newlinesToPrepend;
+  if (noInitialSelection) {
+    selectionStart = Math.max(selectionStart + makePrefix(0, style.unorderedList).length + newlinesToAppend.length, 0);
+    selectionEnd = selectionStart;
+  } else {
+    if (undoResultOppositeList.processed) {
+      selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
+      selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength - totalPrefixLengthOppositeList;
+    } else {
+      selectionStart = Math.max(textarea.selectionStart + newlinesToAppend.length, 0);
+      selectionEnd = textarea.selectionEnd + newlinesToAppend.length + totalPrefixLength;
+    }
+  }
+  return { text, selectionStart, selectionEnd };
+}
+function applyListStyle(textarea, style) {
+  const result = applyLineOperation(
+    textarea,
+    (ta) => listStyle(ta, style),
+    {
+      // Custom selection adjustment for lists
+      adjustSelection: (isRemoving, selStart, selEnd, lineStart) => {
+        const currentLine = textarea.value.slice(lineStart, textarea.selectionEnd);
+        const orderedListRegex = /^\d+\.\s+/;
+        const unorderedListRegex = /^- /;
+        const hasOrderedList = orderedListRegex.test(currentLine);
+        const hasUnorderedList = unorderedListRegex.test(currentLine);
+        const isRemovingCurrent = style.orderedList && hasOrderedList || style.unorderedList && hasUnorderedList;
+        if (selStart === selEnd) {
+          if (isRemovingCurrent) {
+            const prefixMatch = currentLine.match(style.orderedList ? orderedListRegex : unorderedListRegex);
+            const prefixLength = prefixMatch ? prefixMatch[0].length : 0;
             return {
-              start: adjustment,
-              end: selStart === selEnd ? adjustment : Math.max(selEnd - existingPrefixLength, lineStartPos)
+              start: Math.max(selStart - prefixLength, lineStart),
+              end: Math.max(selStart - prefixLength, lineStart)
             };
-          } else if (existingPrefixLength > 0) {
-            const prefixDiff = style.prefix.length - existingPrefixLength;
-            debugLog("insertHeader", `  - Replacing header, adjusting by ${prefixDiff}`);
+          } else if (hasOrderedList || hasUnorderedList) {
+            const oldPrefixMatch = currentLine.match(hasOrderedList ? orderedListRegex : unorderedListRegex);
+            const oldPrefixLength = oldPrefixMatch ? oldPrefixMatch[0].length : 0;
+            const newPrefixLength = style.unorderedList ? 2 : 3;
+            const adjustment = newPrefixLength - oldPrefixLength;
             return {
-              start: selStart + prefixDiff,
-              end: selEnd + prefixDiff
+              start: selStart + adjustment,
+              end: selStart + adjustment
             };
           } else {
-            debugLog("insertHeader", `  - Adding header, adjusting by +${style.prefix.length}`);
+            const prefixLength = style.unorderedList ? 2 : 3;
             return {
-              start: selStart + style.prefix.length,
-              end: selEnd + style.prefix.length
+              start: selStart + prefixLength,
+              end: selStart + prefixLength
+            };
+          }
+        } else {
+          if (isRemovingCurrent) {
+            const prefixMatch = currentLine.match(style.orderedList ? orderedListRegex : unorderedListRegex);
+            const prefixLength = prefixMatch ? prefixMatch[0].length : 0;
+            return {
+              start: Math.max(selStart - prefixLength, lineStart),
+              end: Math.max(selEnd - prefixLength, lineStart)
+            };
+          } else if (hasOrderedList || hasUnorderedList) {
+            const oldPrefixMatch = currentLine.match(hasOrderedList ? orderedListRegex : unorderedListRegex);
+            const oldPrefixLength = oldPrefixMatch ? oldPrefixMatch[0].length : 0;
+            const newPrefixLength = style.unorderedList ? 2 : 3;
+            const adjustment = newPrefixLength - oldPrefixLength;
+            return {
+              start: selStart + adjustment,
+              end: selEnd + adjustment
+            };
+          } else {
+            const prefixLength = style.unorderedList ? 2 : 3;
+            return {
+              start: selStart + prefixLength,
+              end: selEnd + prefixLength
             };
           }
         }
       }
-    );
-    debugLog("insertHeader", `Final result: text="${result.text}", cursor=${result.selectionStart}-${result.selectionEnd}`);
-    debugLog("insertHeader", `============ END ============`);
-    insertText(textarea, result);
-  }
-  function toggleH12(textarea) {
-    insertHeader(textarea, 1, true);
-  }
-  function toggleH22(textarea) {
-    insertHeader(textarea, 2, true);
-  }
-  function toggleH32(textarea) {
-    insertHeader(textarea, 3, true);
-  }
-  function getActiveFormats22(textarea) {
-    return getActiveFormats2(textarea);
-  }
-  function hasFormat2(textarea, format) {
-    return hasFormat(textarea, format);
-  }
-  function expandSelection2(textarea, options = {}) {
-    expandSelection(textarea, options);
-  }
-  function applyCustomFormat(textarea, format) {
-    if (!textarea || textarea.disabled || textarea.readOnly)
-      return;
-    const style = mergeWithDefaults(format);
-    let result;
-    if (style.multiline) {
-      const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
-      if (isMultipleLines(selectedText)) {
-        result = multilineStyle(textarea, style);
-      } else {
-        result = blockStyle(textarea, style);
-      }
-    } else {
-      result = blockStyle(textarea, style);
     }
-    insertText(textarea, result);
+  );
+  insertText(textarea, result);
+}
+function getActiveFormats(textarea) {
+  if (!textarea)
+    return [];
+  const formats = [];
+  const { selectionStart, selectionEnd, value } = textarea;
+  const lines = value.split("\n");
+  let lineStart = 0;
+  let currentLine = "";
+  for (const line of lines) {
+    if (selectionStart >= lineStart && selectionStart <= lineStart + line.length) {
+      currentLine = line;
+      break;
+    }
+    lineStart += line.length + 1;
   }
-  var src_default = {
-    toggleBold: toggleBold3,
-    toggleItalic: toggleItalic3,
-    toggleCode: toggleCode2,
-    insertLink: insertLink3,
-    toggleBulletList: toggleBulletList3,
-    toggleNumberedList: toggleNumberedList3,
-    toggleQuote: toggleQuote2,
-    toggleTaskList: toggleTaskList2,
-    insertHeader,
-    toggleH1: toggleH12,
-    toggleH2: toggleH22,
-    toggleH3: toggleH32,
-    getActiveFormats: getActiveFormats22,
-    hasFormat: hasFormat2,
-    expandSelection: expandSelection2,
-    applyCustomFormat,
-    preserveSelection,
-    setUndoMethod,
-    setDebugMode,
-    getDebugMode
-  };
-  return __toCommonJS2(src_exports);
-})();
+  if (currentLine.startsWith("- ")) {
+    if (currentLine.startsWith("- [ ] ") || currentLine.startsWith("- [x] ")) {
+      formats.push("task-list");
+    } else {
+      formats.push("bullet-list");
+    }
+  }
+  if (/^\d+\.\s/.test(currentLine)) {
+    formats.push("numbered-list");
+  }
+  if (currentLine.startsWith("> ")) {
+    formats.push("quote");
+  }
+  if (currentLine.startsWith("# "))
+    formats.push("header");
+  if (currentLine.startsWith("## "))
+    formats.push("header-2");
+  if (currentLine.startsWith("### "))
+    formats.push("header-3");
+  const lookBehind = Math.max(0, selectionStart - 10);
+  const lookAhead = Math.min(value.length, selectionEnd + 10);
+  const surrounding = value.slice(lookBehind, lookAhead);
+  if (surrounding.includes("**")) {
+    const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+    const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+    const lastOpenBold = beforeCursor.lastIndexOf("**");
+    const nextCloseBold = afterCursor.indexOf("**");
+    if (lastOpenBold !== -1 && nextCloseBold !== -1) {
+      formats.push("bold");
+    }
+  }
+  if (surrounding.includes("_")) {
+    const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+    const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+    const lastOpenItalic = beforeCursor.lastIndexOf("_");
+    const nextCloseItalic = afterCursor.indexOf("_");
+    if (lastOpenItalic !== -1 && nextCloseItalic !== -1) {
+      formats.push("italic");
+    }
+  }
+  if (surrounding.includes("`")) {
+    const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+    const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+    if (beforeCursor.includes("`") && afterCursor.includes("`")) {
+      formats.push("code");
+    }
+  }
+  if (surrounding.includes("[") && surrounding.includes("]")) {
+    const beforeCursor = value.slice(Math.max(0, selectionStart - 100), selectionStart);
+    const afterCursor = value.slice(selectionEnd, Math.min(value.length, selectionEnd + 100));
+    const lastOpenBracket = beforeCursor.lastIndexOf("[");
+    const nextCloseBracket = afterCursor.indexOf("]");
+    if (lastOpenBracket !== -1 && nextCloseBracket !== -1) {
+      const afterBracket = value.slice(selectionEnd + nextCloseBracket + 1, selectionEnd + nextCloseBracket + 10);
+      if (afterBracket.startsWith("(")) {
+        formats.push("link");
+      }
+    }
+  }
+  return formats;
+}
+function toggleBold(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  debugLog("toggleBold", "Starting");
+  debugSelection(textarea, "Before");
+  const style = mergeWithDefaults(FORMATS.bold);
+  const result = blockStyle(textarea, style);
+  debugResult(result);
+  insertText(textarea, result);
+  debugSelection(textarea, "After");
+}
+function toggleItalic(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  const style = mergeWithDefaults(FORMATS.italic);
+  const result = blockStyle(textarea, style);
+  insertText(textarea, result);
+}
+function toggleCode(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  const style = mergeWithDefaults(FORMATS.code);
+  const result = blockStyle(textarea, style);
+  insertText(textarea, result);
+}
+function insertLink(textarea, options = {}) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  const selectedText = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+  let style = mergeWithDefaults(FORMATS.link);
+  const isURL = selectedText && selectedText.match(/^https?:\/\//);
+  if (isURL && !options.url) {
+    style.suffix = `](${selectedText})`;
+    style.replaceNext = "";
+  } else if (options.url) {
+    style.suffix = `](${options.url})`;
+    style.replaceNext = "";
+  }
+  if (options.text && !selectedText) {
+    const pos = textarea.selectionStart;
+    textarea.value = textarea.value.slice(0, pos) + options.text + textarea.value.slice(pos);
+    textarea.selectionStart = pos;
+    textarea.selectionEnd = pos + options.text.length;
+  }
+  const result = blockStyle(textarea, style);
+  insertText(textarea, result);
+}
+function toggleBulletList(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  const style = mergeWithDefaults(FORMATS.bulletList);
+  applyListStyle(textarea, style);
+}
+function toggleNumberedList(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  const style = mergeWithDefaults(FORMATS.numberedList);
+  applyListStyle(textarea, style);
+}
+function toggleQuote(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  debugLog("toggleQuote", "Starting");
+  debugSelection(textarea, "Initial");
+  const style = mergeWithDefaults(FORMATS.quote);
+  const result = applyLineOperation(
+    textarea,
+    (ta) => multilineStyle(ta, style),
+    { prefix: style.prefix }
+  );
+  debugResult(result);
+  insertText(textarea, result);
+  debugSelection(textarea, "Final");
+}
+function toggleTaskList(textarea) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  const style = mergeWithDefaults(FORMATS.taskList);
+  const result = applyLineOperation(
+    textarea,
+    (ta) => multilineStyle(ta, style),
+    { prefix: style.prefix }
+  );
+  insertText(textarea, result);
+}
+function insertHeader(textarea, level = 1, toggle = false) {
+  if (!textarea || textarea.disabled || textarea.readOnly)
+    return;
+  if (level < 1 || level > 6)
+    level = 1;
+  debugLog("insertHeader", `============ START ============`);
+  debugLog("insertHeader", `Level: ${level}, Toggle: ${toggle}`);
+  debugLog("insertHeader", `Initial cursor: ${textarea.selectionStart}-${textarea.selectionEnd}`);
+  const headerKey = `header${level === 1 ? "1" : level}`;
+  const style = mergeWithDefaults(FORMATS[headerKey] || FORMATS.header1);
+  debugLog("insertHeader", `Style prefix: "${style.prefix}"`);
+  const value = textarea.value;
+  const originalStart = textarea.selectionStart;
+  const originalEnd = textarea.selectionEnd;
+  let lineStart = originalStart;
+  while (lineStart > 0 && value[lineStart - 1] !== "\n") {
+    lineStart--;
+  }
+  let lineEnd = originalEnd;
+  while (lineEnd < value.length && value[lineEnd] !== "\n") {
+    lineEnd++;
+  }
+  const currentLineContent = value.slice(lineStart, lineEnd);
+  debugLog("insertHeader", `Current line (before): "${currentLineContent}"`);
+  const existingHeaderMatch = currentLineContent.match(/^(#{1,6})\s*/);
+  const existingLevel = existingHeaderMatch ? existingHeaderMatch[1].length : 0;
+  const existingPrefixLength = existingHeaderMatch ? existingHeaderMatch[0].length : 0;
+  debugLog("insertHeader", `Existing header check:`);
+  debugLog("insertHeader", `  - Match: ${existingHeaderMatch ? `"${existingHeaderMatch[0]}"` : "none"}`);
+  debugLog("insertHeader", `  - Existing level: ${existingLevel}`);
+  debugLog("insertHeader", `  - Existing prefix length: ${existingPrefixLength}`);
+  debugLog("insertHeader", `  - Target level: ${level}`);
+  const shouldToggleOff = toggle && existingLevel === level;
+  debugLog("insertHeader", `Should toggle OFF: ${shouldToggleOff} (toggle=${toggle}, existingLevel=${existingLevel}, level=${level})`);
+  const result = applyLineOperation(
+    textarea,
+    (ta) => {
+      const currentLine = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+      debugLog("insertHeader", `Line in operation: "${currentLine}"`);
+      const cleanedLine = currentLine.replace(/^#{1,6}\s*/, "");
+      debugLog("insertHeader", `Cleaned line: "${cleanedLine}"`);
+      let newLine;
+      if (shouldToggleOff) {
+        debugLog("insertHeader", "ACTION: Toggling OFF - removing header");
+        newLine = cleanedLine;
+      } else if (existingLevel > 0) {
+        debugLog("insertHeader", `ACTION: Replacing H${existingLevel} with H${level}`);
+        newLine = style.prefix + cleanedLine;
+      } else {
+        debugLog("insertHeader", "ACTION: Adding new header");
+        newLine = style.prefix + cleanedLine;
+      }
+      debugLog("insertHeader", `New line: "${newLine}"`);
+      return {
+        text: newLine,
+        selectionStart: ta.selectionStart,
+        selectionEnd: ta.selectionEnd
+      };
+    },
+    {
+      prefix: style.prefix,
+      // Custom selection adjustment for headers
+      adjustSelection: (isRemoving, selStart, selEnd, lineStartPos) => {
+        debugLog("insertHeader", `Adjusting selection:`);
+        debugLog("insertHeader", `  - isRemoving param: ${isRemoving}`);
+        debugLog("insertHeader", `  - shouldToggleOff: ${shouldToggleOff}`);
+        debugLog("insertHeader", `  - selStart: ${selStart}, selEnd: ${selEnd}`);
+        debugLog("insertHeader", `  - lineStartPos: ${lineStartPos}`);
+        if (shouldToggleOff) {
+          const adjustment = Math.max(selStart - existingPrefixLength, lineStartPos);
+          debugLog("insertHeader", `  - Removing header, adjusting by -${existingPrefixLength}`);
+          return {
+            start: adjustment,
+            end: selStart === selEnd ? adjustment : Math.max(selEnd - existingPrefixLength, lineStartPos)
+          };
+        } else if (existingPrefixLength > 0) {
+          const prefixDiff = style.prefix.length - existingPrefixLength;
+          debugLog("insertHeader", `  - Replacing header, adjusting by ${prefixDiff}`);
+          return {
+            start: selStart + prefixDiff,
+            end: selEnd + prefixDiff
+          };
+        } else {
+          debugLog("insertHeader", `  - Adding header, adjusting by +${style.prefix.length}`);
+          return {
+            start: selStart + style.prefix.length,
+            end: selEnd + style.prefix.length
+          };
+        }
+      }
+    }
+  );
+  debugLog("insertHeader", `Final result: text="${result.text}", cursor=${result.selectionStart}-${result.selectionEnd}`);
+  debugLog("insertHeader", `============ END ============`);
+  insertText(textarea, result);
+}
+function toggleH1(textarea) {
+  insertHeader(textarea, 1, true);
+}
+function toggleH2(textarea) {
+  insertHeader(textarea, 2, true);
+}
+function toggleH3(textarea) {
+  insertHeader(textarea, 3, true);
+}
+function getActiveFormats2(textarea) {
+  return getActiveFormats(textarea);
+}
 
 // src/shortcuts.js
 var ShortcutsManager = class {
@@ -1446,19 +1297,19 @@ var ShortcutsManager = class {
     try {
       switch (action) {
         case "toggleBold":
-          (void 0)(textarea);
+          toggleBold(textarea);
           break;
         case "toggleItalic":
-          (void 0)(textarea);
+          toggleItalic(textarea);
           break;
         case "insertLink":
-          (void 0)(textarea);
+          insertLink(textarea);
           break;
         case "toggleBulletList":
-          (void 0)(textarea);
+          toggleBulletList(textarea);
           break;
         case "toggleNumberedList":
-          (void 0)(textarea);
+          toggleNumberedList(textarea);
           break;
       }
       textarea.dispatchEvent(new Event("input", { bubbles: true }));
@@ -2546,37 +2397,37 @@ var Toolbar = class {
     try {
       switch (action) {
         case "toggleBold":
-          (void 0)(textarea);
+          toggleBold(textarea);
           break;
         case "toggleItalic":
-          (void 0)(textarea);
+          toggleItalic(textarea);
           break;
         case "insertH1":
-          (void 0)(textarea);
+          toggleH1(textarea);
           break;
         case "insertH2":
-          (void 0)(textarea);
+          toggleH2(textarea);
           break;
         case "insertH3":
-          (void 0)(textarea);
+          toggleH3(textarea);
           break;
         case "insertLink":
-          (void 0)(textarea);
+          insertLink(textarea);
           break;
         case "toggleCode":
-          (void 0)(textarea);
+          toggleCode(textarea);
           break;
         case "toggleBulletList":
-          (void 0)(textarea);
+          toggleBulletList(textarea);
           break;
         case "toggleNumberedList":
-          (void 0)(textarea);
+          toggleNumberedList(textarea);
           break;
         case "toggleQuote":
-          (void 0)(textarea);
+          toggleQuote(textarea);
           break;
         case "toggleTaskList":
-          (void 0)(textarea);
+          toggleTaskList(textarea);
           break;
         case "toggle-plain":
           const isPlain = this.editor.container.classList.contains("plain-mode");
@@ -2596,7 +2447,7 @@ var Toolbar = class {
     if (!textarea)
       return;
     try {
-      const activeFormats = (void 0)(textarea);
+      const activeFormats = getActiveFormats2(textarea);
       Object.entries(this.buttons).forEach(([name, button]) => {
         let isActive = false;
         switch (name) {
@@ -3272,21 +3123,35 @@ var _OverType = class _OverType {
         const after = value.substring(end);
         const lines = selection.split("\n");
         const outdented = lines.map((line) => line.replace(/^  /, "")).join("\n");
-        this.textarea.value = before + outdented + after;
-        this.textarea.selectionStart = start;
-        this.textarea.selectionEnd = start + outdented.length;
+        if (document.execCommand) {
+          this.textarea.setSelectionRange(start, end);
+          document.execCommand("insertText", false, outdented);
+        } else {
+          this.textarea.value = before + outdented + after;
+          this.textarea.selectionStart = start;
+          this.textarea.selectionEnd = start + outdented.length;
+        }
       } else if (start !== end) {
         const before = value.substring(0, start);
         const selection = value.substring(start, end);
         const after = value.substring(end);
         const lines = selection.split("\n");
         const indented = lines.map((line) => "  " + line).join("\n");
-        this.textarea.value = before + indented + after;
-        this.textarea.selectionStart = start;
-        this.textarea.selectionEnd = start + indented.length;
+        if (document.execCommand) {
+          this.textarea.setSelectionRange(start, end);
+          document.execCommand("insertText", false, indented);
+        } else {
+          this.textarea.value = before + indented + after;
+          this.textarea.selectionStart = start;
+          this.textarea.selectionEnd = start + indented.length;
+        }
       } else {
-        this.textarea.value = value.substring(0, start) + "  " + value.substring(end);
-        this.textarea.selectionStart = this.textarea.selectionEnd = start + 2;
+        if (document.execCommand) {
+          document.execCommand("insertText", false, "  ");
+        } else {
+          this.textarea.value = value.substring(0, start) + "  " + value.substring(end);
+          this.textarea.selectionStart = this.textarea.selectionEnd = start + 2;
+        }
       }
       this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
       return;

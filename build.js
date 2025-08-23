@@ -25,7 +25,9 @@ const baseConfig = {
   },
   loader: {
     '.js': 'js'
-  }
+  },
+  // Prefer ESM versions of packages when available
+  mainFields: ['module', 'main']
 };
 
 // Check for watch mode

@@ -3099,21 +3099,35 @@ var _OverType = class _OverType {
         const after = value.substring(end);
         const lines = selection.split("\n");
         const outdented = lines.map((line) => line.replace(/^  /, "")).join("\n");
-        this.textarea.value = before + outdented + after;
-        this.textarea.selectionStart = start;
-        this.textarea.selectionEnd = start + outdented.length;
+        if (document.execCommand) {
+          this.textarea.setSelectionRange(start, end);
+          document.execCommand("insertText", false, outdented);
+        } else {
+          this.textarea.value = before + outdented + after;
+          this.textarea.selectionStart = start;
+          this.textarea.selectionEnd = start + outdented.length;
+        }
       } else if (start !== end) {
         const before = value.substring(0, start);
         const selection = value.substring(start, end);
         const after = value.substring(end);
         const lines = selection.split("\n");
         const indented = lines.map((line) => "  " + line).join("\n");
-        this.textarea.value = before + indented + after;
-        this.textarea.selectionStart = start;
-        this.textarea.selectionEnd = start + indented.length;
+        if (document.execCommand) {
+          this.textarea.setSelectionRange(start, end);
+          document.execCommand("insertText", false, indented);
+        } else {
+          this.textarea.value = before + indented + after;
+          this.textarea.selectionStart = start;
+          this.textarea.selectionEnd = start + indented.length;
+        }
       } else {
-        this.textarea.value = value.substring(0, start) + "  " + value.substring(end);
-        this.textarea.selectionStart = this.textarea.selectionEnd = start + 2;
+        if (document.execCommand) {
+          document.execCommand("insertText", false, "  ");
+        } else {
+          this.textarea.value = value.substring(0, start) + "  " + value.substring(end);
+          this.textarea.selectionStart = this.textarea.selectionEnd = start + 2;
+        }
       }
       this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
       return;
