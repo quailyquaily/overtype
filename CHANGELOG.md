@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2025-08-23
+
 ### Fixed
 - **Issue #32: Alignment problems with tables and code blocks**
   - Code fences (```) are now preserved and visible in the preview
