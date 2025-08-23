@@ -286,6 +286,8 @@ export class MarkdownParser {
     
     // Wrap in div to maintain line structure
     if (html.trim() === '') {
+      // Intentionally use &nbsp; for empty lines to maintain vertical spacing
+      // This causes a 0->1 character count difference but preserves visual alignment
       return '<div>&nbsp;</div>';
     }
     
@@ -304,11 +306,28 @@ export class MarkdownParser {
     this.resetLinkIndex();
     
     const lines = text.split('\n');
+    let inCodeBlock = false;
+    
     const parsedLines = lines.map((line, index) => {
       // Show raw markdown on active line if requested
       if (showActiveLineRaw && index === activeLine) {
         const content = this.escapeHtml(line) || '&nbsp;';
         return `<div class="raw-line">${content}</div>`;
+      }
+      
+      // Check if this line is a code fence
+      const codeFenceRegex = /^```[^`]*$/;
+      if (codeFenceRegex.test(line)) {
+        inCodeBlock = !inCodeBlock;
+        // Parse fence markers normally to get styled output
+        return this.parseLine(line);
+      }
+      
+      // If we're inside a code block, don't parse as markdown
+      if (inCodeBlock) {
+        const escaped = this.escapeHtml(line);
+        const indented = this.preserveIndentation(escaped, line);
+        return `<div>${indented || '&nbsp;'}</div>`;
       }
       
       // Otherwise, parse the markdown normally
@@ -358,8 +377,10 @@ export class MarkdownParser {
         const fenceText = codeFence.textContent;
         if (fenceText.startsWith('```')) {
           if (!inCodeBlock) {
-            // Start of code block
+            // Start of code block - keep fence visible, then add pre/code
             inCodeBlock = true;
+            
+            // Create the code block that will follow the fence
             currentCodeBlock = document.createElement('pre');
             const codeElement = document.createElement('code');
             currentCodeBlock.appendChild(codeElement);
@@ -371,14 +392,16 @@ export class MarkdownParser {
               codeElement.className = `language-${lang}`;
             }
             
-            container.insertBefore(currentCodeBlock, child);
-            child.remove();
+            // Insert code block after the fence div (don't remove the fence)
+            container.insertBefore(currentCodeBlock, child.nextSibling);
+            
+            // Store reference to the code element for adding content
+            currentCodeBlock._codeElement = codeElement;
             continue;
           } else {
-            // End of code block
+            // End of code block - fence stays visible
             inCodeBlock = false;
             currentCodeBlock = null;
-            child.remove();
             continue;
           }
         }
@@ -386,13 +409,15 @@ export class MarkdownParser {
       
       // Check if we're in a code block - any div that's not a code fence
       if (inCodeBlock && currentCodeBlock && child.tagName === 'DIV' && !child.querySelector('.code-fence')) {
-        const codeElement = currentCodeBlock.querySelector('code');
+        const codeElement = currentCodeBlock._codeElement || currentCodeBlock.querySelector('code');
         // Add the line content to the code block
         if (codeElement.textContent.length > 0) {
           codeElement.textContent += '\n';
         }
         // Get the actual text content, preserving spaces
-        const lineText = child.innerHTML.replace(/&nbsp;/g, ' ').replace(/<[^>]*>/g, '');
+        // Use textContent instead of innerHTML to avoid double-escaping
+        // textContent automatically decodes HTML entities
+        const lineText = child.textContent.replace(/\u00A0/g, ' '); // \u00A0 is nbsp
         codeElement.textContent += lineText;
         child.remove();
         continue;
@@ -465,25 +490,29 @@ export class MarkdownParser {
       return match;
     });
     
-    // Process code blocks
-    const codeBlockRegex = /<div><span class="code-fence">```([^<]*)<\/span><\/div>(.*?)<div><span class="code-fence">```<\/span><\/div>/gs;
-    processed = processed.replace(codeBlockRegex, (match, lang, content) => {
+    // Process code blocks - KEEP the fence markers for alignment AND use semantic pre/code
+    const codeBlockRegex = /<div><span class="code-fence">(```[^<]*)<\/span><\/div>(.*?)<div><span class="code-fence">(```)<\/span><\/div>/gs;
+    processed = processed.replace(codeBlockRegex, (match, openFence, content, closeFence) => {
       // Extract the content between fences
       const lines = content.match(/<div>(.*?)<\/div>/gs) || [];
       const codeContent = lines.map(line => {
-        // Extract text from each div
+        // Extract text from each div - content is already escaped
         const text = line.replace(/<div>(.*?)<\/div>/s, '$1')
-          .replace(/&nbsp;/g, ' ')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&#39;/g, "'")
-          .replace(/&amp;/g, '&');
+          .replace(/&nbsp;/g, ' ');
         return text;
       }).join('\n');
       
-      const langClass = lang ? ` class="language-${lang.trim()}"` : '';
-      return `<pre class="code-block"><code${langClass}>${this.escapeHtml(codeContent)}</code></pre>`;
+      // Extract language from the opening fence
+      const lang = openFence.slice(3).trim();
+      const langClass = lang ? ` class="language-${lang}"` : '';
+      
+      // Keep fence markers visible as separate divs, with pre/code block between them
+      let result = `<div><span class="code-fence">${openFence}</span></div>`;
+      // Content is already escaped, don't double-escape
+      result += `<pre class="code-block"><code${langClass}>${codeContent}</code></pre>`;
+      result += `<div><span class="code-fence">${closeFence}</span></div>`;
+      
+      return result;
     });
     
     return processed;

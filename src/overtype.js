@@ -489,25 +489,9 @@ class OverType {
         openParent.classList.add('code-block-line');
         closeParent.classList.add('code-block-line');
         
-        // Apply class to all divs between the parent divs
-        let currentDiv = openParent.nextElementSibling;
-        while (currentDiv && currentDiv !== closeParent) {
-          // Apply class to divs between the fences
-          if (currentDiv.tagName === 'DIV') {
-            currentDiv.classList.add('code-block-line');
-            
-            // Strip all formatting by replacing with plain text
-            // This prevents markdown formatting inside code blocks
-            const plainText = currentDiv.textContent;
-            currentDiv.textContent = plainText;
-          }
-          
-          // Move to next sibling
-          currentDiv = currentDiv.nextElementSibling;
-          
-          // Safety check to prevent infinite loop
-          if (!currentDiv) break;
-        }
+        // With the new structure, there's a <pre> block between fences, not DIVs
+        // We don't need to process anything between the fences anymore
+        // The <pre><code> structure already handles the content correctly
       }
     }
 

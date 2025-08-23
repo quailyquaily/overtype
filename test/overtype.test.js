@@ -423,6 +423,81 @@ console.log('\n🔧 Integration Tests\n');
   });
 })();
 
+// ===== Character Alignment Tests =====
+console.log('\n🔤 Character Alignment Tests\n');
+
+// Test: HTML entities must NOT appear in visible text (breaks alignment)
+(() => {
+  const input = `Testing > and < and & characters`;
+  const parsed = MarkdownParser.parse(input);
+  
+  // Create a temporary element to extract text content
+  if (typeof document !== 'undefined') {
+    const temp = document.createElement('div');
+    temp.innerHTML = parsed;
+    const visibleText = temp.textContent;
+    
+    assert(
+      visibleText === input,
+      'Special characters maintain 1:1 alignment',
+      `Alignment broken! Input: "${input}" (${input.length} chars) vs Visible: "${visibleText}" (${visibleText.length} chars)`
+    );
+  } else {
+    // In Node, we expect HTML entities in the output for safety
+    // They will render as single characters in the browser
+    assert(
+      parsed.includes('&gt;') && parsed.includes('&lt;') && parsed.includes('&amp;'),
+      'HTML entities should be escaped for safety',
+      `Expected escaped entities in HTML: ${parsed}`
+    );
+  }
+})();
+
+// Test: Code blocks with < > & must maintain character alignment
+(() => {
+  const input = `\`\`\`
+if (x > 5 && y < 10) {
+  return x & y;
+}
+\`\`\``;
+  
+  const parsed = MarkdownParser.parse(input);
+  
+  // The VISIBLE characters must match input exactly
+  // Even though the HTML might contain &gt; &lt; &amp; for safety,
+  // the actual text nodes should contain the real characters
+  // OR the entities should be rendered as single characters
+  
+  // Check that code block content is properly escaped in HTML
+  const hasCodeBlock = parsed.includes('<code');
+  const hasEscapedEntities = parsed.includes('&gt;') && parsed.includes('&lt;') && parsed.includes('&amp;');
+  
+  assert(
+    hasCodeBlock && hasEscapedEntities,
+    'Code blocks escape HTML entities for safety',
+    `Code blocks should escape < > & for HTML safety. Got: ${parsed.substring(0, 200)}`
+  );
+  
+  // But the critical test: when rendered, it must be the right character count
+  if (typeof document !== 'undefined') {
+    const temp = document.createElement('div');
+    temp.innerHTML = parsed;
+    const visibleText = temp.textContent;
+    const inputLines = input.split('\n');
+    const visibleLines = visibleText.split('\n');
+    
+    // Each line must have the same character count
+    inputLines.forEach((inputLine, i) => {
+      const visibleLine = visibleLines[i] || '';
+      assert(
+        inputLine.length === visibleLine.length,
+        `Line ${i + 1} character alignment`,
+        `Line ${i + 1} alignment broken! Input: "${inputLine}" (${inputLine.length}) vs Visible: "${visibleLine}" (${visibleLine.length})`
+      );
+    });
+  }
+})();
+
 // ===== Performance Tests =====
 console.log('\n⚡ Performance Tests\n');
 

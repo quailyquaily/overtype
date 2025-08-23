@@ -112,7 +112,7 @@ console.log('\n📝 List Consolidation Tests\n');
 // ===== Code Block Consolidation Tests =====
 console.log('\n💻 Code Block Consolidation Tests\n');
 
-// Test: Basic code block consolidation
+// Test: Basic code block consolidation with fence markers
 (() => {
   const input = `\`\`\`javascript
 const hello = "world";
@@ -122,12 +122,14 @@ console.log(hello);
   const parsed = MarkdownParser.parse(input);
   
   assert(
+    parsed.includes('<span class="code-fence">```javascript</span>') &&
     parsed.includes('<pre class="code-block">') &&
     parsed.includes('<code class="language-javascript">') &&
     parsed.includes('const hello = &quot;world&quot;') &&
-    parsed.includes('console.log(hello)'),
+    parsed.includes('console.log(hello)') &&
+    parsed.includes('<span class="code-fence">```</span>'),
     'Basic code block consolidation',
-    `Expected <pre><code> with content. Got: ${parsed}`
+    `Expected pre/code with fence markers. Got: ${parsed}`
   );
 })();
 
@@ -141,12 +143,13 @@ without language
   const parsed = MarkdownParser.parse(input);
   
   assert(
+    parsed.includes('<span class="code-fence">```</span>') &&
     parsed.includes('<pre class="code-block">') &&
     parsed.includes('<code>') &&
     parsed.includes('plain code') &&
     parsed.includes('without language'),
     'Code block without language',
-    `Expected <pre><code> without language class. Got: ${parsed}`
+    `Expected <pre><code> with fence markers. Got: ${parsed}`
   );
 })();
 
@@ -161,12 +164,13 @@ without language
   const parsed = MarkdownParser.parse(input);
   
   assert(
+    parsed.includes('<span class="code-fence">```html</span>') &&
     parsed.includes('<pre class="code-block">') &&
     parsed.includes('class="language-html"') &&
     parsed.includes('&lt;div class=&quot;test&quot;&gt;') &&
     parsed.includes('&lt;h1&gt;Title&lt;/h1&gt;'),
     'Code block with HTML entities',
-    `Expected escaped HTML in code block. Got: ${parsed}`
+    `Expected escaped HTML with fence markers. Got: ${parsed}`
   );
 })();
 

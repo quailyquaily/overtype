@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Issue #32: Alignment problems with tables and code blocks**
+  - Code fences (```) are now preserved and visible in the preview
+  - Content inside code blocks is no longer parsed as markdown
+  - Used semantic `<pre><code>` blocks while keeping fences visible
+- **Fixed double-escaping of HTML entities in code blocks**
+  - Changed from using `innerHTML` to `textContent` when extracting code block content
+  - Removed unnecessary text manipulation in `_applyCodeBlockBackgrounds()`
+  - Special characters like `>`, `<`, `&` now display correctly in code blocks
+
 ## [1.2.1] - 2025-08-23
 
 ### Fixed

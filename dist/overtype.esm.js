@@ -234,10 +234,21 @@ var MarkdownParser = class {
   static parse(text, activeLine = -1, showActiveLineRaw = false) {
     this.resetLinkIndex();
     const lines = text.split("\n");
+    let inCodeBlock = false;
     const parsedLines = lines.map((line, index) => {
       if (showActiveLineRaw && index === activeLine) {
         const content = this.escapeHtml(line) || "&nbsp;";
         return `<div class="raw-line">${content}</div>`;
+      }
+      const codeFenceRegex = /^```[^`]*$/;
+      if (codeFenceRegex.test(line)) {
+        inCodeBlock = !inCodeBlock;
+        return this.parseLine(line);
+      }
+      if (inCodeBlock) {
+        const escaped = this.escapeHtml(line);
+        const indented = this.preserveIndentation(escaped, line);
+        return `<div>${indented || "&nbsp;"}</div>`;
       }
       return this.parseLine(line);
     });
@@ -278,23 +289,22 @@ var MarkdownParser = class {
             if (lang) {
               codeElement.className = `language-${lang}`;
             }
-            container.insertBefore(currentCodeBlock, child);
-            child.remove();
+            container.insertBefore(currentCodeBlock, child.nextSibling);
+            currentCodeBlock._codeElement = codeElement;
             continue;
           } else {
             inCodeBlock = false;
             currentCodeBlock = null;
-            child.remove();
             continue;
           }
         }
       }
       if (inCodeBlock && currentCodeBlock && child.tagName === "DIV" && !child.querySelector(".code-fence")) {
-        const codeElement = currentCodeBlock.querySelector("code");
+        const codeElement = currentCodeBlock._codeElement || currentCodeBlock.querySelector("code");
         if (codeElement.textContent.length > 0) {
           codeElement.textContent += "\n";
         }
-        const lineText = child.innerHTML.replace(/&nbsp;/g, " ").replace(/<[^>]*>/g, "");
+        const lineText = child.textContent.replace(/\u00A0/g, " ");
         codeElement.textContent += lineText;
         child.remove();
         continue;
@@ -347,15 +357,19 @@ var MarkdownParser = class {
       }
       return match;
     });
-    const codeBlockRegex = /<div><span class="code-fence">```([^<]*)<\/span><\/div>(.*?)<div><span class="code-fence">```<\/span><\/div>/gs;
-    processed = processed.replace(codeBlockRegex, (match, lang, content) => {
+    const codeBlockRegex = /<div><span class="code-fence">(```[^<]*)<\/span><\/div>(.*?)<div><span class="code-fence">(```)<\/span><\/div>/gs;
+    processed = processed.replace(codeBlockRegex, (match, openFence, content, closeFence) => {
       const lines = content.match(/<div>(.*?)<\/div>/gs) || [];
       const codeContent = lines.map((line) => {
-        const text = line.replace(/<div>(.*?)<\/div>/s, "$1").replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+        const text = line.replace(/<div>(.*?)<\/div>/s, "$1").replace(/&nbsp;/g, " ");
         return text;
       }).join("\n");
-      const langClass = lang ? ` class="language-${lang.trim()}"` : "";
-      return `<pre class="code-block"><code${langClass}>${this.escapeHtml(codeContent)}</code></pre>`;
+      const lang = openFence.slice(3).trim();
+      const langClass = lang ? ` class="language-${lang}"` : "";
+      let result = `<div><span class="code-fence">${openFence}</span></div>`;
+      result += `<pre class="code-block"><code${langClass}>${codeContent}</code></pre>`;
+      result += `<div><span class="code-fence">${closeFence}</span></div>`;
+      return result;
     });
     return processed;
   }
@@ -1496,9 +1510,15 @@ function generateStyles(options = {}) {
       position: relative !important; /* Override reset - needed for absolute children */
       overflow: visible !important; /* Allow dropdown to overflow container */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      text-align: left !important;
       ${themeVars ? `
       /* Theme Variables */
       ${themeVars}` : ""}
+    }
+    
+    /* Force left alignment for all elements in the editor */
+    .overtype-container .overtype-wrapper * {
+      text-align: left !important;
     }
     
     /* Auto-resize mode styles */
@@ -3055,17 +3075,6 @@ var _OverType = class _OverType {
       closeFence.style.display = "block";
       openParent.classList.add("code-block-line");
       closeParent.classList.add("code-block-line");
-      let currentDiv = openParent.nextElementSibling;
-      while (currentDiv && currentDiv !== closeParent) {
-        if (currentDiv.tagName === "DIV") {
-          currentDiv.classList.add("code-block-line");
-          const plainText = currentDiv.textContent;
-          currentDiv.textContent = plainText;
-        }
-        currentDiv = currentDiv.nextElementSibling;
-        if (!currentDiv)
-          break;
-      }
     }
   }
   /**

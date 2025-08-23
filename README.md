@@ -1,6 +1,6 @@
 # OverType
 
-A lightweight markdown editor library with perfect WYSIWYG alignment using an invisible textarea overlay technique. Includes optional toolbar. ~78KB minified with all features.
+A lightweight markdown editor library with perfect WYSIWYG alignment using an invisible textarea overlay technique. Includes optional toolbar. ~79KB minified with all features.
 
 ## Features
 
@@ -9,7 +9,7 @@ A lightweight markdown editor library with perfect WYSIWYG alignment using an in
 - ⌨️ **Keyboard shortcuts** - Common markdown shortcuts (Cmd/Ctrl+B for bold, etc.)
 - 📱 **Mobile optimized** - Responsive design with mobile-specific styles
 - 🔄 **DOM persistence aware** - Recovers from existing DOM (perfect for HyperClay and similar platforms)
-- 🚀 **Lightweight** - ~78KB minified
+- 🚀 **Lightweight** - ~79KB minified
 - 🎯 **Optional toolbar** - Clean, minimal toolbar with all essential formatting
 - ✨ **Smart shortcuts** - Keyboard shortcuts with selection preservation
 - 🔧 **Framework agnostic** - Works with React, Vue, vanilla JS, and more
@@ -24,7 +24,7 @@ We overlap an invisible textarea on top of styled output, giving the illusion of
 
 | Feature | OverType | HyperMD | Milkdown | TUI Editor | EasyMDE |
 |---------|----------|---------|----------|------------|---------|
-| **Size** | ~78KB | 364.02 KB | 344.51 KB | 560.99 KB | 323.69 KB |
+| **Size** | ~79KB | 364.02 KB | 344.51 KB | 560.99 KB | 323.69 KB |
 | **Dependencies** | Bundled | CodeMirror | ProseMirror + plugins | Multiple libs | CodeMirror |
 | **Setup** | Single file | Complex config | Build step required | Complex config | Moderate |
 | **Approach** | Invisible textarea | ContentEditable | ContentEditable | ContentEditable | CodeMirror |
@@ -561,7 +561,7 @@ MIT
 - **Pluggable parser system** - Support for any programming language or syntax
 - **Parser registry** - Automatic language detection by file extension or MIME type  
 - **Cleaner separation** - Extracted the overlay technique without markdown-specific features
-- **Smaller footprint** - ~22KB minified (vs OverType's ~78KB)
+- **Smaller footprint** - ~79KB minified (vs OverType's ~78KB)
 
 Key components extracted from OverType to Synesthesia:
 - The transparent textarea overlay technique for perfect WYSIWYG alignment

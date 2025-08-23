@@ -79,9 +79,15 @@ export function generateStyles(options = {}) {
       position: relative !important; /* Override reset - needed for absolute children */
       overflow: visible !important; /* Allow dropdown to overflow container */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      text-align: left !important;
       ${themeVars ? `
       /* Theme Variables */
       ${themeVars}` : ''}
+    }
+    
+    /* Force left alignment for all elements in the editor */
+    .overtype-container .overtype-wrapper * {
+      text-align: left !important;
     }
     
     /* Auto-resize mode styles */
