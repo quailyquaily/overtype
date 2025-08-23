@@ -164,7 +164,8 @@ class OverType {
         showActiveLineRaw: false,
         showStats: false,
         toolbar: false,
-        statsFormatter: null
+        statsFormatter: null,
+        smartLists: true  // Enable smart list continuation
       };
       
       // Remove theme and colors from options - these are now global
@@ -583,12 +584,155 @@ class OverType {
         return;
       }
       
+      // Handle Enter key for smart list continuation
+      if (event.key === 'Enter' && !event.shiftKey && !event.metaKey && !event.ctrlKey && this.options.smartLists) {
+        if (this.handleSmartListContinuation()) {
+          event.preventDefault();
+          return;
+        }
+      }
+      
       // Let shortcuts manager handle other keys
       const handled = this.shortcuts.handleKeydown(event);
       
       // Call user callback if provided
       if (!handled && this.options.onKeydown) {
         this.options.onKeydown(event, this);
+      }
+    }
+
+    /**
+     * Handle smart list continuation
+     * @returns {boolean} Whether the event was handled
+     */
+    handleSmartListContinuation() {
+      const textarea = this.textarea;
+      const cursorPos = textarea.selectionStart;
+      const context = MarkdownParser.getListContext(textarea.value, cursorPos);
+      
+      if (!context || !context.inList) return false;
+      
+      // Handle empty list item (exit list)
+      if (context.content.trim() === '' && cursorPos >= context.markerEndPos) {
+        this.deleteListMarker(context);
+        return true;
+      }
+      
+      // Handle text splitting if cursor is in middle of content
+      if (cursorPos > context.markerEndPos && cursorPos < context.lineEnd) {
+        this.splitListItem(context, cursorPos);
+      } else {
+        // Just add new item after current line
+        this.insertNewListItem(context);
+      }
+      
+      // Handle numbered list renumbering
+      if (context.listType === 'numbered') {
+        this.scheduleNumberedListUpdate();
+      }
+      
+      return true;
+    }
+    
+    /**
+     * Delete list marker and exit list
+     * @private
+     */
+    deleteListMarker(context) {
+      // Select from line start to marker end
+      this.textarea.setSelectionRange(context.lineStart, context.markerEndPos);
+      document.execCommand('delete');
+      
+      // Trigger input event
+      this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    /**
+     * Insert new list item
+     * @private
+     */
+    insertNewListItem(context) {
+      const newItem = MarkdownParser.createNewListItem(context);
+      document.execCommand('insertText', false, '\n' + newItem);
+      
+      // Trigger input event
+      this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    /**
+     * Split list item at cursor position
+     * @private
+     */
+    splitListItem(context, cursorPos) {
+      // Get text after cursor
+      const textAfterCursor = context.content.substring(cursorPos - context.markerEndPos);
+      
+      // Delete text after cursor
+      this.textarea.setSelectionRange(cursorPos, context.lineEnd);
+      document.execCommand('delete');
+      
+      // Insert new list item with remaining text
+      const newItem = MarkdownParser.createNewListItem(context);
+      document.execCommand('insertText', false, '\n' + newItem + textAfterCursor);
+      
+      // Position cursor after new list marker
+      const newCursorPos = this.textarea.selectionStart - textAfterCursor.length;
+      this.textarea.setSelectionRange(newCursorPos, newCursorPos);
+      
+      // Trigger input event
+      this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    /**
+     * Schedule numbered list renumbering
+     * @private
+     */
+    scheduleNumberedListUpdate() {
+      // Clear any pending update
+      if (this.numberUpdateTimeout) {
+        clearTimeout(this.numberUpdateTimeout);
+      }
+      
+      // Schedule update after current input cycle
+      this.numberUpdateTimeout = setTimeout(() => {
+        this.updateNumberedLists();
+      }, 10);
+    }
+    
+    /**
+     * Update/renumber all numbered lists
+     * @private
+     */
+    updateNumberedLists() {
+      const value = this.textarea.value;
+      const cursorPos = this.textarea.selectionStart;
+      
+      const newValue = MarkdownParser.renumberLists(value);
+      
+      if (newValue !== value) {
+        // Calculate cursor offset
+        let offset = 0;
+        const oldLines = value.split('\n');
+        const newLines = newValue.split('\n');
+        let charCount = 0;
+        
+        for (let i = 0; i < oldLines.length && charCount < cursorPos; i++) {
+          if (oldLines[i] !== newLines[i]) {
+            const diff = newLines[i].length - oldLines[i].length;
+            if (charCount + oldLines[i].length < cursorPos) {
+              offset += diff;
+            }
+          }
+          charCount += oldLines[i].length + 1; // +1 for newline
+        }
+        
+        // Update textarea
+        this.textarea.value = newValue;
+        const newCursorPos = cursorPos + offset;
+        this.textarea.setSelectionRange(newCursorPos, newCursorPos);
+        
+        // Trigger update
+        this.textarea.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
 

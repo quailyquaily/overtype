@@ -397,9 +397,147 @@ var OverType = (() => {
       });
       return processed;
     }
+    /**
+     * Get list context at cursor position
+     * @param {string} text - Full text content
+     * @param {number} cursorPosition - Current cursor position
+     * @returns {Object} List context information
+     */
+    static getListContext(text, cursorPosition) {
+      const lines = text.split("\n");
+      let currentPos = 0;
+      let lineIndex = 0;
+      let lineStart = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const lineLength = lines[i].length;
+        if (currentPos + lineLength >= cursorPosition) {
+          lineIndex = i;
+          lineStart = currentPos;
+          break;
+        }
+        currentPos += lineLength + 1;
+      }
+      const currentLine = lines[lineIndex];
+      const lineEnd = lineStart + currentLine.length;
+      const checkboxMatch = currentLine.match(this.LIST_PATTERNS.checkbox);
+      if (checkboxMatch) {
+        return {
+          inList: true,
+          listType: "checkbox",
+          indent: checkboxMatch[1],
+          marker: "-",
+          checked: checkboxMatch[2] === "x",
+          content: checkboxMatch[3],
+          lineStart,
+          lineEnd,
+          markerEndPos: lineStart + checkboxMatch[1].length + checkboxMatch[2].length + 5
+          // indent + "- [ ] "
+        };
+      }
+      const bulletMatch = currentLine.match(this.LIST_PATTERNS.bullet);
+      if (bulletMatch) {
+        return {
+          inList: true,
+          listType: "bullet",
+          indent: bulletMatch[1],
+          marker: bulletMatch[2],
+          content: bulletMatch[3],
+          lineStart,
+          lineEnd,
+          markerEndPos: lineStart + bulletMatch[1].length + bulletMatch[2].length + 1
+          // indent + marker + space
+        };
+      }
+      const numberedMatch = currentLine.match(this.LIST_PATTERNS.numbered);
+      if (numberedMatch) {
+        return {
+          inList: true,
+          listType: "numbered",
+          indent: numberedMatch[1],
+          marker: parseInt(numberedMatch[2]),
+          content: numberedMatch[3],
+          lineStart,
+          lineEnd,
+          markerEndPos: lineStart + numberedMatch[1].length + numberedMatch[2].length + 2
+          // indent + number + ". "
+        };
+      }
+      return {
+        inList: false,
+        listType: null,
+        indent: "",
+        marker: null,
+        content: currentLine,
+        lineStart,
+        lineEnd,
+        markerEndPos: lineStart
+      };
+    }
+    /**
+     * Create a new list item based on context
+     * @param {Object} context - List context from getListContext
+     * @returns {string} New list item text
+     */
+    static createNewListItem(context) {
+      switch (context.listType) {
+        case "bullet":
+          return `${context.indent}${context.marker} `;
+        case "numbered":
+          return `${context.indent}${context.marker + 1}. `;
+        case "checkbox":
+          return `${context.indent}- [ ] `;
+        default:
+          return "";
+      }
+    }
+    /**
+     * Renumber all numbered lists in text
+     * @param {string} text - Text containing numbered lists
+     * @returns {string} Text with renumbered lists
+     */
+    static renumberLists(text) {
+      const lines = text.split("\n");
+      const numbersByIndent = /* @__PURE__ */ new Map();
+      let inList = false;
+      const result = lines.map((line) => {
+        const match = line.match(this.LIST_PATTERNS.numbered);
+        if (match) {
+          const indent = match[1];
+          const indentLevel = indent.length;
+          const content = match[3];
+          if (!inList) {
+            numbersByIndent.clear();
+          }
+          const currentNumber = (numbersByIndent.get(indentLevel) || 0) + 1;
+          numbersByIndent.set(indentLevel, currentNumber);
+          for (const [level] of numbersByIndent) {
+            if (level > indentLevel) {
+              numbersByIndent.delete(level);
+            }
+          }
+          inList = true;
+          return `${indent}${currentNumber}. ${content}`;
+        } else {
+          if (line.trim() === "" || !line.match(/^\s/)) {
+            inList = false;
+            numbersByIndent.clear();
+          }
+          return line;
+        }
+      });
+      return result.join("\n");
+    }
   };
   // Track link index for anchor naming
   __publicField(MarkdownParser, "linkIndex", 0);
+  /**
+   * List pattern definitions
+   */
+  __publicField(MarkdownParser, "LIST_PATTERNS", {
+    bullet: /^(\s*)([-*+])\s+(.*)$/,
+    numbered: /^(\s*)(\d+)\.\s+(.*)$/,
+    checkbox: /^(\s*)-\s+\[([ x])\]\s+(.*)$/
+  });
 
   // node_modules/markdown-actions/dist/markdown-actions.esm.js
   var __defProp2 = Object.defineProperty;
@@ -2872,7 +3010,9 @@ ${blockSuffix}` : suffix;
         showActiveLineRaw: false,
         showStats: false,
         toolbar: false,
-        statsFormatter: null
+        statsFormatter: null,
+        smartLists: true
+        // Enable smart list continuation
       };
       const { theme, colors, ...cleanOptions } = options;
       return {
@@ -3165,9 +3305,111 @@ ${blockSuffix}` : suffix;
         this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
         return;
       }
+      if (event.key === "Enter" && !event.shiftKey && !event.metaKey && !event.ctrlKey && this.options.smartLists) {
+        if (this.handleSmartListContinuation()) {
+          event.preventDefault();
+          return;
+        }
+      }
       const handled = this.shortcuts.handleKeydown(event);
       if (!handled && this.options.onKeydown) {
         this.options.onKeydown(event, this);
+      }
+    }
+    /**
+     * Handle smart list continuation
+     * @returns {boolean} Whether the event was handled
+     */
+    handleSmartListContinuation() {
+      const textarea = this.textarea;
+      const cursorPos = textarea.selectionStart;
+      const context = MarkdownParser.getListContext(textarea.value, cursorPos);
+      if (!context || !context.inList)
+        return false;
+      if (context.content.trim() === "" && cursorPos >= context.markerEndPos) {
+        this.deleteListMarker(context);
+        return true;
+      }
+      if (cursorPos > context.markerEndPos && cursorPos < context.lineEnd) {
+        this.splitListItem(context, cursorPos);
+      } else {
+        this.insertNewListItem(context);
+      }
+      if (context.listType === "numbered") {
+        this.scheduleNumberedListUpdate();
+      }
+      return true;
+    }
+    /**
+     * Delete list marker and exit list
+     * @private
+     */
+    deleteListMarker(context) {
+      this.textarea.setSelectionRange(context.lineStart, context.markerEndPos);
+      document.execCommand("delete");
+      this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    /**
+     * Insert new list item
+     * @private
+     */
+    insertNewListItem(context) {
+      const newItem = MarkdownParser.createNewListItem(context);
+      document.execCommand("insertText", false, "\n" + newItem);
+      this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    /**
+     * Split list item at cursor position
+     * @private
+     */
+    splitListItem(context, cursorPos) {
+      const textAfterCursor = context.content.substring(cursorPos - context.markerEndPos);
+      this.textarea.setSelectionRange(cursorPos, context.lineEnd);
+      document.execCommand("delete");
+      const newItem = MarkdownParser.createNewListItem(context);
+      document.execCommand("insertText", false, "\n" + newItem + textAfterCursor);
+      const newCursorPos = this.textarea.selectionStart - textAfterCursor.length;
+      this.textarea.setSelectionRange(newCursorPos, newCursorPos);
+      this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    /**
+     * Schedule numbered list renumbering
+     * @private
+     */
+    scheduleNumberedListUpdate() {
+      if (this.numberUpdateTimeout) {
+        clearTimeout(this.numberUpdateTimeout);
+      }
+      this.numberUpdateTimeout = setTimeout(() => {
+        this.updateNumberedLists();
+      }, 10);
+    }
+    /**
+     * Update/renumber all numbered lists
+     * @private
+     */
+    updateNumberedLists() {
+      const value = this.textarea.value;
+      const cursorPos = this.textarea.selectionStart;
+      const newValue = MarkdownParser.renumberLists(value);
+      if (newValue !== value) {
+        let offset = 0;
+        const oldLines = value.split("\n");
+        const newLines = newValue.split("\n");
+        let charCount = 0;
+        for (let i = 0; i < oldLines.length && charCount < cursorPos; i++) {
+          if (oldLines[i] !== newLines[i]) {
+            const diff = newLines[i].length - oldLines[i].length;
+            if (charCount + oldLines[i].length < cursorPos) {
+              offset += diff;
+            }
+          }
+          charCount += oldLines[i].length + 1;
+        }
+        this.textarea.value = newValue;
+        const newCursorPos = cursorPos + offset;
+        this.textarea.setSelectionRange(newCursorPos, newCursorPos);
+        this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
       }
     }
     /**

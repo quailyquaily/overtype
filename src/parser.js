@@ -517,4 +517,166 @@ export class MarkdownParser {
     
     return processed;
   }
+
+  /**
+   * List pattern definitions
+   */
+  static LIST_PATTERNS = {
+    bullet: /^(\s*)([-*+])\s+(.*)$/,
+    numbered: /^(\s*)(\d+)\.\s+(.*)$/,
+    checkbox: /^(\s*)-\s+\[([ x])\]\s+(.*)$/
+  };
+
+  /**
+   * Get list context at cursor position
+   * @param {string} text - Full text content
+   * @param {number} cursorPosition - Current cursor position
+   * @returns {Object} List context information
+   */
+  static getListContext(text, cursorPosition) {
+    // Find the line containing the cursor
+    const lines = text.split('\n');
+    let currentPos = 0;
+    let lineIndex = 0;
+    let lineStart = 0;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const lineLength = lines[i].length;
+      if (currentPos + lineLength >= cursorPosition) {
+        lineIndex = i;
+        lineStart = currentPos;
+        break;
+      }
+      currentPos += lineLength + 1; // +1 for newline
+    }
+    
+    const currentLine = lines[lineIndex];
+    const lineEnd = lineStart + currentLine.length;
+    
+    // Check for checkbox first (most specific)
+    const checkboxMatch = currentLine.match(this.LIST_PATTERNS.checkbox);
+    if (checkboxMatch) {
+      return {
+        inList: true,
+        listType: 'checkbox',
+        indent: checkboxMatch[1],
+        marker: '-',
+        checked: checkboxMatch[2] === 'x',
+        content: checkboxMatch[3],
+        lineStart,
+        lineEnd,
+        markerEndPos: lineStart + checkboxMatch[1].length + checkboxMatch[2].length + 5 // indent + "- [ ] "
+      };
+    }
+    
+    // Check for bullet list
+    const bulletMatch = currentLine.match(this.LIST_PATTERNS.bullet);
+    if (bulletMatch) {
+      return {
+        inList: true,
+        listType: 'bullet',
+        indent: bulletMatch[1],
+        marker: bulletMatch[2],
+        content: bulletMatch[3],
+        lineStart,
+        lineEnd,
+        markerEndPos: lineStart + bulletMatch[1].length + bulletMatch[2].length + 1 // indent + marker + space
+      };
+    }
+    
+    // Check for numbered list
+    const numberedMatch = currentLine.match(this.LIST_PATTERNS.numbered);
+    if (numberedMatch) {
+      return {
+        inList: true,
+        listType: 'numbered',
+        indent: numberedMatch[1],
+        marker: parseInt(numberedMatch[2]),
+        content: numberedMatch[3],
+        lineStart,
+        lineEnd,
+        markerEndPos: lineStart + numberedMatch[1].length + numberedMatch[2].length + 2 // indent + number + ". "
+      };
+    }
+    
+    // Not in a list
+    return {
+      inList: false,
+      listType: null,
+      indent: '',
+      marker: null,
+      content: currentLine,
+      lineStart,
+      lineEnd,
+      markerEndPos: lineStart
+    };
+  }
+
+  /**
+   * Create a new list item based on context
+   * @param {Object} context - List context from getListContext
+   * @returns {string} New list item text
+   */
+  static createNewListItem(context) {
+    switch (context.listType) {
+      case 'bullet':
+        return `${context.indent}${context.marker} `;
+      case 'numbered':
+        return `${context.indent}${context.marker + 1}. `;
+      case 'checkbox':
+        return `${context.indent}- [ ] `;
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Renumber all numbered lists in text
+   * @param {string} text - Text containing numbered lists
+   * @returns {string} Text with renumbered lists
+   */
+  static renumberLists(text) {
+    const lines = text.split('\n');
+    const numbersByIndent = new Map();
+    let inList = false;
+    
+    const result = lines.map(line => {
+      const match = line.match(this.LIST_PATTERNS.numbered);
+      
+      if (match) {
+        const indent = match[1];
+        const indentLevel = indent.length;
+        const content = match[3];
+        
+        // If we weren't in a list or indent changed, reset lower levels
+        if (!inList) {
+          numbersByIndent.clear();
+        }
+        
+        // Get the next number for this indent level
+        const currentNumber = (numbersByIndent.get(indentLevel) || 0) + 1;
+        numbersByIndent.set(indentLevel, currentNumber);
+        
+        // Clear deeper indent levels
+        for (const [level] of numbersByIndent) {
+          if (level > indentLevel) {
+            numbersByIndent.delete(level);
+          }
+        }
+        
+        inList = true;
+        return `${indent}${currentNumber}. ${content}`;
+      } else {
+        // Not a numbered list item
+        if (line.trim() === '' || !line.match(/^\s/)) {
+          // Empty line or non-indented line breaks the list
+          inList = false;
+          numbersByIndent.clear();
+        }
+        return line;
+      }
+    });
+    
+    return result.join('\n');
+  }
 }

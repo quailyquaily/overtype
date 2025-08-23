@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.2] - 2025-08-23
 
+### Added
+- **Smart List Continuation** (Issue #26) - GitHub-style automatic list continuation
+  - Press Enter at the end of a list item to create a new one
+  - Press Enter on an empty list item to exit the list
+  - Press Enter in the middle of text to split it into two items
+  - Supports bullet lists (`-`, `*`, `+`), numbered lists, and checkboxes
+  - Numbered lists automatically renumber when items are added or removed
+  - Enabled by default with `smartLists: true` option
+
 ### Fixed
 - **Issue #32: Alignment problems with tables and code blocks**
   - Code fences (```) are now preserved and visible in the preview
