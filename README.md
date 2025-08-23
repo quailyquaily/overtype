@@ -581,3 +581,7 @@ If you need a markdown editor with toolbar and formatting features, use OverType
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+---
+
+Ready for another radical idea?  
+[Let's remove every layer of the web application stack.](https://hyperclay.com)
