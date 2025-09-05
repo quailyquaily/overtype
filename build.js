@@ -1,6 +1,7 @@
 import esbuild from 'esbuild';
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // Read package.json for version
 const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
@@ -120,6 +121,26 @@ async function build() {
       
       // Update HTML files with actual minified size
       updateFileSizes(minSize);
+      
+      // Test TypeScript definitions before copying
+      const typesSource = path.join(process.cwd(), 'src', 'overtype.d.ts');
+      const typesDest = path.join(process.cwd(), 'dist', 'overtype.d.ts');
+      if (fs.existsSync(typesSource)) {
+        // Test the TypeScript definitions
+        console.log('🔍 Testing TypeScript definitions...');
+        try {
+          execSync('npx tsc --noEmit test-types.ts', { stdio: 'inherit' });
+          console.log('✅ TypeScript definitions test passed');
+        } catch (error) {
+          console.error('❌ TypeScript definitions test failed');
+          console.error('   Run "npx tsc --noEmit test-types.ts" to see the errors');
+          process.exit(1);
+        }
+        
+        // Copy to dist after successful test
+        fs.copyFileSync(typesSource, typesDest);
+        console.log('✅ Copied TypeScript definitions to dist/overtype.d.ts');
+      }
       
       console.log('\n✨ Build complete!');
     }

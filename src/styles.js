@@ -476,10 +476,10 @@ export function generateStyles(options = {}) {
       height: 8px !important;
       background: #4caf50 !important;
       border-radius: 50% !important;
-      animation: pulse 2s infinite !important;
+      animation: overtype-pulse 2s infinite !important;
     }
     
-    @keyframes pulse {
+    @keyframes overtype-pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.2); }
     }
@@ -487,19 +487,19 @@ export function generateStyles(options = {}) {
 
     /* Toolbar Styles */
     .overtype-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
       padding: 8px !important; /* Override reset */
       background: var(--toolbar-bg, var(--bg-primary, #f8f9fa)) !important; /* Override reset */
       overflow-x: auto !important; /* Allow horizontal scrolling */
       overflow-y: hidden !important; /* Hide vertical overflow */
-      -webkit-overflow-scrolling: touch;
-      flex-shrink: 0;
+      -webkit-overflow-scrolling: touch !important;
+      flex-shrink: 0 !important;
       height: auto !important;
       grid-row: 1 !important; /* Always first row in grid */
       position: relative !important; /* Override reset */
-      z-index: 100; /* Ensure toolbar is above wrapper */
+      z-index: 100 !important; /* Ensure toolbar is above wrapper */
       scrollbar-width: thin; /* Thin scrollbar on Firefox */
     }
     

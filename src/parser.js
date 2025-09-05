@@ -232,7 +232,7 @@ export class MarkdownParser {
     let html = text;
     // Order matters: parse code first
     html = this.parseInlineCode(html);
-
+    
     // Use placeholders to protect inline code while preserving formatting spans
     // We use Unicode Private Use Area (U+E000-U+F8FF) as placeholders because:
     // 1. These characters are reserved for application-specific use
@@ -240,35 +240,35 @@ export class MarkdownParser {
     // 3. They maintain single-character width (important for alignment)
     // 4. They're invisible if accidentally rendered
     const sanctuaries = new Map();
-
+    
     // Protect code blocks
     html = html.replace(/(<code>.*?<\/code>)/g, (match) => {
       const placeholder = `\uE000${sanctuaries.size}\uE001`;
       sanctuaries.set(placeholder, match);
       return placeholder;
     });
-
+    
     // Parse links AFTER protecting code but BEFORE bold/italic
     // This ensures link URLs don't get processed as markdown
     html = this.parseLinks(html);
-
+    
     // Protect entire link elements (not just the URL part)
     html = html.replace(/(<a[^>]*>.*?<\/a>)/g, (match) => {
       const placeholder = `\uE000${sanctuaries.size}\uE001`;
       sanctuaries.set(placeholder, match);
       return placeholder;
     });
-
+    
     // Process other inline elements on text with placeholders
     html = this.parseStrikethrough(html);
     html = this.parseBold(html);
     html = this.parseItalic(html);
-
+    
     // Restore all sanctuaries
     sanctuaries.forEach((content, placeholder) => {
       html = html.replace(placeholder, content);
     });
-
+    
     return html;
   }
 

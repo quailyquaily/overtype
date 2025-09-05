@@ -104,7 +104,8 @@ class OverType {
 
       // Setup toolbar if enabled
       if (this.options.toolbar) {
-        this.toolbar = new Toolbar(this, this.options.toolbar.buttons);
+        const toolbarButtons = typeof this.options.toolbar === 'object' ? this.options.toolbar.buttons : null;
+        this.toolbar = new Toolbar(this, toolbarButtons);
         this.toolbar.create();
         
         // Update toolbar states on selection change
@@ -771,16 +772,21 @@ class OverType {
 
     /**
      * Get the rendered HTML of the current content
-     * @param {boolean} processForPreview - If true, post-processes HTML for preview mode (consolidates lists/code blocks)
+     * @param {Object} options - Rendering options
+     * @param {boolean} options.cleanHTML - If true, removes syntax markers and OverType-specific classes
      * @returns {string} Rendered HTML
      */
-    getRenderedHTML(processForPreview = false) {
+    getRenderedHTML(options = {}) {
       const markdown = this.getValue();
       let html = MarkdownParser.parse(markdown);
       
-      if (processForPreview) {
-        // Post-process HTML for preview mode
-        html = MarkdownParser.postProcessHTML(html);
+      if (options.cleanHTML) {
+        // Remove all syntax marker spans for clean HTML export
+        html = html.replace(/<span class="syntax-marker[^"]*">.*?<\/span>/g, '');
+        // Remove OverType-specific classes
+        html = html.replace(/\sclass="(bullet-list|ordered-list|code-fence|hr-marker|blockquote|url-part)"/g, '');
+        // Clean up empty class attributes
+        html = html.replace(/\sclass=""/g, '');
       }
       
       return html;
@@ -788,10 +794,20 @@ class OverType {
 
     /**
      * Get the current preview element's HTML
+     * This includes all syntax markers and OverType styling
      * @returns {string} Current preview HTML (as displayed)
      */
     getPreviewHTML() {
       return this.preview.innerHTML;
+    }
+    
+    /**
+     * Get clean HTML without any OverType-specific markup
+     * Useful for exporting to other formats or storage
+     * @returns {string} Clean HTML suitable for export
+     */
+    getCleanHTML() {
+      return this.getRenderedHTML({ cleanHTML: true });
     }
 
     /**
