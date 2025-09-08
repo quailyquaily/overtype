@@ -5,12 +5,12 @@ A lightweight markdown editor library with perfect WYSIWYG alignment using an in
 ## Live Examples
 
 🎮 **Try it out**: [Interactive demos on overtype.dev](https://overtype.dev)
-- [Basic Editor](https://overtype.dev/#basic-editor)
-- [With Toolbar](https://overtype.dev/#toolbar)
-- [Multiple Instances](https://overtype.dev/#multiple-instances)
-- [View Modes](https://overtype.dev/#view-modes)
-- [Custom Themes](https://overtype.dev/#custom-themes)
-- [All Markdown Features](https://overtype.dev/#markdown-features)
+- [Basic Editor](https://overtype.dev/#basic-editor) - Minimal setup with live preview
+- [With Toolbar](https://overtype.dev/#toolbar) - Full formatting toolbar
+- [Multiple Instances](https://overtype.dev/demo.html#multiple-instances) - Several editors on one page
+- [View Modes](https://overtype.dev/demo.html#view-modes) - Preview synchronization
+- [Themes](https://overtype.dev/demo.html#themes) - Light/dark theme switching
+- [All Features](https://overtype.dev/demo.html#markdown-features) - Complete markdown showcase
 
 ## Features
 
