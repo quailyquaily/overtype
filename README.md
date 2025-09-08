@@ -574,31 +574,21 @@ Special thanks to:
 
 MIT
 
-## Related Projects
-
-### Synesthesia
-
-[Synesthesia](https://github.com/panphora/synesthesia) is a lightweight syntax highlighting editor library that extracted and refined the core textarea overlay technique from OverType. While OverType is focused on markdown editing with toolbar features, Synesthesia provides a more generalized code editing solution with:
-
-- **Pluggable parser system** - Support for any programming language or syntax
-- **Parser registry** - Automatic language detection by file extension or MIME type  
-- **Cleaner separation** - Extracted the overlay technique without markdown-specific features
-- **Smaller footprint** - ~86KB minified (vs OverType's ~78KB)
-
-Key components extracted from OverType to Synesthesia:
-- The transparent textarea overlay technique for perfect WYSIWYG alignment
-- Theme system with CSS variable support
-- DOM persistence and recovery mechanisms  
-- Auto-resize functionality
-- Event delegation for efficient multi-instance support
-
-If you need a markdown editor with toolbar and formatting features, use OverType. If you need a lightweight code editor with custom syntax highlighting, check out Synesthesia.
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-Ready for another radical idea?  
-[Let's remove every layer of the web application stack.](https://hyperclay.com)
+Built with the radical idea that sometimes dumb ideas work.
+
+---
+
+**Ready for another radical idea?**  
+Let's remove every layer of the web application stack.
+
+### Hyperclay
+
+[Hyperclay](https://hyperclay.com) by @panphora allows you to make a web app in a single, portable, self-updating, vanilla HTML file. No frameworks, no build steps, no deployment pipelines. Just a single HTML file that persists its own state and can be edited live.
+
+Think of it as a Google Document for interactive code, where the UI, logic, and data all live in one self-modifying file. Share apps instantly, edit them directly, use them offline.
