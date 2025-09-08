@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6] - 2025-09-08
+
+### Fixed
+- **Re-enabled code button inside links** - Now that the sanctuary pattern properly handles inline code within link text, the code button works correctly without Unicode placeholder issues
+- **Removed unnecessary code** - Deleted the `isInsideLink` function that was no longer needed, reducing bundle size
+
+### Changed
+- **README update** - Replaced Synesthesia section with Hyperclay information
+
 ## [1.2.5] - 2025-09-08
 
 ### Fixed
