@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.7] - 2025-09-30
+
+### Fixed
+- **Issue #55: Double-escaping of HTML entities in code blocks** - HTML special characters (`<`, `>`, `&`, `"`) inside inline code spans are now properly escaped once instead of twice
+  - Removed redundant `escapeHtml()` calls when rendering code sanctuaries
+  - Fixes issue where `` `<angle brackets>` `` would display as `&amp;lt;angle brackets&amp;gt;` instead of `&lt;angle brackets&gt;`
+  - Also fixed the same issue for inline code within link text
+  - Thanks to [@lyricat](https://github.com/lyricat) for identifying and fixing this issue (PR #56)
+
+### Added
+- Comprehensive test suite for HTML entity escaping in code blocks
+
 ## [1.2.6] - 2025-09-08
 
 ### Fixed

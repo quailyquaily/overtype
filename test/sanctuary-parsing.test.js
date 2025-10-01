@@ -179,6 +179,79 @@ const testCases = [
       'text'
     ],
     shouldNotContain: ['<a href="test"']
+  },
+  {
+    name: 'Single backtick code with angle brackets should not double-escape',
+    input: '`<angle brackets>`',
+    shouldContain: [
+      '<code>',
+      '&lt;angle brackets&gt;',
+      '</code>'
+    ],
+    shouldNotContain: ['&amp;lt;', '&amp;gt;']
+  },
+  {
+    name: 'Single backtick code with ampersand should not double-escape',
+    input: '`foo & bar`',
+    shouldContain: [
+      '<code>',
+      '&amp;',
+      '</code>'
+    ],
+    shouldNotContain: ['&amp;amp;']
+  },
+  {
+    name: 'Single backtick code with mixed HTML entities should not double-escape',
+    input: '`<tag> & "quotes"`',
+    shouldContain: [
+      '<code>',
+      '&lt;tag&gt;',
+      '&amp;',
+      '&quot;quotes&quot;',
+      '</code>'
+    ],
+    shouldNotContain: ['&amp;lt;', '&amp;gt;', '&amp;amp;', '&amp;quot;']
+  },
+  {
+    name: 'Inline code with unmatched angle brackets should not double-escape',
+    input: '`if they are unmatched <`',
+    shouldContain: [
+      '<code>',
+      '&lt;',
+      '</code>'
+    ],
+    shouldNotContain: ['&amp;lt;']
+  },
+  {
+    name: 'Multiple inline code spans with HTML entities should not double-escape',
+    input: '`<first>` and `<second>`',
+    shouldContain: [
+      '<code>',
+      '&lt;first&gt;',
+      '&lt;second&gt;',
+      '</code>'
+    ],
+    shouldNotContain: ['&amp;lt;', '&amp;gt;']
+  },
+  {
+    name: 'Code block with HTML entities should not double-escape',
+    input: '```\n<html>\n&\n```',
+    shouldContain: [
+      '&lt;html&gt;',
+      '&amp;'
+    ],
+    shouldNotContain: ['&amp;lt;', '&amp;gt;', '&amp;amp;']
+  },
+  {
+    name: 'Double backtick code with HTML entities should not double-escape',
+    input: '``<code> & stuff``',
+    shouldContain: [
+      '<code>',
+      '&lt;code&gt;',
+      '&amp;',
+      '</code>'
+    ],
+    shouldNotContain: ['&amp;lt;', '&amp;gt;', '&amp;amp;']
   }
 ];
 

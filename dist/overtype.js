@@ -1,5 +1,5 @@
 /**
- * OverType v1.2.6
+ * OverType v1.2.7
  * A lightweight markdown editor library with perfect WYSIWYG alignment
  * @license MIT
  * @author Demo User
@@ -285,13 +285,13 @@ var OverType = (() => {
         const sanctuary = sanctuaries.get(placeholder);
         let replacement;
         if (sanctuary.type === "code") {
-          replacement = `<code><span class="syntax-marker">${sanctuary.openTicks}</span>${this.escapeHtml(sanctuary.content)}<span class="syntax-marker">${sanctuary.closeTicks}</span></code>`;
+          replacement = `<code><span class="syntax-marker">${sanctuary.openTicks}</span>${sanctuary.content}<span class="syntax-marker">${sanctuary.closeTicks}</span></code>`;
         } else if (sanctuary.type === "link") {
           let processedLinkText = sanctuary.linkText;
           sanctuaries.forEach((innerSanctuary, innerPlaceholder) => {
             if (processedLinkText.includes(innerPlaceholder)) {
               if (innerSanctuary.type === "code") {
-                const codeHtml = `<code><span class="syntax-marker">${innerSanctuary.openTicks}</span>${this.escapeHtml(innerSanctuary.content)}<span class="syntax-marker">${innerSanctuary.closeTicks}</span></code>`;
+                const codeHtml = `<code><span class="syntax-marker">${innerSanctuary.openTicks}</span>${innerSanctuary.content}<span class="syntax-marker">${innerSanctuary.closeTicks}</span></code>`;
                 processedLinkText = processedLinkText.replace(innerPlaceholder, codeHtml);
               }
             }
