@@ -42,7 +42,7 @@ npm run build
 git add -A
 git commit -m "Release v{version}"
 ```
-Do NOT add co-author attribution unless specifically requested.
+**IMPORTANT:** Do NOT add co-author attribution. Claude Code should never add itself as a co-author unless specifically requested by the user.
 
 ### 7. Create Git Tag
 ```bash
